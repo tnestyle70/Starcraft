@@ -33,6 +33,9 @@ void CSceneMgr::Scene_Change(SCENEID eID)
 		case SC_STAGE:
 			m_pScene = new CStage;
 			break;
+		case SC_EDIT:
+			m_pScene = new CEdit;
+			break;
 		}
 		m_pScene->Initialize();
 		m_ePreScene = m_eCurScene;

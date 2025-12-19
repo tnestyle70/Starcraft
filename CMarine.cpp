@@ -23,6 +23,7 @@ void CMarine::Initialize()
     m_pFrameKey = L"Marine";
 
     m_eRender = RENDER_WORLD;
+    m_eState = eUnitState::IDLE;
     m_tFrame.iFrame = 0;
     m_tFrame.iStart = 0;
     m_tFrame.iEnd = 7;
@@ -34,16 +35,32 @@ void CMarine::Initialize()
 int CMarine::Update()
 {
     int iResult = CUnit::Update();
+
     if (iResult == DEAD)
         return DEAD;
 
     DWORD now = GetTickCount();
-    if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+
+    switch (m_eState)
     {
-        m_tFrame.iStart++;
-        if (m_tFrame.iStart > m_tFrame.iEnd)
-            m_tFrame.iStart = 0;
-        m_tFrame.dwTime = now;
+    case eUnitState::IDLE:
+        m_tFrame.iStart = 0;
+        break;
+    case eUnitState::MOVE:
+        if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+        {
+            m_tFrame.iStart++;
+            if (m_tFrame.iStart > m_tFrame.iEnd)
+                m_tFrame.iStart = 0;
+            m_tFrame.dwTime = now;
+        }
+        break;
+    case eUnitState::ATTACK:
+        break;
+    case eUnitState::DIE:
+        break;
+    default:
+        break;
     }
 
     __super::Update_Rect();

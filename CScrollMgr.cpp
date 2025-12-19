@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CScrollMgr.h"
+#include "CTimeMgr.h"
 
 CScrollMgr* CScrollMgr::m_pInstance = nullptr;
 
@@ -9,6 +10,23 @@ CScrollMgr::CScrollMgr() : m_fScrollX(0.f), m_fScrollY(0.f)
 
 CScrollMgr::~CScrollMgr()
 {
+}
+
+void CScrollMgr::Update()
+{
+    float dt = CTimeMgr::Get_Instance()->GetDT();
+    float speed = 900.f; // px/sec
+
+    float dx = 0, dy = 0;
+    if (GetAsyncKeyState('A') & 0x8000) dx -= 1;
+    if (GetAsyncKeyState('D') & 0x8000) dx += 1;
+    if (GetAsyncKeyState('W') & 0x8000) dy -= 1;
+    if (GetAsyncKeyState('S') & 0x8000) dy += 1;
+
+    m_fScrollX += dx * speed * dt;
+    m_fScrollY += dy * speed * dt;
+
+    ClampToWorld(); // 0 ~ world-view
 }
 
 void CScrollMgr::Scroll_Lock()

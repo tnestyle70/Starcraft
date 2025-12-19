@@ -16,7 +16,7 @@ void CTimeMgr::Initialize()
 	QueryPerformanceFrequency(&m_liFreq);
 	QueryPerformanceCounter(&m_liPrev);
 	m_dDT = 0;
-	m_dDTClamp = 0.5;
+	m_dDTClamp = 0.16;
 }
 
 void CTimeMgr::BeginFrame()

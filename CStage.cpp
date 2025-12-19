@@ -8,10 +8,13 @@
 #include "CInputMgr.h"
 #include "CSceneMgr.h"
 #include "CSelectionMgr.h"
+#include "CTileMgr.h"
 #include "CCommandMgr.h"
 #include "CMarine.h"
 #include "CBattleCruiser.h"
 #include "CTank.h"
+#include "CSCV.h"
+#include "CMedic.h"
 
 CStage::CStage()
 {
@@ -27,6 +30,9 @@ void CStage::Initialize()
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/MyFolder/Map/FightSpirit.bmp", L"Stage");
 	//Stage 진입시 마우스 클램핑
 	ClampMouse(g_hWnd);
+	//Tile 정보 로드
+	CTileMgr::Get_Instance()->Load_Tile();
+
 	//마린 스프라이트 시트
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Unit/Marine/Marine.bmp", L"Marine");
 	//마린 3마리 생성
@@ -53,6 +59,18 @@ void CStage::Initialize()
 	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pTank);
 	pTank = CAbstractFactory<CTank>::Create(100.f, 500.f);
 	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pTank);
+	//SCV
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Unit/SCV/SCV.bmp", L"SCV");
+	CObj* pSCV = CAbstractFactory<CSCV>::Create(100.f, 100.f);
+	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pSCV);
+	pSCV = CAbstractFactory<CSCV>::Create(200.f, 100.f);
+	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pSCV);
+	pSCV = CAbstractFactory<CSCV>::Create(300.f, 100.f);
+	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pSCV);
+	//Medic
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Unit/Medic/Medic.bmp", L"Medic");
+	CObj* pMedic = CAbstractFactory<CMedic>::Create(400.f, 200.f);
+	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pMedic);
 }
 
 int CStage::Update()

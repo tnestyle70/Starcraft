@@ -139,6 +139,12 @@
     <Filter Include="01. Obj\00. Unit\02. Tank">
       <UniqueIdentifier>{f7c30db1-fb59-49ff-8362-bc421352401a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Obj\00. Unit\03. SCV">
+      <UniqueIdentifier>{e9505c78-34d3-4671-b64c-27c9fa1e0289}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\04. Medic">
+      <UniqueIdentifier>{577c39dc-f9cc-42c4-b25d-b28748f70261}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -234,6 +240,12 @@
     <ClInclude Include="CTank.h">
       <Filter>01. Obj\00. Unit\02. Tank</Filter>
     </ClInclude>
+    <ClInclude Include="CSCV.h">
+      <Filter>01. Obj\00. Unit\03. SCV</Filter>
+    </ClInclude>
+    <ClInclude Include="CMedic.h">
+      <Filter>01. Obj\00. Unit\04. Medic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Starcraft.cpp">
@@ -316,6 +328,12 @@
     </ClCompile>
     <ClCompile Include="CTank.cpp">
       <Filter>01. Obj\00. Unit\02. Tank</Filter>
+    </ClCompile>
+    <ClCompile Include="CSCV.cpp">
+      <Filter>01. Obj\00. Unit\03. SCV</Filter>
+    </ClCompile>
+    <ClCompile Include="CMedic.cpp">
+      <Filter>01. Obj\00. Unit\04. Medic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

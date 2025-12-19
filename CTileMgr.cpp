@@ -3,6 +3,7 @@
 #include "CAbstractFactory.h"
 #include "CScrollMgr.h"
 
+
 CTileMgr* CTileMgr::m_pInstance = nullptr;
 
 CTileMgr::CTileMgr()
@@ -44,14 +45,11 @@ void CTileMgr::Late_Update()
 
 void CTileMgr::Render(HDC hDC)
 {
-	// 311
-
 	int	iCullX = abs((int)CScrollMgr::Get_Instance()->Get_ScrollX() / TILECX);
 	int	iCullY = abs((int)CScrollMgr::Get_Instance()->Get_ScrollY() / TILECY);
 
 	int iMaxX = iCullX + WINCX / TILECX + 2;
 	int iMaxY = iCullY + WINCY / TILECY + 2;
-
 
 	for (int i = iCullY; i < iMaxY; ++i)
 	{
@@ -65,7 +63,6 @@ void CTileMgr::Render(HDC hDC)
 			m_vecTile[iIndex]->Render(hDC);
 		}
 	}
-
 }
 
 void CTileMgr::Release()
@@ -74,18 +71,99 @@ void CTileMgr::Release()
 	m_vecTile.clear();
 }
 
-void CTileMgr::Picking_Tile(POINT pt, int iDrawID, int iOption)
+void CTileMgr::Picking_Tile(POINT pt, int iOption, int iCost)
 {
+	//마우스가 위치한 타일 x,y
 	int		x = pt.x / TILECX;
 	int		y = pt.y / TILECY;
+	//로직 검토하기
+	int iIndex = TILEX * y + x;
 
-	int iIndex = y * TILEX + x;
+	//if (0 > iIndex || (size_t)iIndex >= m_vecTile.size())
+	//	return;
 
-	if (0 > iIndex || (size_t)iIndex >= m_vecTile.size())
-		return;
-
-	dynamic_cast<CTile*>(m_vecTile[iIndex])->Set_DrawID(iDrawID);
 	dynamic_cast<CTile*>(m_vecTile[iIndex])->Set_Option(iOption);
+	dynamic_cast<CTile*>(m_vecTile[iIndex])->Set_Cost(iCost);
+}
+
+void CTileMgr::RenderGrid(HDC hDC, float fScrX, float fScrY)
+{
+	// 1) 텍스트 투명 배경
+	int oldBk = SetBkMode(hDC, TRANSPARENT);
+	COLORREF oldColor = SetTextColor(hDC, RGB(0, 255, 0));
+
+	// 2) 폰트(매 프레임 CreateFont 하면 무거우니 static 권장)
+	static HFONT hFont = CreateFont(
+		14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+		DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Consolas"
+	);
+
+	HFONT oldF = (HFONT)SelectObject(hDC, hFont);
+
+	// 3) 현재 화면에서 보이는 타일 범위만 계산 (성능 + 깔끔)
+	int startCol = fScrX / TILECX;
+	int startRow = fScrY / TILECY;
+
+	int endCol = startCol + (WINCX / TILECX) + 2;
+	int endRow = startRow + (WINCY / TILECY) + 2;
+
+	// 4) 숫자 찍기 (예: (col,row) 또는 idx)
+	wchar_t buf[64];
+
+	for (int r = startRow; r < endRow; ++r)
+	{
+		for (int c = startCol; c < endCol; ++c)
+		{
+			// 타일 월드 중심
+			int worldCx = c * TILECX + TILECX * 0.5;
+			int worldCy = r * TILECY + TILECY * 0.5;
+
+			// 월드 -> 스크린 (스크롤 보정)
+			int x = worldCx - fScrX;
+			int y = worldCy - fScrY;
+
+			// 화면 밖이면 스킵
+			if (x < -TILECX || x > WINCX + TILECX || y < -TILECY || y > WINCY + TILECY)
+				continue;
+
+			CObj* pTile = m_vecTile[TILEX * r + c];
+			int iCost = dynamic_cast<CTile*>(pTile)->Get_Cost();
+			// 원하는 표시로 바꿔도 됨:
+			wsprintf(buf, L"%d", iCost);
+			TextOut(hDC, x - 3, y - 5, buf, lstrlen(buf));
+		}
+	}
+	//격자 그리드 그리기
+	//월드 기준 타일 범위
+	float fStartCol = fScrX / TILECX;
+	float fEndCol = (fScrX + WINCX) / TILECX + 1;
+	float fStartRow = fScrY / TILECY;
+	float fEndRow = (fScrY + WINCY) / TILECY + 1;
+
+	// 펜 설정(격자색)
+	HPEN pen = CreatePen(PS_SOLID, 1, RGB(255, 255, 255));
+	HPEN oldP = (HPEN)SelectObject(hDC, pen);
+	//세로선
+	for (int c = fStartCol; c <= fEndCol; ++c)
+	{
+		int xWorld = c * TILECX;
+		int xScr = xWorld - fScrX; // 월드->스크린
+
+		MoveToEx(hDC, xScr, 0, nullptr);           // 시작점 :contentReference[oaicite:2]{index=2}
+		LineTo(hDC, xScr, WINCY);                // 끝점 :contentReference[oaicite:3]{index=3}
+	}
+	// 가로선
+	for (int r = fStartRow; r <= fEndRow; ++r)
+	{
+		int yWorld = r * TILECY;
+		int yScr = yWorld - fScrY;
+
+		MoveToEx(hDC, 0, yScr, nullptr);
+		LineTo(hDC, WINCX, yScr);
+	}
+	SelectObject(hDC, oldP);
+	DeleteObject(pen);
 }
 
 void CTileMgr::Save_Tile()
@@ -104,18 +182,18 @@ void CTileMgr::Save_Tile()
 		return;
 	}
 
-	int			iDrawID(0), iOption(0);
+	int			iOption(0), iCost(0);
 	DWORD		dwByte(0);
 
 	for (auto& pTile : m_vecTile)
 	{
-		iDrawID = dynamic_cast<CTile*>(pTile)->Get_DrawID();
 		iOption = dynamic_cast<CTile*>(pTile)->Get_Option();
+		iCost = dynamic_cast<CTile*>(pTile)->Get_Cost();
 
 		INFO tTile = pTile->Get_Info();
 
-		WriteFile(hFile, &iDrawID, sizeof(int), &dwByte, nullptr);
 		WriteFile(hFile, &iOption, sizeof(int), &dwByte, nullptr);
+		WriteFile(hFile, &iCost, sizeof(int), &dwByte, nullptr);
 		WriteFile(hFile, &tTile, sizeof(INFO), &dwByte, nullptr);
 	}
 
@@ -141,23 +219,25 @@ void CTileMgr::Load_Tile()
 	}
 
 	Release();
+	//불러올 때 reserve
+	m_vecTile.reserve(TILEX * TILEY);
 
-	int			iDrawID(0), iOption(0);
+	int			iOption(0), iCost(0);
 	DWORD		dwByte(0);
 	INFO		tTile{};
 
 	while (true)
 	{
-		ReadFile(hFile, &iDrawID, sizeof(int), &dwByte, nullptr);
 		ReadFile(hFile, &iOption, sizeof(int), &dwByte, nullptr);
+		ReadFile(hFile, &iCost, sizeof(int), &dwByte, nullptr);
 		ReadFile(hFile, &tTile, sizeof(INFO), &dwByte, nullptr);
 
 		if (dwByte == 0)
 			break;
 
 		CObj* pTile = CAbstractFactory<CTile>::Create(tTile.fX, tTile.fY);
-		dynamic_cast<CTile*>(pTile)->Set_DrawID(iDrawID);
 		dynamic_cast<CTile*>(pTile)->Set_Option(iOption);
+		dynamic_cast<CTile*>(pTile)->Set_Cost(iCost);
 
 		m_vecTile.push_back(pTile);
 	}
@@ -166,4 +246,3 @@ void CTileMgr::Load_Tile()
 
 	MessageBox(g_hWnd, L"Tile Load 완료", _T("성공"), MB_OK);
 }
-

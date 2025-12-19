@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CTile.h"
 
 class CTileMgr
@@ -18,10 +17,10 @@ public:
 	void		Release();
 
 public:
-	void		Picking_Tile(POINT pt, int iDrawID, int iOption);
+	void		Picking_Tile(POINT pt, int iOption, int iCost);
 	void		Save_Tile();
 	void		Load_Tile();
-
+	void RenderGrid(HDC hDC, float fScrX, float fScrY);
 public:
 	static CTileMgr* Get_Instance()
 	{

@@ -1,6 +1,7 @@
 #pragma once
 #include "CMenu.h"
 #include "CStage.h"
+#include "CEdit.h"
 
 class CSceneMgr
 {

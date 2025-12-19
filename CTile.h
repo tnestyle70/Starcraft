@@ -7,10 +7,10 @@ public:
 	virtual ~CTile();
 
 public:
-	void	Set_DrawID(int iDrawID) { m_iDrawID = iDrawID; }
+	void	Set_Cost(int iCost) { m_iCost = iCost; }
 	void	Set_Option(int iOption) { m_iOption = iOption; }
 
-	int Get_DrawID() { return m_iDrawID; }
+	int Get_Cost() { return m_iCost; }
 	int Get_Option() { return m_iOption; }
 
 public:
@@ -21,8 +21,8 @@ public:
 	void Release() override;
 
 private:
-	int		m_iOption;
-	int     m_iDrawID;
+	int		m_iOption; //지형 타입(충돌, 통과 여부)
+	int		m_iCost; //이동 비용(가중치) A* 사용시 적용
 };
 
 

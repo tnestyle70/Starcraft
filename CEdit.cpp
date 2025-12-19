@@ -3,6 +3,7 @@
 #include "CBmpMgr.h"
 #include "CTileMgr.h"
 #include "CScrollMgr.h"
+#include "CInputMgr.h"
 
 CEdit::CEdit()
 {
@@ -17,14 +18,18 @@ void CEdit::Initialize()
 {
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Map/FightSpirit.bmp", L"Stage");
 
-	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Tile/Tile.bmp", L"Tile");
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/MyFolder/Tile/Tile.bmp", L"Tile");
 
 	CTileMgr::Get_Instance()->Initialize();
+	CTileMgr::Get_Instance()->Load_Tile();
 }
 
 int CEdit::Update()
 {
+	CScrollMgr::Get_Instance()->Update();
+
 	CTileMgr::Get_Instance()->Update();
+
 	return 0;
 }
 
@@ -39,49 +44,52 @@ void CEdit::Render(HDC hDC)
 {
 	HDC	hMemDC = CBmpMgr::Get_Instance()->Find_Image(L"Stage");
 
+	float fScrX = CScrollMgr::Get_Instance()->Get_ScrollX();
+	float fScrY = CScrollMgr::Get_Instance()->Get_ScrollY();
+
 	BitBlt(hDC,		// 복사 받을 DC
 		0,
 		0,
 		WINCX,
 		WINCY,
 		hMemDC,		// 복사할 이미지 DC
-		0,			// 이미지의 LEFT
-		0,			// 이미지의 TOP
+		fScrX,			// 이미지의 LEFT
+		fScrY,			// 이미지의 TOP
 		SRCCOPY);	// 복사 방식
 
-	CTileMgr::Get_Instance()->Render(hDC);
+	CTileMgr::Get_Instance()->RenderGrid(hDC, fScrX, fScrY);
 }
 
 void CEdit::Release()
 {
 }
+
 void CEdit::Key_Input()
 {
-	if (GetAsyncKeyState(VK_LEFT))
-		CScrollMgr::Get_Instance()->Set_ScrollX(5.f);
+	if (CInputMgr::Get_Instance()->KeyPress(LEFT_MOUSE))
+	{
+		POINT ptMouse{};
+		GetCursorPos(&ptMouse);
+		ScreenToClient(g_hWnd, &ptMouse);
+		//마우스 좌표 월드 좌표로 변환
+		ptMouse.x += (int)CScrollMgr::Get_Instance()->Get_ScrollX();
+		ptMouse.y += (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
-	if (GetAsyncKeyState(VK_RIGHT))
-		CScrollMgr::Get_Instance()->Set_ScrollX(-5.f);
+		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 0, 1);
+	}
 
-	if (GetAsyncKeyState(VK_UP))
-		CScrollMgr::Get_Instance()->Set_ScrollY(5.f);
-
-	if (GetAsyncKeyState(VK_DOWN))
-		CScrollMgr::Get_Instance()->Set_ScrollY(-5.f);
-
-	if (GetAsyncKeyState(VK_LBUTTON))
+	if (CInputMgr::Get_Instance()->KeyPress(RIGHT_MOUSE))
 	{
 		POINT ptMouse{};
 		GetCursorPos(&ptMouse);
 		ScreenToClient(g_hWnd, &ptMouse);
 
-		ptMouse.x -= (int)CScrollMgr::Get_Instance()->Get_ScrollX();
-		ptMouse.y -= (int)CScrollMgr::Get_Instance()->Get_ScrollY();
+		ptMouse.x += (int)CScrollMgr::Get_Instance()->Get_ScrollX();
+		ptMouse.y += (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
-		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 1, 0);
+		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 0, 0);
 	}
-
-	if (GetAsyncKeyState('S'))
+	if (GetAsyncKeyState('T'))
 	{
 		CTileMgr::Get_Instance()->Save_Tile();
 	}

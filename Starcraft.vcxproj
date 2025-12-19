@@ -145,6 +145,7 @@
     <ClInclude Include="CEdit.h" />
     <ClInclude Include="CInputMgr.h" />
     <ClInclude Include="CMainGame.h" />
+    <ClInclude Include="CMedic.h" />
     <ClInclude Include="CMenu.h" />
     <ClInclude Include="CMyBmp.h" />
     <ClInclude Include="CObj.h" />
@@ -152,6 +153,7 @@
     <ClInclude Include="CScene.h" />
     <ClInclude Include="CSceneMgr.h" />
     <ClInclude Include="CScrollMgr.h" />
+    <ClInclude Include="CSCV.h" />
     <ClInclude Include="CSelectionMgr.h" />
     <ClInclude Include="CStage.h" />
     <ClInclude Include="CTank.h" />
@@ -177,6 +179,7 @@
     <ClCompile Include="CEdit.cpp" />
     <ClCompile Include="CInputMgr.cpp" />
     <ClCompile Include="CMainGame.cpp" />
+    <ClCompile Include="CMedic.cpp" />
     <ClCompile Include="CMenu.cpp" />
     <ClCompile Include="CMyBmp.cpp" />
     <ClCompile Include="CObj.cpp" />
@@ -184,6 +187,7 @@
     <ClCompile Include="CScene.cpp" />
     <ClCompile Include="CSceneMgr.cpp" />
     <ClCompile Include="CScrollMgr.cpp" />
+    <ClCompile Include="CSCV.cpp" />
     <ClCompile Include="CSelectionMgr.cpp" />
     <ClCompile Include="CStage.cpp" />
     <ClCompile Include="CTank.cpp" />

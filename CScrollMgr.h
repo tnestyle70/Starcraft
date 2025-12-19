@@ -11,6 +11,7 @@ private:
 	~CScrollMgr();
 
 public:
+	void Update();
 	void		Scroll_Lock();
 
 public:
