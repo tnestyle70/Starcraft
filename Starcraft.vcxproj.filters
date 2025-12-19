@@ -1,0 +1,339 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="00. MainGame">
+      <UniqueIdentifier>{1aa69099-e421-47fe-a053-6174c09707b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj">
+      <UniqueIdentifier>{e5867bb3-7286-4550-9cbd-0efd73c35965}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Scene">
+      <UniqueIdentifier>{23f4a8d1-ca24-4bf5-a706-6ade2ad0b326}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Scene\00. Logo">
+      <UniqueIdentifier>{54a4cb30-1e0d-41c8-82bb-0bf4f92e68dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Scene\01. Menu">
+      <UniqueIdentifier>{4d695b8b-5d6a-4f08-b859-c30785ec45fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Scene\02. Edit">
+      <UniqueIdentifier>{12f69e54-6511-488d-8c2d-a5c8efc2baca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Scene\03. Stage">
+      <UniqueIdentifier>{9ed9a2c9-2de6-4257-b60a-9dd270dc3d07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design">
+      <UniqueIdentifier>{38cc1663-2583-4311-bf7f-ca87d4fc5902}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\00. AbstractFactory">
+      <UniqueIdentifier>{81dd7288-7acd-4922-a0b3-0173d0f32c97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit">
+      <UniqueIdentifier>{eb7a956f-dd4e-4e3e-884f-1e8bd6eba4d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building">
+      <UniqueIdentifier>{b97fd795-3f08-41bf-a0ba-55346199b245}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\02. Projectile">
+      <UniqueIdentifier>{3c8bc947-8092-4c95-8b13-500752076ab6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\01. ObjMgr">
+      <UniqueIdentifier>{2ee1b426-8326-47c0-b9bf-22848128a634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\02. CollisionMgr">
+      <UniqueIdentifier>{e8be8af5-dea0-4d04-a171-a02284eeffd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\03. TileMap">
+      <UniqueIdentifier>{4dea9e5a-e967-48cb-96a0-cb0d6891a7a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\04. ScrollMgr">
+      <UniqueIdentifier>{eba7094c-af7e-43e8-ae83-10a7447f53dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\05. AnimationMgr">
+      <UniqueIdentifier>{4f4c7923-8691-4cbb-b4f6-8cbd90233676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\06. SceneMgr">
+      <UniqueIdentifier>{36f708e2-2485-46b9-9137-b6289f1e7e77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\08. SpatialHash">
+      <UniqueIdentifier>{3e47be0d-13af-47cd-afaa-7a9d18a056b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\09. Core">
+      <UniqueIdentifier>{89d53334-9ec7-450a-8015-373bc33ed953}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\09. Core\00. TimeMgr">
+      <UniqueIdentifier>{acfac765-fe54-46b6-aa6c-8def81fa9516}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\09. Core\02. EventBus">
+      <UniqueIdentifier>{c09460b1-a351-4413-9900-290bf51e4eb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS">
+      <UniqueIdentifier>{5c15a87b-980b-4e4b-a26f-ef5a9e9d0b60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\00. SelectionMgr">
+      <UniqueIdentifier>{387914f3-9778-47ff-81e1-ee2ca28b3c39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\01. CommandMgr">
+      <UniqueIdentifier>{69608e4e-d7ce-4715-b319-0d8b787fd241}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\02. ProductionMgr">
+      <UniqueIdentifier>{51332616-68f3-4192-94f6-2f8f3c81a358}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\03. FogOfWar">
+      <UniqueIdentifier>{44692e7e-e8df-48de-a40e-6123bc2593ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\04. PathMgr">
+      <UniqueIdentifier>{a3ae7ab4-4e7e-4f2b-91bb-cb27d7199075}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\07. BmpMgr">
+      <UniqueIdentifier>{fe0e718c-dcc7-48ec-9a94-41ce45bbeccf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\07. BmpMgr\CMyBmp">
+      <UniqueIdentifier>{2f78ff89-24e9-47a0-9ad2-446431419f94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. UI">
+      <UniqueIdentifier>{93a4d68f-2cbe-44fd-a4c8-e090e9a74348}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\09. Core\01. InputMgr">
+      <UniqueIdentifier>{4291742b-94f1-44fd-a661-04d1e6c5a63e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. UI\00. Button">
+      <UniqueIdentifier>{cc5f87fa-fd05-4668-87c7-93703f8bfc04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05. Resource">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="05. Resource\00. UI">
+      <UniqueIdentifier>{0ff16a03-472b-499c-bb61-86a85ab61d04}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05. Resource\00. UI\00. Button">
+      <UniqueIdentifier>{b628795a-6468-482d-91e9-c21e52bb1c83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05. Resource\00. UI\01. Frames">
+      <UniqueIdentifier>{ce0837c9-fe49-4044-8660-8b608883cf49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05. Resource\01. Units">
+      <UniqueIdentifier>{24e3794a-2581-4171-bba2-cd8887afed85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="05. Resource\02. Buildings">
+      <UniqueIdentifier>{ecb4a888-ec56-42ae-9105-6e07b7be5fea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Scene\02. Edit\00. TileMgr">
+      <UniqueIdentifier>{6fb60eea-7ad6-4629-8d53-1002d30cd2f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Marine">
+      <UniqueIdentifier>{08b3e8cf-ad1b-4e58-a269-42eb7eebb2f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. BattleCruiser">
+      <UniqueIdentifier>{cfc98f82-dfb4-44dc-b939-39032410c34b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Tank">
+      <UniqueIdentifier>{f7c30db1-fb59-49ff-8362-bc421352401a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Starcraft.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CMainGame.h">
+      <Filter>00. MainGame</Filter>
+    </ClInclude>
+    <ClInclude Include="CScene.h">
+      <Filter>03. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Define.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CObj.h">
+      <Filter>01. Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="CBuilding.h">
+      <Filter>01. Obj\01. Building</Filter>
+    </ClInclude>
+    <ClInclude Include="CTimeMgr.h">
+      <Filter>02. Design\09. Core\00. TimeMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CSceneMgr.h">
+      <Filter>02. Design\06. SceneMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CMenu.h">
+      <Filter>03. Scene\01. Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="CBmpMgr.h">
+      <Filter>02. Design\07. BmpMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CMyBmp.h">
+      <Filter>02. Design\07. BmpMgr\CMyBmp</Filter>
+    </ClInclude>
+    <ClInclude Include="CAbstractFactory.h">
+      <Filter>02. Design\00. AbstractFactory</Filter>
+    </ClInclude>
+    <ClInclude Include="CInputMgr.h">
+      <Filter>02. Design\09. Core\01. InputMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CUIWidget.h">
+      <Filter>04. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="CObjMgr.h">
+      <Filter>02. Design\01. ObjMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CButton.h">
+      <Filter>04. UI\00. Button</Filter>
+    </ClInclude>
+    <ClInclude Include="CCollisionMgr.h">
+      <Filter>02. Design\02. CollisionMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CStage.h">
+      <Filter>03. Scene\03. Stage</Filter>
+    </ClInclude>
+    <ClInclude Include="CScrollMgr.h">
+      <Filter>02. Design\04. ScrollMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CEdit.h">
+      <Filter>03. Scene\02. Edit</Filter>
+    </ClInclude>
+    <ClInclude Include="CTileMgr.h">
+      <Filter>03. Scene\02. Edit\00. TileMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CTile.h">
+      <Filter>03. Scene\02. Edit\00. TileMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CMarine.h">
+      <Filter>01. Obj\00. Unit\00. Marine</Filter>
+    </ClInclude>
+    <ClInclude Include="CSelectionMgr.h">
+      <Filter>02. Design\10. RTS\00. SelectionMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CCommandMgr.h">
+      <Filter>02. Design\10. RTS\01. CommandMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CBattleCruiser.h">
+      <Filter>01. Obj\00. Unit\01. BattleCruiser</Filter>
+    </ClInclude>
+    <ClInclude Include="CTank.h">
+      <Filter>01. Obj\00. Unit\02. Tank</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Starcraft.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CMainGame.cpp">
+      <Filter>00. MainGame</Filter>
+    </ClCompile>
+    <ClCompile Include="CScene.cpp">
+      <Filter>03. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="CObj.cpp">
+      <Filter>01. Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="CUnit.cpp">
+      <Filter>01. Obj\00. Unit</Filter>
+    </ClCompile>
+    <ClCompile Include="CBuilding.cpp">
+      <Filter>01. Obj\01. Building</Filter>
+    </ClCompile>
+    <ClCompile Include="CTimeMgr.cpp">
+      <Filter>02. Design\09. Core\00. TimeMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CSceneMgr.cpp">
+      <Filter>02. Design\06. SceneMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CMenu.cpp">
+      <Filter>03. Scene\01. Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="CBmpMgr.cpp">
+      <Filter>02. Design\07. BmpMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CMyBmp.cpp">
+      <Filter>02. Design\07. BmpMgr\CMyBmp</Filter>
+    </ClCompile>
+    <ClCompile Include="CInputMgr.cpp">
+      <Filter>02. Design\09. Core\01. InputMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CUIWidget.cpp">
+      <Filter>04. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="CObjMgr.cpp">
+      <Filter>02. Design\01. ObjMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CButton.cpp">
+      <Filter>04. UI\00. Button</Filter>
+    </ClCompile>
+    <ClCompile Include="CCollisionMgr.cpp">
+      <Filter>02. Design\02. CollisionMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CStage.cpp">
+      <Filter>03. Scene\03. Stage</Filter>
+    </ClCompile>
+    <ClCompile Include="CScrollMgr.cpp">
+      <Filter>02. Design\04. ScrollMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CEdit.cpp">
+      <Filter>03. Scene\02. Edit</Filter>
+    </ClCompile>
+    <ClCompile Include="CTile.cpp">
+      <Filter>03. Scene\02. Edit\00. TileMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CTileMgr.cpp">
+      <Filter>03. Scene\02. Edit\00. TileMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CMarine.cpp">
+      <Filter>01. Obj\00. Unit\00. Marine</Filter>
+    </ClCompile>
+    <ClCompile Include="CSelectionMgr.cpp">
+      <Filter>02. Design\10. RTS\00. SelectionMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CCommandMgr.cpp">
+      <Filter>02. Design\10. RTS\01. CommandMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CBattleCruiser.cpp">
+      <Filter>01. Obj\00. Unit\01. BattleCruiser</Filter>
+    </ClCompile>
+    <ClCompile Include="CTank.cpp">
+      <Filter>01. Obj\00. Unit\02. Tank</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Starcraft.rc">
+      <Filter>05. Resource</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="small.ico">
+      <Filter>05. Resource</Filter>
+    </Image>
+    <Image Include="Starcraft.ico">
+      <Filter>05. Resource</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CUnit.h">
+      <Filter>01. Obj\00. Unit</Filter>
+    </None>
+  </ItemGroup>
+</Project>
