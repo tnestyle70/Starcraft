@@ -21,6 +21,23 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+//디버깅
+static void ShowLastErrorBox(const wchar_t* where)
+{
+    DWORD err = GetLastError();
+
+    wchar_t* msg = nullptr;
+    FormatMessageW(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr, err, 0, (LPWSTR)&msg, 0, nullptr);
+
+    wchar_t buf[1024];
+    wsprintfW(buf, L"%s failed.\nGetLastError = %lu\n%s", where, err, msg ? msg : L"(no message)");
+    MessageBoxW(nullptr, buf, L"Win32 Error", MB_OK | MB_ICONERROR);
+
+    if (msg) LocalFree(msg);
+}
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -34,17 +51,31 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // TODO: 여기에 코드를 입력합니다.
 
     // 전역 문자열을 초기화합니다.
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_STARCRAFT, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
+    //LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    //LoadStringW(hInstance, IDC_STARCRAFT, szWindowClass, MAX_LOADSTRING);
+    //MyRegisterClass(hInstance);
 
-    // 애플리케이션 초기화를 수행합니다:
-    if (!InitInstance (hInstance, nCmdShow))
+    // 리소스(STRINGTABLE) 꼬였을 때 임시 우회: 하드코딩
+    lstrcpyW(szTitle, L"Starcraft");
+    lstrcpyW(szWindowClass, L"StarcraftWindowClass");
+
+    ATOM atom = MyRegisterClass(hInstance);
+    if (atom == 0) { ShowLastErrorBox(L"RegisterClassExW"); return 0; }
+
+    if (!InitInstance(hInstance, nCmdShow))
     {
-        return FALSE;
+        // InitInstance 내부에서 CreateWindowW 실패 원인을 띄우게 만들 예정
+        return 0;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_STARCRAFT));
+    //// 애플리케이션 초기화를 수행합니다:
+    //if (!InitInstance (hInstance, nCmdShow))
+    //{
+    //    return FALSE;
+    //}
+
+    HACCEL hAccelTable = nullptr; // 임시: 가속키 리소스 안 쓰기
+    //HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_STARCRAFT));
 
     CMainGame game;
     game.Initialize();
@@ -111,8 +142,14 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    if (!hWnd)
    {
-      return FALSE;
+       ShowLastErrorBox(L"CreateWindowW");
+       return FALSE;
    }
+
+   //if (!hWnd)
+   //{
+   //   return FALSE;
+   //}
 
    g_hWnd = hWnd;
 

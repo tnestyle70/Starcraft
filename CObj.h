@@ -16,6 +16,7 @@ public:
 	virtual bool IsDead() const { return false; };
 	INFO Get_Info() { return m_tInfo; }
 	RECT* Get_Rect() { return &m_tRect; }
+	Vec2 Get_Pos() { return { m_tInfo.fX, m_tInfo.fY }; }
 
 	void Set_Pos(float fX, float fY) { m_tInfo.fX = fX, m_tInfo.fY = fY; }
 	void Set_Size(float fCX, float fCY) { m_tInfo.fCX = fCX, m_tInfo.fCY = fCY; }

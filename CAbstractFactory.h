@@ -1,5 +1,40 @@
 #pragma once
 #include "CObj.h"
+#include "CBuilding.h"
+#include "CCommandCenter.h"
+#include "CBarracks.h"
+#include "CFactory.h"
+#include "CStarport.h"
+
+struct CBuildingFactory
+{
+	static CBuilding* Create(eBuildingType type)
+	{
+		CBuilding* pBuilding = nullptr;
+		switch (type)
+		{
+		case eBuildingType::COMMAND_CENTER:
+			pBuilding = new CCommandCenter;
+			break;
+			/*
+		case eBuildingType::BARRACK:
+			pBuilding = new CBarracks;
+			break;
+		case eBuildingType::FACTORY:
+			pBuilding = new CFactory;
+			break;
+		case eBuildingType::STARPORT:
+			pBuilding = new CStarport;
+			break;
+			*/
+		default:
+			break;
+		}
+		if (!pBuilding) return nullptr;
+		pBuilding->Initialize();
+		return pBuilding;
+	}
+};
 
 template<typename T>
 class CAbstractFactory
@@ -36,3 +71,4 @@ public:
 		return pObj;
 	}
 };
+

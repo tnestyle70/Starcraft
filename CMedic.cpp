@@ -18,7 +18,7 @@ void CMedic::Initialize()
     m_tInfo.fCX = 64.f; //메딕 한 칸 크기
     m_tInfo.fCY = 64.f;
 
-    m_fSpeed = 0.8f;
+    m_fSpeed = 200.f;
 
     m_pFrameKey = L"Medic";
 
@@ -35,6 +35,7 @@ void CMedic::Initialize()
 int CMedic::Update()
 {
     int iResult = CUnit::Update();
+
     if (iResult == DEAD)
         return DEAD;
 
@@ -46,6 +47,8 @@ int CMedic::Update()
         m_tFrame.iStart = 0;
         break;
     case eUnitState::MOVE:
+        m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
+
         if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
         {
             m_tFrame.iStart++;
@@ -71,6 +74,8 @@ void CMedic::Late_Update()
 {
     //선택이 되었을 경우 마우스 방향의 애니메이션 재생
     if (!m_bSelected) return;
+    //이동 중이면 마우스 방향 애니메이션 재생 멈추기
+    if (m_eState != eUnitState::IDLE) return;
 
     Vec2 vWorldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
     Vec2 vDir{ vWorldMouse.fX - m_tInfo.fX, vWorldMouse.fY - m_tInfo.fY };

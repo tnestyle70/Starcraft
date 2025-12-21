@@ -10,11 +10,13 @@
 #include "CSelectionMgr.h"
 #include "CTileMgr.h"
 #include "CCommandMgr.h"
+#include "CNavMgr.h"
 #include "CMarine.h"
 #include "CBattleCruiser.h"
 #include "CTank.h"
 #include "CSCV.h"
 #include "CMedic.h"
+#include "CUIMgr.h"
 
 CStage::CStage()
 {
@@ -32,6 +34,8 @@ void CStage::Initialize()
 	ClampMouse(g_hWnd);
 	//Tile 정보 로드
 	CTileMgr::Get_Instance()->Load_Tile();
+	//NavGrid 정보 로드
+	CNavMgr::Get_Instance()->BuildFromTile();
 
 	//마린 스프라이트 시트
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Unit/Marine/Marine.bmp", L"Marine");
@@ -71,6 +75,15 @@ void CStage::Initialize()
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Unit/Medic/Medic.bmp", L"Medic");
 	CObj* pMedic = CAbstractFactory<CMedic>::Create(400.f, 200.f);
 	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pMedic);
+	//미니맵,MainUI, 미네랄, 가스, 인구수 UI
+	//CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/MiniMap.bmp", L"MiniMapUI");
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/MainUI/MainUI.bmp", L"MainUI");
+	//CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Resource/mineral_resource.bmp", L"MineralUI");
+	//CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Resource/gas.bmp", L"GasUI");
+	//CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Resource/human_resource.bmp", L"HumanUI");
+
+	//UIMgr 초기화
+	CUIMgr::Get_Instance()->Initialize();
 }
 
 int CStage::Update()
@@ -78,6 +91,8 @@ int CStage::Update()
 	CSelectionMgr::Get_Instance()->Update();
 
 	CObjMgr::Get_Instance()->Update();
+	
+	//CUIMgr::Get_Instance()->Update();
 
 	return 0;
 }
@@ -107,29 +122,28 @@ void CStage::Late_Update()
 
 void CStage::Render(HDC hDC)
 {
-	HDC	hMemDC = CBmpMgr::Get_Instance()->Find_Image(L"Stage");
+	// 1. 배경 그리기 (스크롤 적용)
+	HDC hStageDC = CBmpMgr::Get_Instance()->Find_Image(L"Stage");
+	if (hStageDC)
+	{
+		int scrX = (int)CScrollMgr::Get_Instance()->Get_ScrollX();
+		int scrY = (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
-	float fScrX = CScrollMgr::Get_Instance()->Get_ScrollX();
-	float fScrY = CScrollMgr::Get_Instance()->Get_ScrollY();
+		// Clamp 및 BitBlt (작성하신 코드 유지)
+		BitBlt(hDC, 0, 0, WINCX, WINCY, hStageDC, scrX, scrY, SRCCOPY);
+	}
 
-	BitBlt(hDC,		// 복사 받을 DC
-		0,
-		0,
-		WINCX,
-		WINCY,
-		hMemDC,		// 복사할 이미지 DC
-		fScrX,			// 이미지의 LEFT
-		fScrY,			// 이미지의 TOP
-		SRCCOPY);	// 복사 방식
-
+	// 2. 오브젝트 렌더
 	CObjMgr::Get_Instance()->Render(hDC);
-	//SelectionMgr 오버레이로 업데이트
-	CObjMgr::Get_Instance()->Render(hDC);
+
+	// 3. UI 렌더 (가장 위)
+	CUIMgr::Get_Instance()->Render(hDC);
 }
 
 void CStage::Release()
 {
 	CObjMgr::Get_Instance()->Delete_Obj(OBJ_UI);
+	CUIMgr::Get_Instance()->Release();
 }
 
 void CStage::ClampMouse(HWND hWnd)

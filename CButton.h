@@ -1,10 +1,9 @@
 #pragma once
 #include "CObj.h"
-#include "CUIWidget.h"
 
 struct AtlasRect { int iX, iY, iWidth, iHeight; };
 
-class CButton :  public CObj//, public CUIWidget
+class CButton :  public CObj
 {
 public:
     CButton();

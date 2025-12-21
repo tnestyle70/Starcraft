@@ -4,7 +4,7 @@
 #include "CBmpMgr.h"
 #include <cwchar>
 
-CTile::CTile() : m_iOption(0), m_iCost(0)
+CTile::CTile() : m_iOption(0), m_iCost(1)
 {
 }
 

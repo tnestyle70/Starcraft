@@ -1,5 +1,6 @@
 #pragma once
 #include "CObj.h"
+#include "Commandable.h"
 #include <deque>
 #include <vector>
 
@@ -11,11 +12,13 @@ enum class eOrderType
 struct Order
 {
 	eOrderType eType;
-	Vec2 vTargetPos;
-	CObj* pTarget;
+	Vec2 dst;
+	//월드 좌표 way point
+	vector<Vec2> path;
+	int iPathIndex;
 };
 
-class CUnit : public CObj
+class CUnit : public Commandable, public CObj
 {
 public:
 	CUnit();
@@ -26,12 +29,21 @@ public:
 	virtual void Late_Update()	PURE;
 	virtual void Render(HDC hDC)PURE;
 	virtual void Release()		PURE;
+public: //Commandable의 커맨드 카드 슬롯 구현
+	void CommandCardSlot(vector<CommandSlot>& outSlot) override;
+	bool ExecuteCommand(eCommandID command, CommandContext& context) override;
 public:
-	void IssueMove(const Vec2& worldTarget);
+	void IssueMove();
+	void IssueStop();
+	void IssueHold();
+	void IssuePatrol();
+	void IssueAttackMove();
 	void ClearOrders() { m_OrderQ.clear(); };
 	void PushOrder(const Order& order) {m_OrderQ.push_back(order);};
 public:
-	bool UpdateMove();
+	bool UpdateMove(Order& order);
+	void PopOrder();
+	void StartOrder(Order& order);
 public:
 	int DirTo16WayIndex(Vec2& vDir);
 public:

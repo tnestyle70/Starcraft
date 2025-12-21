@@ -71,6 +71,12 @@ void CTileMgr::Release()
 	m_vecTile.clear();
 }
 
+CObj* CTileMgr::GetTile(int row, int col)
+{
+	//row, col에 해당하는 CTile을 반환
+	return m_vecTile[row * TILEX + col];
+}
+
 void CTileMgr::Picking_Tile(POINT pt, int iOption, int iCost)
 {
 	//마우스가 위치한 타일 x,y
@@ -128,9 +134,9 @@ void CTileMgr::RenderGrid(HDC hDC, float fScrX, float fScrY)
 				continue;
 
 			CObj* pTile = m_vecTile[TILEX * r + c];
-			int iCost = dynamic_cast<CTile*>(pTile)->Get_Cost();
+			int iOption = dynamic_cast<CTile*>(pTile)->Get_Option();
 			// 원하는 표시로 바꿔도 됨:
-			wsprintf(buf, L"%d", iCost);
+			wsprintf(buf, L"%d", iOption);
 			TextOut(hDC, x - 3, y - 5, buf, lstrlen(buf));
 		}
 	}
@@ -166,6 +172,75 @@ void CTileMgr::RenderGrid(HDC hDC, float fScrX, float fScrY)
 	DeleteObject(pen);
 }
 
+bool CTileMgr::IsOccupy(int row, int col)
+{
+	if (!InRange(row, col)) return true;
+	return m_vecOccupy[row * TILEX + col] != 0;
+
+	return false;
+}
+
+void CTileMgr::SetOccupy(int row, int col, bool occupy)
+{
+	if (!InRange(row, col)) return;
+	if ((int)m_vecOccupy.size() != TILEX * TILEY)
+	{
+		m_vecOccupy.assign(TILEX * TILEY, 0);
+	}
+
+	m_vecOccupy[row * TILEX + col] = occupy ? 1 : 0;
+}
+
+bool CTileMgr::InRange(int& row, int& col) const
+{
+	return (row >= 0 && row < TILEY &&
+		col >= 0 && col < TILEX);
+}
+
+bool CTileMgr::IsBuildableTile(int row, int col)
+{
+	if (!InRange(row, col)) return false;
+	CObj* pObjTile = GetTile(row, col);
+	CTile* pTile = dynamic_cast<CTile*>(pObjTile);
+	if (!pTile) return false;
+
+	int iOption = pTile->Get_Option();
+	return (iOption == 0);
+}
+
+bool CTileMgr::CanConstruct(int row, int col, int width, int height)
+{
+	for (int r = row; r < row + height; ++r)
+	{
+		for (int c = col; c < col + width; ++c)
+		{
+			if (!InRange(row, col)) return false;
+			if (!IsBuildableTile(row, col)) return false;
+			if (IsOccupy(row, col)) return false;
+		}
+	}
+	return true;
+}
+
+bool CTileMgr::WorldToCell(const Vec2& world, int& outRow, int& outCol) const
+{
+	if (world.fX < 0.f || world.fY < 0.f) return false;
+	outRow = (int)(world.fY / TILECY);
+	outCol = (int)(world.fX / TILECX);
+	return InRange(outRow, outCol);
+}
+
+Vec2 CTileMgr::CellToWorldCenter(int row, int col) const
+{
+	return Vec2{col * (float)TILECX + TILECX * 0.5f, 
+	row * (float)TILECY + TILECY * 0.5f};
+}
+
+Vec2 CTileMgr::CellToWorldTopLeft(int row, int col) const
+{
+	return Vec2{col * (float)TILECX, row * (float)TILECY};
+}
+
 void CTileMgr::Save_Tile()
 {
 	HANDLE		hFile = CreateFile(L"../Data/Tile.dat",	// 파일 경로
@@ -184,22 +259,33 @@ void CTileMgr::Save_Tile()
 
 	int			iOption(0), iCost(0);
 	DWORD		dwByte(0);
+	//디버깅 
+	int cnt = 0, opt0 = 0, opt1 = 0, optOther = 0;
 
 	for (auto& pTile : m_vecTile)
 	{
 		iOption = dynamic_cast<CTile*>(pTile)->Get_Option();
 		iCost = dynamic_cast<CTile*>(pTile)->Get_Cost();
-
 		INFO tTile = pTile->Get_Info();
+
+		if (iOption == 0) opt0++;
+		else if (iOption == 1) opt1++;
+		else optOther++;
 
 		WriteFile(hFile, &iOption, sizeof(int), &dwByte, nullptr);
 		WriteFile(hFile, &iCost, sizeof(int), &dwByte, nullptr);
 		WriteFile(hFile, &tTile, sizeof(INFO), &dwByte, nullptr);
+
+		cnt++;
 	}
 
 	CloseHandle(hFile);
 
-	MessageBox(g_hWnd, L"Tile Save 완료", _T("성공"), MB_OK);
+	wchar_t buf[128];
+	swprintf_s(buf, L"SAVE TOTAL=%d\nopt0=%d opt1=%d other=%d", cnt, opt0, opt1, optOther);
+	MessageBox(g_hWnd, buf, L"Save Debug", MB_OK);
+
+	//MessageBox(g_hWnd, L"Tile Save 완료", _T("성공"), MB_OK);
 }
 
 void CTileMgr::Load_Tile()
@@ -225,15 +311,22 @@ void CTileMgr::Load_Tile()
 	int			iOption(0), iCost(0);
 	DWORD		dwByte(0);
 	INFO		tTile{};
-
+	//디버깅
+	int cnt = 0, cntOpt1 = 0;
 	while (true)
 	{
-		ReadFile(hFile, &iOption, sizeof(int), &dwByte, nullptr);
-		ReadFile(hFile, &iCost, sizeof(int), &dwByte, nullptr);
-		ReadFile(hFile, &tTile, sizeof(INFO), &dwByte, nullptr);
+		DWORD br1 = 0, br2 = 0, br3 = 0;
+		BOOL ok1 = ReadFile(hFile, &iOption, sizeof(int), &br1, nullptr);
+		BOOL ok2 = ReadFile(hFile, &iCost, sizeof(int), &br2, nullptr);
+		BOOL ok3 = ReadFile(hFile, &tTile, sizeof(INFO), &br3, nullptr);
 
-		if (dwByte == 0)
+		if (!ok1 || !ok2 || !ok3 ||
+			br1 != sizeof(int) || br2 != sizeof(int) || br3 != sizeof(INFO))
 			break;
+		if (iOption == 1) cntOpt1++;
+		cnt++;
+		//if (dwByte == 0)
+		//	break;
 
 		CObj* pTile = CAbstractFactory<CTile>::Create(tTile.fX, tTile.fY);
 		dynamic_cast<CTile*>(pTile)->Set_Option(iOption);
@@ -243,6 +336,8 @@ void CTileMgr::Load_Tile()
 	}
 
 	CloseHandle(hFile);
+	wchar_t buf[128];
+	swprintf_s(buf, L"TOTAL=%d\nopt1=%d", cnt, cntOpt1);
 
-	MessageBox(g_hWnd, L"Tile Load 완료", _T("성공"), MB_OK);
+	MessageBox(g_hWnd, buf, L"Tile Load 완료", MB_OK);
 }

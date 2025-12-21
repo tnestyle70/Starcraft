@@ -75,7 +75,7 @@ void CEdit::Key_Input()
 		ptMouse.x += (int)CScrollMgr::Get_Instance()->Get_ScrollX();
 		ptMouse.y += (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
-		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 0, 1);
+		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 1, 1);
 	}
 
 	if (CInputMgr::Get_Instance()->KeyPress(RIGHT_MOUSE))
@@ -87,7 +87,7 @@ void CEdit::Key_Input()
 		ptMouse.x += (int)CScrollMgr::Get_Instance()->Get_ScrollX();
 		ptMouse.y += (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
-		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 0, 0);
+		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 0, 1);
 	}
 	if (GetAsyncKeyState('T'))
 	{

@@ -18,14 +18,15 @@ void CBattleCruiser::Initialize()
     m_tInfo.fCX = 120.f; //마린 한 칸 크기
     m_tInfo.fCY = 120.f;
 
-    m_fSpeed = 0.8f;
+    m_fSpeed = 200.f;
 
     m_pFrameKey = L"BattleCruiser";
 
     m_eRender = RENDER_WORLD;
+    m_eState = eUnitState::IDLE;
     m_tFrame.iFrame = 0;
     m_tFrame.iStart = 0;
-    m_tFrame.iEnd = 15;
+    m_tFrame.iEnd = 0;
     m_tFrame.iCol = 0;
     m_tFrame.dwTime = 0;
     m_tFrame.dwSpeed = 100;
@@ -34,18 +35,28 @@ void CBattleCruiser::Initialize()
 int CBattleCruiser::Update()
 {
     int iResult = CUnit::Update();
+
     if (iResult == DEAD)
         return DEAD;
-    /*
+
     DWORD now = GetTickCount();
-    if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+
+    switch (m_eState)
     {
-        m_tFrame.iStart++;
-        if (m_tFrame.iStart > m_tFrame.iEnd)
-            m_tFrame.iStart = 0;
-        m_tFrame.dwTime = now;
+    case eUnitState::IDLE:
+        m_tFrame.iStart = 0;
+        break;
+    case eUnitState::MOVE:
+        m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
+        break;
+    case eUnitState::ATTACK:
+        break;
+    case eUnitState::DIE:
+        break;
+    default:
+        break;
     }
-    */
+
     __super::Update_Rect();
 
     return NOEVENT;
@@ -55,6 +66,8 @@ void CBattleCruiser::Late_Update()
 {
     //선택이 되었을 경우 마우스 방향의 애니메이션 재생
     if (!m_bSelected) return;
+    //이동 중이면 마우스 방향 애니메이션 재생 멈추기
+    if (m_eState != eUnitState::IDLE) return;
 
     Vec2 vWorldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
     Vec2 vDir{ vWorldMouse.fX - m_tInfo.fX, vWorldMouse.fY - m_tInfo.fY };

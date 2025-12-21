@@ -136,31 +136,40 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CAbstractFactory.h" />
+    <ClInclude Include="CBarracks.h" />
     <ClInclude Include="CBattleCruiser.h" />
     <ClInclude Include="CBmpMgr.h" />
     <ClInclude Include="CBuilding.h" />
     <ClInclude Include="CButton.h" />
     <ClInclude Include="CCollisionMgr.h" />
+    <ClInclude Include="CCommandCenter.h" />
     <ClInclude Include="CCommandMgr.h" />
     <ClInclude Include="CEdit.h" />
+    <ClInclude Include="CFactory.h" />
     <ClInclude Include="CInputMgr.h" />
     <ClInclude Include="CMainGame.h" />
+    <ClInclude Include="CMainUI.h" />
     <ClInclude Include="CMedic.h" />
     <ClInclude Include="CMenu.h" />
     <ClInclude Include="CMyBmp.h" />
+    <ClInclude Include="CNavMgr.h" />
     <ClInclude Include="CObj.h" />
     <ClInclude Include="CObjMgr.h" />
+    <ClInclude Include="Commandable.h" />
+    <ClInclude Include="CommandSlot.h" />
+    <ClInclude Include="CResourceMgr.h" />
     <ClInclude Include="CScene.h" />
     <ClInclude Include="CSceneMgr.h" />
     <ClInclude Include="CScrollMgr.h" />
     <ClInclude Include="CSCV.h" />
     <ClInclude Include="CSelectionMgr.h" />
     <ClInclude Include="CStage.h" />
+    <ClInclude Include="CStarport.h" />
     <ClInclude Include="CTank.h" />
     <ClInclude Include="CTile.h" />
     <ClInclude Include="CTileMgr.h" />
     <ClInclude Include="CTimeMgr.h" />
-    <ClInclude Include="CUIWidget.h" />
+    <ClInclude Include="CUIMgr.h" />
     <ClInclude Include="CMarine.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="framework.h" />
@@ -170,31 +179,39 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CBarracks.cpp" />
     <ClCompile Include="CBattleCruiser.cpp" />
     <ClCompile Include="CBmpMgr.cpp" />
     <ClCompile Include="CBuilding.cpp" />
     <ClCompile Include="CButton.cpp" />
     <ClCompile Include="CCollisionMgr.cpp" />
+    <ClCompile Include="CCommandCenter.cpp" />
     <ClCompile Include="CCommandMgr.cpp" />
     <ClCompile Include="CEdit.cpp" />
+    <ClCompile Include="CFactory.cpp" />
     <ClCompile Include="CInputMgr.cpp" />
     <ClCompile Include="CMainGame.cpp" />
+    <ClCompile Include="CMainUI.cpp" />
     <ClCompile Include="CMedic.cpp" />
     <ClCompile Include="CMenu.cpp" />
     <ClCompile Include="CMyBmp.cpp" />
+    <ClCompile Include="CNavMgr.cpp" />
     <ClCompile Include="CObj.cpp" />
     <ClCompile Include="CObjMgr.cpp" />
+    <ClCompile Include="Commandable.cpp" />
+    <ClCompile Include="CResourceMgr.cpp" />
     <ClCompile Include="CScene.cpp" />
     <ClCompile Include="CSceneMgr.cpp" />
     <ClCompile Include="CScrollMgr.cpp" />
     <ClCompile Include="CSCV.cpp" />
     <ClCompile Include="CSelectionMgr.cpp" />
     <ClCompile Include="CStage.cpp" />
+    <ClCompile Include="CStarport.cpp" />
     <ClCompile Include="CTank.cpp" />
     <ClCompile Include="CTile.cpp" />
     <ClCompile Include="CTileMgr.cpp" />
     <ClCompile Include="CTimeMgr.cpp" />
-    <ClCompile Include="CUIWidget.cpp" />
+    <ClCompile Include="CUIMgr.cpp" />
     <ClCompile Include="CUnit.cpp" />
     <ClCompile Include="CMarine.cpp" />
     <ClCompile Include="pch.cpp">
@@ -204,13 +221,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Starcraft.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Starcraft.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="small.ico" />
-    <Image Include="Starcraft.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="CUnit.h" />

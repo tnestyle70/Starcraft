@@ -84,14 +84,8 @@
     <Filter Include="02. Design\10. RTS\01. CommandMgr">
       <UniqueIdentifier>{69608e4e-d7ce-4715-b319-0d8b787fd241}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. Design\10. RTS\02. ProductionMgr">
-      <UniqueIdentifier>{51332616-68f3-4192-94f6-2f8f3c81a358}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\10. RTS\03. FogOfWar">
       <UniqueIdentifier>{44692e7e-e8df-48de-a40e-6123bc2593ce}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. Design\10. RTS\04. PathMgr">
-      <UniqueIdentifier>{a3ae7ab4-4e7e-4f2b-91bb-cb27d7199075}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. Design\07. BmpMgr">
       <UniqueIdentifier>{fe0e718c-dcc7-48ec-9a94-41ce45bbeccf}</UniqueIdentifier>
@@ -99,33 +93,8 @@
     <Filter Include="02. Design\07. BmpMgr\CMyBmp">
       <UniqueIdentifier>{2f78ff89-24e9-47a0-9ad2-446431419f94}</UniqueIdentifier>
     </Filter>
-    <Filter Include="04. UI">
-      <UniqueIdentifier>{93a4d68f-2cbe-44fd-a4c8-e090e9a74348}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\09. Core\01. InputMgr">
       <UniqueIdentifier>{4291742b-94f1-44fd-a661-04d1e6c5a63e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="04. UI\00. Button">
-      <UniqueIdentifier>{cc5f87fa-fd05-4668-87c7-93703f8bfc04}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="05. Resource">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
-    <Filter Include="05. Resource\00. UI">
-      <UniqueIdentifier>{0ff16a03-472b-499c-bb61-86a85ab61d04}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="05. Resource\00. UI\00. Button">
-      <UniqueIdentifier>{b628795a-6468-482d-91e9-c21e52bb1c83}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="05. Resource\00. UI\01. Frames">
-      <UniqueIdentifier>{ce0837c9-fe49-4044-8660-8b608883cf49}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="05. Resource\01. Units">
-      <UniqueIdentifier>{24e3794a-2581-4171-bba2-cd8887afed85}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="05. Resource\02. Buildings">
-      <UniqueIdentifier>{ecb4a888-ec56-42ae-9105-6e07b7be5fea}</UniqueIdentifier>
     </Filter>
     <Filter Include="03. Scene\02. Edit\00. TileMgr">
       <UniqueIdentifier>{6fb60eea-7ad6-4629-8d53-1002d30cd2f0}</UniqueIdentifier>
@@ -144,6 +113,33 @@
     </Filter>
     <Filter Include="01. Obj\00. Unit\04. Medic">
       <UniqueIdentifier>{577c39dc-f9cc-42c4-b25d-b28748f70261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\04. NavMgr">
+      <UniqueIdentifier>{a3ae7ab4-4e7e-4f2b-91bb-cb27d7199075}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\02. BuildingMgr">
+      <UniqueIdentifier>{51332616-68f3-4192-94f6-2f8f3c81a358}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\05. ResourceMgr">
+      <UniqueIdentifier>{a7292ca5-512c-44cd-96d6-9b7f347e1a96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\11. UI">
+      <UniqueIdentifier>{e388bf84-2e26-4c1c-b2f1-3baa3e82a5e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. CommandCenter">
+      <UniqueIdentifier>{c2db366b-9be9-4a32-be0e-da17301e6dab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\01. Barracks">
+      <UniqueIdentifier>{4e2fe771-a89c-4cf4-a938-94b67413e048}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Factory">
+      <UniqueIdentifier>{93c919d6-07fc-40c6-8c3a-89a32bc21517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\03. Starport">
+      <UniqueIdentifier>{c2de90fb-30a6-4520-b0f8-a247c44d5435}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\11. UI\00. MainUI">
+      <UniqueIdentifier>{42aa3c73-c549-4290-abce-7c00603f20a7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -198,14 +194,8 @@
     <ClInclude Include="CInputMgr.h">
       <Filter>02. Design\09. Core\01. InputMgr</Filter>
     </ClInclude>
-    <ClInclude Include="CUIWidget.h">
-      <Filter>04. UI</Filter>
-    </ClInclude>
     <ClInclude Include="CObjMgr.h">
       <Filter>02. Design\01. ObjMgr</Filter>
-    </ClInclude>
-    <ClInclude Include="CButton.h">
-      <Filter>04. UI\00. Button</Filter>
     </ClInclude>
     <ClInclude Include="CCollisionMgr.h">
       <Filter>02. Design\02. CollisionMgr</Filter>
@@ -245,6 +235,39 @@
     </ClInclude>
     <ClInclude Include="CMedic.h">
       <Filter>01. Obj\00. Unit\04. Medic</Filter>
+    </ClInclude>
+    <ClInclude Include="CNavMgr.h">
+      <Filter>02. Design\10. RTS\04. NavMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CResourceMgr.h">
+      <Filter>02. Design\10. RTS\05. ResourceMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CUIMgr.h">
+      <Filter>02. Design\11. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="CButton.h">
+      <Filter>02. Design\11. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandSlot.h">
+      <Filter>01. Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="Commandable.h">
+      <Filter>01. Obj</Filter>
+    </ClInclude>
+    <ClInclude Include="CCommandCenter.h">
+      <Filter>01. Obj\01. Building\00. CommandCenter</Filter>
+    </ClInclude>
+    <ClInclude Include="CBarracks.h">
+      <Filter>01. Obj\01. Building\01. Barracks</Filter>
+    </ClInclude>
+    <ClInclude Include="CFactory.h">
+      <Filter>01. Obj\01. Building\02. Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="CStarport.h">
+      <Filter>01. Obj\01. Building\03. Starport</Filter>
+    </ClInclude>
+    <ClInclude Include="CMainUI.h">
+      <Filter>02. Design\11. UI\00. MainUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -287,14 +310,8 @@
     <ClCompile Include="CInputMgr.cpp">
       <Filter>02. Design\09. Core\01. InputMgr</Filter>
     </ClCompile>
-    <ClCompile Include="CUIWidget.cpp">
-      <Filter>04. UI</Filter>
-    </ClCompile>
     <ClCompile Include="CObjMgr.cpp">
       <Filter>02. Design\01. ObjMgr</Filter>
-    </ClCompile>
-    <ClCompile Include="CButton.cpp">
-      <Filter>04. UI\00. Button</Filter>
     </ClCompile>
     <ClCompile Include="CCollisionMgr.cpp">
       <Filter>02. Design\02. CollisionMgr</Filter>
@@ -335,19 +352,36 @@
     <ClCompile Include="CMedic.cpp">
       <Filter>01. Obj\00. Unit\04. Medic</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Starcraft.rc">
-      <Filter>05. Resource</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="small.ico">
-      <Filter>05. Resource</Filter>
-    </Image>
-    <Image Include="Starcraft.ico">
-      <Filter>05. Resource</Filter>
-    </Image>
+    <ClCompile Include="CNavMgr.cpp">
+      <Filter>02. Design\10. RTS\04. NavMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CResourceMgr.cpp">
+      <Filter>02. Design\10. RTS\05. ResourceMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CButton.cpp">
+      <Filter>02. Design\11. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="CUIMgr.cpp">
+      <Filter>02. Design\11. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Commandable.cpp">
+      <Filter>01. Obj</Filter>
+    </ClCompile>
+    <ClCompile Include="CCommandCenter.cpp">
+      <Filter>01. Obj\01. Building\00. CommandCenter</Filter>
+    </ClCompile>
+    <ClCompile Include="CBarracks.cpp">
+      <Filter>01. Obj\01. Building\01. Barracks</Filter>
+    </ClCompile>
+    <ClCompile Include="CFactory.cpp">
+      <Filter>01. Obj\01. Building\02. Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="CStarport.cpp">
+      <Filter>01. Obj\01. Building\03. Starport</Filter>
+    </ClCompile>
+    <ClCompile Include="CMainUI.cpp">
+      <Filter>02. Design\11. UI\00. MainUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="CUnit.h">
