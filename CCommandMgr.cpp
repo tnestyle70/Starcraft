@@ -56,6 +56,7 @@ void CCommandMgr::Update()
     //배치 모드가 아닐 경우 return 
     if (m_eMode != eCommandMode::PLAEC_BUILDING)
         return;
+
     if (!m_pGhost) 
     {
         m_eMode = eCommandMode::NONE;
@@ -124,10 +125,13 @@ void CCommandMgr::Update()
             CancleBuilding();
             */
         }
+        return;
     }
+  
     if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE))
     {
         CancleBuilding();
+        return;
     }
 }
 

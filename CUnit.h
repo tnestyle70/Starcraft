@@ -46,10 +46,7 @@ public:
 	void StartOrder(Order& order);
 public:
 	int DirTo16WayIndex(Vec2& vDir);
-public:
 	RECT GetWorldRect() const;
-	void SetSelected(bool bSelected) { m_bSelected = bSelected; }
-	bool IsDead() const override { return m_bDead; }
 protected:
 	//명령큐
 	std::deque<Order> m_OrderQ;
@@ -58,7 +55,6 @@ protected:
 	eUnitState m_eState;
 	FRAME m_tFrame;
 	//유닛 상태
-	bool m_bSelected;
 	float m_fSpeed;
 	bool m_bDead;
 	int m_iHP;

@@ -133,69 +133,46 @@ void CObjMgr::Release()
 
 CObj* CObjMgr::PickObjAt(const Vec2& vWorldPos)
 {
-	//중심 기준으로 더 가까운 적을 선택
 	CObj* pBest = nullptr;
 	float fBestDistSq = FLT_MAX;
-	//유닛 먼저
-	auto& unit = m_ObjList[OBJ_UNIT];
 
-	for (CObj* pObj : unit)
+	// 1) 유닛 먼저(정책)
+	for (CUnit* pObj : m_vecUnits)
 	{
-		if (!pObj) continue;
-		if (pObj->IsDead()) continue;
+		if (!pObj || pObj->IsDead()) continue;
 
-		const INFO& info = pObj->Get_Info();
-
-		const float left = info.fX - info.fCX * 0.5f;
-		const float right = info.fX + info.fCX * 0.5f;
-		const float top = info.fY - info.fCY * 0.5f;
-		const float bottom = info.fY + info.fCY * 0.5f;
-
-		if (vWorldPos.fX < left || vWorldPos.fX > right ||
-			vWorldPos.fY < top || vWorldPos.fY > bottom)
+		RECT rc = pObj->GetWorldRect();
+		if (vWorldPos.fX < rc.left || vWorldPos.fX > rc.right ||
+			vWorldPos.fY < rc.top || vWorldPos.fY > rc.bottom)
 			continue;
 
-		const float dx = vWorldPos.fX - info.fX;
-		const float dy = vWorldPos.fY - info.fY;
-		const float distSq = dx * dx + dy * dy;
-
-		if (distSq < fBestDistSq)
-		{
-			fBestDistSq = distSq;
-			pBest = pObj;
-		}
-	}
-	if (pBest) return pBest;
-
-	//유닛 없으면 건물
-	auto& building = m_ObjList[OBJ_BUILDING];
-
-	for (CObj* pObj : building)
-	{
-		if (!pObj) continue;
-		if (pObj->IsDead()) continue;
-
 		const INFO& info = pObj->Get_Info();
+		float dx = vWorldPos.fX - info.fX;
+		float dy = vWorldPos.fY - info.fY;
+		float distSq = dx * dx + dy * dy;
+		if (distSq < fBestDistSq) { fBestDistSq = distSq; pBest = pObj; }
+	}
 
-		const float left = info.fX - info.fCX * 0.5f;
-		const float right = info.fX + info.fCX * 0.5f;
-		const float top = info.fY - info.fCY * 0.5f;
-		const float bottom = info.fY + info.fCY * 0.5f;
-
-		if (vWorldPos.fX < left || vWorldPos.fX > right ||
-			vWorldPos.fY < top || vWorldPos.fY > bottom)
-			continue;
-
-		const float dx = vWorldPos.fX - info.fX;
-		const float dy = vWorldPos.fY - info.fY;
-		const float distSq = dx * dx + dy * dy;
-
-		if (distSq < fBestDistSq)
+	// 2) 유닛 없으면 건물
+	if (!pBest)
+	{
+		for (CBuilding* pObj : m_vecBuildings)
 		{
-			fBestDistSq = distSq;
-			pBest = pObj;
+			if (!pObj || pObj->IsDead()) continue;
+
+			RECT rc = pObj->GetWorldRect();
+			if (vWorldPos.fX < rc.left || vWorldPos.fX > rc.right ||
+				vWorldPos.fY < rc.top || vWorldPos.fY > rc.bottom)
+				continue;
+
+			const INFO& info = pObj->Get_Info();
+			float dx = vWorldPos.fX - info.fX;
+			float dy = vWorldPos.fY - info.fY;
+			float distSq = dx * dx + dy * dy;
+			if (distSq < fBestDistSq) { fBestDistSq = distSq; pBest = pObj; }
 		}
 	}
+
 	return pBest;
 }
 

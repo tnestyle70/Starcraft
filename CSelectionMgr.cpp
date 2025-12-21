@@ -38,7 +38,7 @@ bool CSelectionMgr::IsClickSelection(const RECT& r)
 {
 	const int w = abs(r.right - r.left);
 	const int h = abs(r.bottom - r.top);
-	return (w <= 4 && h <= 4);
+	return (w <= 10 && h <= 10);
 }
 
 void CSelectionMgr::ClearSelection()

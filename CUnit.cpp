@@ -3,7 +3,7 @@
 #include "CTimeMgr.h"
 #include "CNavMgr.h"
 
-CUnit::CUnit() : m_fSpeed(0.f), m_bSelected(false), m_bDead(false), m_iHP(0), m_iMaxHP(0),
+CUnit::CUnit() : m_fSpeed(0.f), m_bDead(false), m_iHP(0), m_iMaxHP(0),
 	m_bActiveOrder(false)
 {
 	m_vDir = { 1.f, 1.f };

@@ -110,6 +110,7 @@ void CStage::Late_Update()
 		Vec2 vWMouse = CInputMgr::Get_Instance()->GetWorldMouse();
 		CCommandMgr::Get_Instance()->IssueMove(vWMouse);
 	}
+
 	//강제 종료
 	if (CInputMgr::Get_Instance()->KeyPress(ESCAPE0))
 	{
