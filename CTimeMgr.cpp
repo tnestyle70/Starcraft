@@ -33,6 +33,5 @@ void CTimeMgr::BeginFrame()
 	{
 		m_dDT = m_dDTClamp;
 	}
-
 	m_dDT = dDT;
 }

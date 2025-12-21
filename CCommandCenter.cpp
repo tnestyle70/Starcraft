@@ -2,6 +2,7 @@
 #include "CCommandCenter.h"
 #include "CTimeMgr.h"
 #include "CScrollMgr.h"
+#include "CBmpMgr.h"
 
 CCommandCenter::CCommandCenter()
 {
@@ -14,10 +15,13 @@ CCommandCenter::~CCommandCenter()
 void CCommandCenter::Initialize()
 {
 	CBuilding::Initialize();
-	m_tInfo.fX = 128.f;
-	m_tInfo.fY = 160.f;
+	m_tInfo.fCX = 128.f;
+	m_tInfo.fCY = 160.f;
 	m_pFrameKey = L"CommandCenter";
 	m_eRender = RENDER_WORLD;
+	m_tFrame.iStart = 0;
+	m_tFrame.iFrame = 0;
+	m_tFrame.iEnd = 0;
 }
 
 int CCommandCenter::Update()
@@ -36,29 +40,18 @@ int CCommandCenter::Update()
 
 void CCommandCenter::Render(HDC hDC)
 {
+	//고스트 모드일 경우 고스트 렌더가 되도록 설정
+	if (m_bGhost)
+	{
+		CBuilding::Render(hDC);
+		return;
+	}
+
 	int iScrollX = (int)CScrollMgr::Get_Instance()->Get_ScrollX();
 	int iScrollY = (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
 	int iDrawX = (int)(m_tInfo.fX - m_tInfo.fCX / 2.f - iScrollX);
 	int iDrawY = (int)(m_tInfo.fY - m_tInfo.fCY / 2.f - iScrollY);
-
-	//선택 원(예: m_bSelected가 true일 때) 추후에 bmp로 교체
-	if (m_bSelected)
-	{
-		HBRUSH oldB = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
-		HPEN pen = CreatePen(PS_SOLID, 2, RGB(0, 255, 0));
-		HPEN oldP = (HPEN)SelectObject(hDC, pen);
-
-		int cx = iDrawX + (int)(m_tInfo.fCX * 0.5f);
-		int cy = iDrawY + (int)(m_tInfo.fCY * 0.8f);   // 발밑 느낌으로 살짝 아래
-		int r = (int)(max(m_tInfo.fCX, m_tInfo.fCY) * 0.55f);
-
-		Ellipse(hDC, cx - r, cy - r / 2, cx + r, cy + r / 2);
-
-		SelectObject(hDC, oldP);
-		SelectObject(hDC, oldB);
-		DeleteObject(pen);
-	}
 
 	HDC hMemDC = CBmpMgr::Get_Instance()->Find_Image(m_pFrameKey);
 
@@ -75,7 +68,8 @@ void CCommandCenter::Render(HDC hDC)
 		iScrY,
 		(int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
 		(int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
-		RGB(255, 255, 0));
+		RGB(0, 255, 0));
+
 }
 
 void CCommandCenter::Release()

@@ -8,7 +8,7 @@ class CCommandCenter : public CBuilding, public Commandable
 {
 public:
 	CCommandCenter();
-	~CCommandCenter();
+	virtual ~CCommandCenter();
 public:
 	void Initialize() override;
 	int Update() override;

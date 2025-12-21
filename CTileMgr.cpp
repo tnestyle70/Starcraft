@@ -29,6 +29,8 @@ void CTileMgr::Initialize()
 			m_vecTile.push_back(pTile);
 		}
 	}
+	//타일 Occuy 먼저 초기화
+	m_vecOccupy.assign(TILEX * TILEY, 0); 
 }
 
 void CTileMgr::Update()
@@ -174,10 +176,9 @@ void CTileMgr::RenderGrid(HDC hDC, float fScrX, float fScrY)
 
 bool CTileMgr::IsOccupy(int row, int col)
 {
-	if (!InRange(row, col)) return true;
-	return m_vecOccupy[row * TILEX + col] != 0;
-
-	return false;
+	int idx = row * TILEX + col;
+	if ((int)m_vecOccupy.size() != TILEX * TILEY) return false; // 또는 true(정책)
+	return m_vecOccupy[idx] != 0;
 }
 
 void CTileMgr::SetOccupy(int row, int col, bool occupy)
@@ -214,9 +215,9 @@ bool CTileMgr::CanConstruct(int row, int col, int width, int height)
 	{
 		for (int c = col; c < col + width; ++c)
 		{
-			if (!InRange(row, col)) return false;
-			if (!IsBuildableTile(row, col)) return false;
-			if (IsOccupy(row, col)) return false;
+			if (!InRange(r, c)) return false;
+			if (!IsBuildableTile(r, c)) return false;
+			if (IsOccupy(r, c)) return false;
 		}
 	}
 	return true;

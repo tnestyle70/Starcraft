@@ -78,7 +78,7 @@ void CStage::Initialize()
 
 	//커맨드 센터
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/CommandCenter/CommandCenter4.bmp", L"CommandCenter");
-	CObj* pCommandCenter = CAbstractFactory<CCommandCenter>::Create(200.f, 200.f);
+	CObj* pCommandCenter = CAbstractFactory<CCommandCenter>::Create(290.f, 250.f);
 	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pCommandCenter);
 	//UIMgr 초기화 (여기서 MainUI.bmp 로드 + 알파 비트맵 생성)
 	CUIMgr::Get_Instance()->Initialize();
@@ -130,7 +130,6 @@ void CStage::Render(HDC hDC)
 		// Clamp 및 BitBlt (작성하신 코드 유지)
 		BitBlt(hDC, 0, 0, WINCX, WINCY, hStageDC, scrX, scrY, SRCCOPY);
 	}
-
 	// 2. 오브젝트 렌더
 	CObjMgr::Get_Instance()->Render(hDC);
 
