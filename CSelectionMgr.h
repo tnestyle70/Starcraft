@@ -1,6 +1,6 @@
 #pragma once
 
-class CUnit;
+class CObj;
 
 class CSelectionMgr
 {
@@ -17,7 +17,7 @@ public:
 	void OnMouseMove();
 	void OnLMouseUp();
 
-	const std::vector<CUnit*>& GetSelected() const { return m_vecSelected; }
+	const std::vector<CObj*>& GetSelected() const { return m_vecSelected; }
 	void ClearSelection();
 public:
 	static CSelectionMgr* Get_Instance()
@@ -45,7 +45,7 @@ private:
 	POINT m_ptCur{};
 	RECT m_rcScreen{};
 
-	std::vector<CUnit*> m_vecSelected;
+	std::vector<CObj*> m_vecSelected;
 private:
 	static POINT GetMouseClient();
 	static RECT NormalizeRect(POINT a, POINT b);

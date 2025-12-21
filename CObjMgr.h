@@ -22,7 +22,7 @@ public:
 	void	Render(HDC hDC);
 	void	Release();
 public:
-	CUnit* PickUnitAt(const Vec2& vWorldPos);
+	CObj* PickUnitAt(const Vec2& vWorldPos);
 public:
 	CButton CreateButton(float fX, float fY, float fCX, float fCY);
 	CButton* CreateButton(const wchar_t* framekey, float fX, float fY, const wchar_t* atlasKey, int iScrY);

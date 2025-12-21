@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "CSelectionMgr.h"
 #include "CUnit.h"
+#include "CBuilding.h"
 #include "CScrollMgr.h"
 #include "CObjMgr.h"
 #include "CInputMgr.h"
@@ -42,10 +43,10 @@ bool CSelectionMgr::IsClickSelection(const RECT& r)
 
 void CSelectionMgr::ClearSelection()
 {
-	for (auto* pUnit : m_vecSelected)
+	for (auto* pObj : m_vecSelected)
 	{
-		if (pUnit)
-			pUnit->SetSelected(false);
+		if (pObj)
+			pObj->SetSelected(false);
 	}
 	m_vecSelected.clear();
 }
@@ -60,7 +61,7 @@ void CSelectionMgr::SelectSingleAt(const POINT& clientPt)
 
 	Vec2 vWorld{ clientPt.x + fScrX, clientPt.y + fScrY };
 
-	CUnit* pHit = CObjMgr::Get_Instance()->PickUnitAt(vWorld);
+	CObj* pHit = CObjMgr::Get_Instance()->PickUnitAt(vWorld);
 	if (pHit) 
 	{
 		pHit->SetSelected(true);
@@ -79,7 +80,6 @@ void CSelectionMgr::Update()
 	if (CInputMgr::Get_Instance()->KeyUp(LEFT_MOUSE))
 		OnLMouseUp();
 }
-
 
 void CSelectionMgr::OnLMouseDown() //드래그 중
 {

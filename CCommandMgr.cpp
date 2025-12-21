@@ -142,8 +142,11 @@ void CCommandMgr::IssueMove(Vec2& worldGoal)
 	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
 	if (selected.empty()) return;
 
-    for (CUnit* pUnit : selected)
+    for (CObj* pObj : selected)
     {
+        CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
+        if (!pUnit) continue;
+
         Vec2 start = pUnit->Get_Pos();
         //AStart를 통해 계산한 위치를 반환 받아서 CUnit 쪽에 넘겨주기 
         vector<Vec2> path = CNavMgr::Get_Instance()->RequestPathWorld(start, worldGoal);

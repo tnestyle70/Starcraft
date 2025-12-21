@@ -30,7 +30,12 @@ public:
 public:
 	int m_iZOrder = 0;
 	virtual int GetSortY() const { return m_tRect.bottom; } 
+public:
+	bool IsSelected() { return m_bSelected; }
+	void SetSelected(bool bSelected){ m_bSelected = bSelected; }
 protected:
+	//선택 상태 CObj로 올리기
+	bool m_bSelected;
 	INFO m_tInfo; //상태
 	RECT m_tRect;
 	FRAME m_tFrame; //애니메이션

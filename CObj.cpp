@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "CObj.h"
 
-CObj::CObj() : m_pFrameKey(L""), m_iDrawID(0), m_eRender(RENDER_END)
+CObj::CObj() : m_pFrameKey(L""), m_iDrawID(0), m_eRender(RENDER_END), m_bSelected(false)
 {
 	ZeroMemory(&m_tInfo, sizeof(INFO));
 	ZeroMemory(&m_tRect, sizeof(RECT));
