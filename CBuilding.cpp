@@ -195,3 +195,15 @@ void CBuilding::UpdateConstruct()
 		ConstructComplete();
 	}
 }
+
+RECT CBuilding::GetWorldRect() const
+{
+	RECT rc{};
+
+	rc.left = (LONG)(m_tInfo.fX - m_tInfo.fCX * 0.5f);
+	rc.top = (LONG)(m_tInfo.fY - m_tInfo.fCY * 0.5f);
+	rc.right = (LONG)(m_tInfo.fX + m_tInfo.fCX * 0.5f);
+	rc.bottom = (LONG)(m_tInfo.fY + m_tInfo.fCY * 0.5f);
+
+	return rc;
+}

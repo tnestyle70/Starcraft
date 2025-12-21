@@ -60,6 +60,8 @@ public:
 	//°Ç¹° Size
 	int GetWidth() { return m_iWidth; }
 	int GetHeight() { return m_iHeight; }
+
+	RECT GetWorldRect() const;
 protected:
 	virtual void SetBuildingData() PURE; 
 	virtual void ConstructComplete() PURE;

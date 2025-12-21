@@ -80,6 +80,7 @@ void CStage::Initialize()
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/CommandCenter/CommandCenter4.bmp", L"CommandCenter");
 	CObj* pCommandCenter = CAbstractFactory<CCommandCenter>::Create(290.f, 250.f);
 	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pCommandCenter);
+
 	//UIMgr 초기화 (여기서 MainUI.bmp 로드 + 알파 비트맵 생성)
 	CUIMgr::Get_Instance()->Initialize();
 }

@@ -3,6 +3,7 @@
 #include "CObj.h"
 
 class CUnit;
+class CBuilding;
 class CButton;
 
 class CObjMgr
@@ -22,15 +23,16 @@ public:
 	void	Render(HDC hDC);
 	void	Release();
 public:
-	CObj* PickUnitAt(const Vec2& vWorldPos);
+	CObj* PickObjAt(const Vec2& vWorldPos);
 public:
 	CButton CreateButton(float fX, float fY, float fCX, float fCY);
 	CButton* CreateButton(const wchar_t* framekey, float fX, float fY, const wchar_t* atlasKey, int iScrY);
 public:
-	std::vector<CUnit*>& GetUnits() { return m_vecUnits; }
-	void AddUnit(CUnit* pUnit);
+	vector<CUnit*>& GetUnits() { return m_vecUnits; }
+	vector<CBuilding*>& GetBuildings() { return m_vecBuildings; }
 private:
-	std::vector<CUnit*> m_vecUnits;
+	vector<CUnit*> m_vecUnits;
+	vector<CBuilding*> m_vecBuildings;
 private:
 	static CObjMgr* m_pInstance;
 

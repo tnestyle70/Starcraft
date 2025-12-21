@@ -61,7 +61,7 @@ void CSelectionMgr::SelectSingleAt(const POINT& clientPt)
 
 	Vec2 vWorld{ clientPt.x + fScrX, clientPt.y + fScrY };
 
-	CObj* pHit = CObjMgr::Get_Instance()->PickUnitAt(vWorld);
+	CObj* pHit = CObjMgr::Get_Instance()->PickObjAt(vWorld);
 	if (pHit) 
 	{
 		pHit->SetSelected(true);
@@ -126,7 +126,7 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 	rcWorld.right += (LONG)fScrX;
 	rcWorld.bottom += (LONG)fScrY;
 	
-	//전체 마린(유닛) 훑어서 유닛 월드 Rect가 rcWorld와 겹치면 선택
+	//전체 마린 훑어서 유닛 월드 Rect가 rcWorld와 겹치면 선택
 	auto& units = CObjMgr::Get_Instance()->GetUnits();
 	for (CUnit* u : units)
 	{
@@ -138,6 +138,24 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 		{
 			u->SetSelected(true);
 			m_vecSelected.push_back(u);
+		}
+	}
+	//유닛 없으면 건물 선택
+	if (m_vecSelected.empty())
+	{
+		auto& building = CObjMgr::Get_Instance()->GetBuildings();
+		for (auto* pBuilding : building)
+		{
+			if (!pBuilding) continue;
+			
+			RECT br = pBuilding->GetWorldRect();
+			RECT inter{};
+			if (IntersectRect(&inter, &rcWorld, &br))
+			{
+				pBuilding->SetSelected(true);
+				m_vecSelected.push_back(pBuilding);
+				break; // 건물은 1개만
+			}
 		}
 	}
 }

@@ -3,6 +3,7 @@
 //#include "CCollisionMgr.h"
 #include "CButton.h"
 #include "CUnit.h"
+#include "CBuilding.h"
 
 CObjMgr* CObjMgr::m_pInstance = nullptr;
 
@@ -39,6 +40,13 @@ void CObjMgr::Add_Object(OBJID eID, CObj* pObj)
 			m_vecUnits.push_back(pUnit);
 		}
 	}
+	if (eID == OBJ_BUILDING)
+	{
+		if (auto* pBuilding = dynamic_cast<CBuilding*>(pObj))
+		{
+			m_vecBuildings.push_back(pBuilding);
+		}
+	}
 }
 
 void CObjMgr::Update()
@@ -58,6 +66,11 @@ void CObjMgr::Update()
 				{
 					CUnit* pDeadUnit = static_cast<CUnit*>(pDead);
 					m_vecUnits.erase(remove(m_vecUnits.begin(), m_vecUnits.end(), pDeadUnit), m_vecUnits.end());
+				}
+				if (i == OBJ_BUILDING)
+				{
+					CBuilding* pDeadUnit = static_cast<CBuilding*>(pDead);
+					m_vecBuildings.erase(remove(m_vecBuildings.begin(), m_vecBuildings.end(), pDeadUnit), m_vecBuildings.end());
 				}
 
 				Safe_Delete<CObj*>(pDead);
@@ -118,7 +131,7 @@ void CObjMgr::Release()
 	}
 }
 
-CObj* CObjMgr::PickUnitAt(const Vec2& vWorldPos)
+CObj* CObjMgr::PickObjAt(const Vec2& vWorldPos)
 {
 	//중심 기준으로 더 가까운 적을 선택
 	CObj* pBest = nullptr;
@@ -152,8 +165,8 @@ CObj* CObjMgr::PickUnitAt(const Vec2& vWorldPos)
 			pBest = pObj;
 		}
 	}
+	if (pBest) return pBest;
 
-	return pBest;
 	//유닛 없으면 건물
 	auto& building = m_ObjList[OBJ_BUILDING];
 
@@ -183,7 +196,6 @@ CObj* CObjMgr::PickUnitAt(const Vec2& vWorldPos)
 			pBest = pObj;
 		}
 	}
-
 	return pBest;
 }
 
@@ -211,10 +223,4 @@ CButton* CObjMgr::CreateButton(const wchar_t* framekey, float fX, float fY, cons
 	Add_Object(OBJ_UI, pButton);
 
 	return pButton;
-}
-
-void CObjMgr::AddUnit(CUnit* pUnit)
-{
-	if (!pUnit) return;
-	m_vecUnits.push_back(pUnit);
 }
