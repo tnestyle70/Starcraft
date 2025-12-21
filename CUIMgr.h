@@ -21,4 +21,8 @@ private:
     static CUIMgr* m_pInstance;
 
     CMainUI* m_pMainUI = nullptr;
+private:
+    HDC m_hCachedDC = nullptr;
+    HBITMAP m_hCachedBitmap = nullptr;
+    bool m_bNeedRedraw = true;
 };

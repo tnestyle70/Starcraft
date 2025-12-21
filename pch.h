@@ -7,6 +7,10 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <Windows.h>
+#include <wingdi.h>  // ← AlphaBlend를 위해 필요
+#pragma comment(lib, "msimg32.lib")  // ← AlphaBlend 라이브러리
+
 
 #ifdef _DEBUG
 

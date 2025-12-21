@@ -75,14 +75,12 @@ void CStage::Initialize()
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Unit/Medic/Medic.bmp", L"Medic");
 	CObj* pMedic = CAbstractFactory<CMedic>::Create(400.f, 200.f);
 	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pMedic);
-	//미니맵,MainUI, 미네랄, 가스, 인구수 UI
-	//CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/MiniMap.bmp", L"MiniMapUI");
-	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/MainUI/MainUI.bmp", L"MainUI");
-	//CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Resource/mineral_resource.bmp", L"MineralUI");
-	//CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Resource/gas.bmp", L"GasUI");
-	//CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Resource/human_resource.bmp", L"HumanUI");
 
-	//UIMgr 초기화
+	//커맨드 센터
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/CommandCenter/CommandCenter4.bmp", L"CommandCenter");
+	CObj* pCommandCenter = CAbstractFactory<CCommandCenter>::Create(200.f, 200.f);
+	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pCommandCenter);
+	//UIMgr 초기화 (여기서 MainUI.bmp 로드 + 알파 비트맵 생성)
 	CUIMgr::Get_Instance()->Initialize();
 }
 

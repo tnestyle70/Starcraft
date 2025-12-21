@@ -12,6 +12,8 @@ public:
 public:
 	void Initialize() override;
 	int Update() override;
+	void Render(HDC hDC) override;
+	void Release();
 	//ICommandable
 	void CommandCardSlot(std::vector<CommandSlot>& outSlot) override;
 	bool ExecuteCommand(eCommandID command, CommandContext& context) override;
