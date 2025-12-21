@@ -17,6 +17,7 @@
 #include "CSCV.h"
 #include "CMedic.h"
 #include "CUIMgr.h"
+#include "CResourceMgr.h"
 
 CStage::CStage()
 {
@@ -28,6 +29,9 @@ CStage::~CStage()
 
 void CStage::Initialize()
 {
+	//리소스 매니저 - 나중에 지우기
+	CResourceMgr::Get_Instance()->Reset();
+
 	//스테이지 이미지
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/MyFolder/Map/FightSpirit.bmp", L"Stage");
 	//Stage 진입시 마우스 클램핑
@@ -91,7 +95,7 @@ int CStage::Update()
 
 	CObjMgr::Get_Instance()->Update();
 	
-	//CUIMgr::Get_Instance()->Update();
+	CUIMgr::Get_Instance()->Update();
 
 	return 0;
 }

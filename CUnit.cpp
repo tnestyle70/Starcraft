@@ -97,7 +97,7 @@ void CUnit::CommandCardSlot(vector<CommandSlot>& outSlot)
 	outSlot.push_back(s);
 	//4¹ø ½½·Ô
 	s.slotIndex = 0;
-	s.commandID = eCommandID::ATTACKMOVE;
+	s.commandID = eCommandID::ATTACK;
 	s.iconKey = TEXT("ICON_ATTACKMOVE");
 	s.hotkey = 'S';
 	s.clickable = true;
@@ -121,7 +121,7 @@ bool CUnit::ExecuteCommand(eCommandID command, CommandContext& context)
 	case eCommandID::PATROL:
 		IssuePatrol();
 		break;
-	case eCommandID::ATTACKMOVE:
+	case eCommandID::ATTACK:
 		IssueAttackMove();
 		break;
 	default:

@@ -15,8 +15,11 @@ public:
 	void Render(HDC hDC) override;
 	void Release();
 	//ICommandable
+	void RenderSlot(HDC hDC, int slotIndex);
+	int GetIconIndex(eCommandID eCommand);
 	void CommandCardSlot(std::vector<CommandSlot>& outSlot) override;
 	bool ExecuteCommand(eCommandID command, CommandContext& context) override;
+	void UpdateHotKeys();
 protected:
 	void SetBuildingData() override;
 	void ConstructComplete() override;

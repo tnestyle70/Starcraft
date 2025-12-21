@@ -175,7 +175,7 @@ bool CBuilding::CalcSizeTopLeft(const Vec2& worldPos, int& outRow, int& outCol) 
 
 void CBuilding::UpdateConstruct()
 {
-	if (!m_pBuilder) return;
+	//if (!m_pBuilder) return;
 
 	float fDeltaTime = CTimeMgr::Get_Instance()->GetDT();
 	m_fConstructElapsed += fDeltaTime;

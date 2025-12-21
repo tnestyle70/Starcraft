@@ -3,17 +3,22 @@
 #include <tchar.h>
 
 //커맨드 카드 종류
-enum class eCommandID 
+enum class eCommandID
 {
-	NONE = 0, 
-	//유닛 공통
-	MOVE, STOP, HOLD, PATROL, ATTACKMOVE,
-	//빌딩
-	CANCLE,
-	//배럭
-	TRAIN_MARIN, TRAIN_MEDIC,
-	//커맨드 센터
-	TRAIN_SCV
+	//기본 커맨드
+	MOVE = 0,
+	STOP = 1,
+	ATTACK = 2,
+	PATROL = 3,
+	HOLD = 4,
+	CANCLE = 5,
+	RALLY = 6,
+	GATHER = 7,
+	BUILD = 8, 
+	REPARI = 9,
+    // 유닛 아이콘 (10~)
+	SCV = 11,
+	NONE = 100
 };
 
 //커맨드 카드 1칸

@@ -38,6 +38,7 @@ void CInputMgr::Initialize()
 	//논리키와 실제키 매핑
 	m_iVKCode[LEFT_MOUSE] = VK_LBUTTON;
 	m_iVKCode[RIGHT_MOUSE] = VK_RBUTTON;
+	m_iVKCode[S_KEY] = 'S';
 	m_iVKCode[ESCAPE0] = '0';
 }
 
