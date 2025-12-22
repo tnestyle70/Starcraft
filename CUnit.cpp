@@ -61,48 +61,48 @@ int CUnit::Update()
 void CUnit::CommandCardSlot(vector<CommandSlot>& outSlot)
 {
 	outSlot.clear();
+	outSlot.resize(9);
+	//미리 값 채우기
+	for (int i = 0; i < 9; ++i)
+	{
+		outSlot[i].slotIndex = i;
+		outSlot[i].commandID = eCommandID::NONE;
+		outSlot[i].iconKey = TEXT("");
+		outSlot[i].hotkey = 0;
+		outSlot[i].clickable = false;
+		outSlot[i].visible = false;
+	}
 	//3 * 3 기준
 	//0번 슬롯
-	CommandSlot s;
-	s.slotIndex = 0; 
-	s.commandID = eCommandID::MOVE;
-	s.iconKey = TEXT("ICON_MOVE"); // TEXT 안에는 L 붙이지 말기
-	s.hotkey = 'M';
-	s.clickable = true;
-	s.visible = true; //칸 없음, 보이되 비활성(잠금), 동작 가능한 버튼 상태 나누기
-	outSlot.push_back(s);
+	outSlot[0].commandID = eCommandID::MOVE;
+	outSlot[0].iconKey = TEXT("ICON_MOVE");
+	outSlot[0].hotkey = 'M';
+	outSlot[0].clickable = true;
+	outSlot[0].visible = true;
 	//1번 슬롯
-	s.slotIndex = 0;
-	s.commandID = eCommandID::STOP;
-	s.iconKey = TEXT("ICON_STOP");
-	s.hotkey = 'S';
-	s.clickable = true;
-	s.visible = true;
-	outSlot.push_back(s);
+	outSlot[1].commandID = eCommandID::STOP;
+	outSlot[1].iconKey = TEXT("ICON_STOP");
+	outSlot[1].hotkey = 'S';
+	outSlot[1].clickable = true;
+	outSlot[1].visible = true;
 	//2번 슬롯
-	s.slotIndex = 0;
-	s.commandID = eCommandID::HOLD;
-	s.iconKey = TEXT("ICON_HOLD");
-	s.hotkey = 'S';
-	s.clickable = true;
-	s.visible = true;
-	outSlot.push_back(s);
+	outSlot[2].commandID = eCommandID::HOLD;
+	outSlot[2].iconKey = TEXT("ICON_HOLD");
+	outSlot[2].hotkey = 'H';
+	outSlot[2].clickable = true;
+	outSlot[2].visible = true;
 	//3번 슬롯
-	s.slotIndex = 0;
-	s.commandID = eCommandID::PATROL;
-	s.iconKey = TEXT("ICON_PATROL");
-	s.hotkey = 'S';
-	s.clickable = true;
-	s.visible = true;
-	outSlot.push_back(s);
+	outSlot[3].commandID = eCommandID::PATROL;
+	outSlot[3].iconKey = TEXT("ICON_PATROL");
+	outSlot[3].hotkey = 'P';
+	outSlot[3].clickable = true;
+	outSlot[3].visible = true;
 	//4번 슬롯
-	s.slotIndex = 0;
-	s.commandID = eCommandID::ATTACK;
-	s.iconKey = TEXT("ICON_ATTACKMOVE");
-	s.hotkey = 'S';
-	s.clickable = true;
-	s.visible = true;
-	outSlot.push_back(s);
+	outSlot[4].commandID = eCommandID::ATTACK;
+	outSlot[4].iconKey = TEXT("ICON_ATTACK");
+	outSlot[4].hotkey = 'A';
+	outSlot[4].clickable = true;
+	outSlot[4].visible = true;
 }
 
 bool CUnit::ExecuteCommand(eCommandID command, CommandContext& context)

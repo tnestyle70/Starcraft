@@ -21,6 +21,9 @@ namespace IconIndex
 
     // 유닛 아이콘 (10~)
     const int SCV = 11;             // SCV
+    //건물 아이콘
+    const int COMMAND_CENTER = 22; //커맨드 센터
+    const int SUPPLY_DEPOT = 23; //보급고
 }
 
 

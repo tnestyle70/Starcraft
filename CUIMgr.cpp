@@ -200,6 +200,11 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         // 유닛 생산
     case eCommandID::SCV:
         return IconIndex::SCV;
+        // 건물 건설
+    case eCommandID::COMMAND_CENTER:
+        return IconIndex::COMMAND_CENTER;
+    case eCommandID::SUPPLY_DEPOT:
+        return IconIndex::SUPPLY_DEPOT;
         /*
     case eCommandID::MARIN:
         return IconIndex::MARIN;

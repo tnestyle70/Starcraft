@@ -131,3 +131,22 @@ void CSCV::Render(HDC hDC)
 void CSCV::Release()
 {
 }
+
+void CSCV::CommandCardSlot(vector<CommandSlot>& outSlot)
+{
+    // 1. 부모 클래스의 공통 슬롯을 먼저 가져오기
+    CUnit::CommandCardSlot(outSlot);
+
+    //6번 : CommandCenter 생성
+    outSlot[6].commandID = eCommandID::COMMAND_CENTER;
+    outSlot[6].iconKey = TEXT("ICON_COMMAND_CENTER");
+    outSlot[6].hotkey = 'A';
+    outSlot[6].clickable = true;
+    outSlot[6].visible = true;
+    //7번 : CommandCenter 생성
+    outSlot[7].commandID = eCommandID::SUPPLY_DEPOT;
+    outSlot[7].iconKey = TEXT("ICON_SUPPLY_DEPOT");
+    outSlot[7].hotkey = 'S';
+    outSlot[7].clickable = true;
+    outSlot[7].visible = true;
+}

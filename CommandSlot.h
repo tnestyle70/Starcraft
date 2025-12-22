@@ -14,10 +14,13 @@ enum class eCommandID
 	CANCLE = 5,
 	RALLY = 6,
 	GATHER = 7,
-	BUILD = 8, 
+	BUILD = 8,
 	REPARI = 9,
-    // 유닛 아이콘 (10~)
+	// 유닛 아이콘 (10~)
 	SCV = 11,
+	//건물 아이콘
+	COMMAND_CENTER = 22,
+	SUPPLY_DEPOT = 23,
 	NONE = 100
 };
 

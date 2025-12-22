@@ -30,7 +30,7 @@ public:
 	virtual void Render(HDC hDC)PURE;
 	virtual void Release()		PURE;
 public: //Commandable의 커맨드 카드 슬롯 구현
-	void CommandCardSlot(vector<CommandSlot>& outSlot) override;
+	void CommandCardSlot(vector<CommandSlot>& outSlot);
 	bool ExecuteCommand(eCommandID command, CommandContext& context) override;
 public:
 	void IssueMove();
