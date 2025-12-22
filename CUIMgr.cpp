@@ -37,7 +37,24 @@ void CUIMgr::Initialize()
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/MainUI/MainUI.bmp", L"MainUI");
     //UIButton 로드
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/Icon/ButtonIcon.bmp", L"ICON_BUTTON_UI");
-    // CMainUI 생성 및 초기화 (여기서 알파 비트맵 생성됨)
+    //건물  
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/CommandCenter/CommandCenter.bmp", L"COMMANDCENTER_GREEN");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/CommandCenter/CommandCenter_Red.bmp", L"COMMANDCENTER_RED");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Barrack/Barrack.bmp", L"BARRACK_GREEN");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Barrack/Barrack_Red.bmp", L"BARRACK_RED");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/SupplyDepot/SupplyDepot.bmp", L"SUPPLYDEPOT_GREEN");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/SupplyDepot/SupplyDepot_Red.bmp", L"SUPPLYDEPOT_RED");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Starport/Starport.bmp", L"STARPORT_GREEN");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Starport/Starport_Red.bmp", L"STARPORT_RED");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Factory/Factory.bmp", L"FACTORY_GREEN");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Factory/Factory_Red.bmp", L"FACTORY_RED");
+    //알파마스크
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/trash/Structure/BuildAlpha.bmp", L"BUILD_ALPAH");
+    //ProgressUI
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/HpRect.bmp", L"HP_RECT");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/ProgressEmpty.bmp", L"PROGRESS_EMPTY");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/ProgressFull.bmp", L"PROGRESS_FULL");
+    //CMainUI 생성 및 초기화 (여기서 알파 비트맵 생성됨)
     m_pMainUI = new CMainUI;
     m_pMainUI->Initialize();
 }
@@ -204,6 +221,14 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         // 유닛 생산
     case eCommandID::SCV:
         return IconIndex::SCV;
+    case eCommandID::MARINE:
+        return IconIndex::MARINE;
+    case eCommandID::MEDIC:
+        return IconIndex::MEDIC;
+    case eCommandID::TANK:
+        return IconIndex::TANK;
+    case eCommandID::BATTLECRUISER:
+        return IconIndex::BATTLECRUISER;
         // 건물 건설
     case eCommandID::COMMAND_CENTER:
         return IconIndex::COMMAND_CENTER;

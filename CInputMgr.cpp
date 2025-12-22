@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "CInputMgr.h"
 #include "CScrollMgr.h"
+#include <unordered_map>
 
 //클래스의 싱글턴 포인터를 프로그램에서 한 번만 선언
 CInputMgr* CInputMgr::m_pInst = nullptr;
@@ -91,7 +92,7 @@ bool CInputMgr::KeyUp(eKey eKey) const
 {
 	return !m_bCurrentKey[eKey] && m_bPrevKey[eKey];
 }
-//가상 키보드 입력 받는 함수
+
 bool CInputMgr::KeyPressVK(int vkCode) const
 {
 	SHORT sState = GetAsyncKeyState(vkCode);
@@ -100,18 +101,19 @@ bool CInputMgr::KeyPressVK(int vkCode) const
 
 bool CInputMgr::KeyDownVK(int vkCode) const
 {
-	// 이전 프레임 상태를 추적하려면 별도 배열 필요
-	// 간단하게는 현재 누름 + 이전에 안 눌림 체크
-	SHORT sState = GetAsyncKeyState(vkCode);
-	bool bCurrent = (sState & 0x8000) != 0;
-	bool bPrev = (sState & 0x0001) != 0; // 이전 상태 비트
-	return bCurrent && !bPrev;
+	// VK 전용 배열 필요
+	static std::unordered_map<int, bool> prevState;
+	bool current = (GetAsyncKeyState(vkCode) & 0x8000) != 0;
+	bool prev = prevState[vkCode];
+	prevState[vkCode] = current;
+	return current && !prev;
 }
 
 bool CInputMgr::KeyUpVK(int vkCode) const
 {
-	SHORT sState = GetAsyncKeyState(vkCode);
-	bool bCurrent = (sState & 0x8000) != 0;
-	bool bPrev = (sState & 0x0001) != 0;
-	return !bCurrent && bPrev;
+	static std::unordered_map<int, bool> prevState;
+	bool current = (GetAsyncKeyState(vkCode) & 0x8000) != 0;
+	bool prev = prevState[vkCode];
+	prevState[vkCode] = current;
+	return !current && prev;
 }

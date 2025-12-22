@@ -5,6 +5,7 @@
 #include "CSelectionMgr.h"
 #include "CInputMgr.h"
 #include "CUIMgr.h"
+#include "CBuilding.h"
 
 CUnit::CUnit() : m_fSpeed(0.f), m_bDead(false), m_iHP(0), m_iMaxHP(0),
 	m_bActiveOrder(false)
@@ -46,7 +47,12 @@ int CUnit::Update()
 	switch (order.eType)
 	{
 	case eOrderType::MOVE:
+	case eOrderType::MOVE_AND_BUILD:
 		finished = UpdateMove(order);
+		break;
+	case eOrderType::STOP:
+		//바로 종료
+		finished = true;
 		break;
 	default:
 		// 나머지 오더는 아직 미구현이면 그냥 종료 처리하거나 HOLD로 두면 됨
@@ -56,17 +62,34 @@ int CUnit::Update()
 
 	if (finished)
 	{
-		PopOrder();
+		CompleteOrder();
 	}
 
 	__super::Update_Rect();
-
 	return 0;
 }
 
 void CUnit::UpdateHotKeys()
 {
 	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+
+	if (selected.empty())
+		return;
+	//다중 유닛 멈춤 처리
+	if (CInputMgr::Get_Instance()->KeyDown(S_KEY))
+	{
+		for (auto* unit : selected)
+		{
+			Commandable* command = dynamic_cast<Commandable*>(unit);
+			if (command)
+			{
+				CommandContext ctx{};
+				command->ExecuteCommand(eCommandID::STOP, ctx);
+			}
+		}
+		return;
+	}
+
 	//선택된 유닛이 없거나 CUnit 클래스가 아닐 경우 return
 	if (selected.size() != 1)
 		return;
@@ -148,20 +171,8 @@ bool CUnit::ExecuteCommand(eCommandID command, CommandContext& context)
 {
 	switch (command)
 	{
-	case eCommandID::MOVE:
-		IssueMove();
-		break;
 	case eCommandID::STOP:
-		IssueStop();
-		break;
-	case eCommandID::HOLD:
-		IssueHold();
-		break;
-	case eCommandID::PATROL:
-		IssuePatrol();
-		break;
-	case eCommandID::ATTACK:
-		IssueAttackMove();
+		CompleteOrder();
 		break;
 	default:
 		break;
@@ -170,43 +181,38 @@ bool CUnit::ExecuteCommand(eCommandID command, CommandContext& context)
 	return false;
 }
 
-void CUnit::IssueMove()
+void CUnit::CompleteOrder()
 {
-	/*
-	//직접 이동 호출
-	ClearOrders();
-
-	Order order;
-	order.eType = eOrderType::MOVE;
-	order.dst = worldTarget;
-	order.path.clear();
-
-	//A* 경로 생성
-	Vec2 start{ m_tInfo.fX, m_tInfo.fY };
-	order.path = CNavMgr::Get_Instance()->RequestPathWorld(start, order.dst);
-	//경로 없으면 직선 이동
-	if (order.path.empty())
+	if (m_OrderQ.empty())
+		return;
+	//끝난 오더 처리
+	Order& orderFinished = m_OrderQ.front();
+	//특수 처리
+	switch (orderFinished.eType)
 	{
-		order.path.push_back(order.dst);
+	case eOrderType::MOVE_AND_BUILD:
+		FinalizeBuild(orderFinished);
+		break;
 	}
-	PushOrder(order);
-	*/
+	//오더제거
+	m_OrderQ.pop_front();
+	m_bActiveOrder = false;
+	//오더가 없을 경우 IDLE
+	if (m_OrderQ.empty())
+		m_eState = eUnitState::IDLE;
 }
 
-void CUnit::IssueStop()
+void CUnit::ClearOrder()
 {
-}
-
-void CUnit::IssueHold()
-{
-}
-
-void CUnit::IssuePatrol()
-{
-}
-
-void CUnit::IssueAttackMove()
-{
+	//오더들의 포인터 정리
+	for (auto& order : m_OrderQ)
+	{
+		delete order.pBuilding;
+		order.pBuilding = nullptr;
+	}
+	m_OrderQ.clear();
+	m_bActiveOrder = false;
+	m_eState = eUnitState::IDLE;
 }
 
 bool CUnit::UpdateMove(Order& order)
@@ -222,7 +228,6 @@ bool CUnit::UpdateMove(Order& order)
 		? order.path[order.iPathIndex] : order.dst;
 	Vec2 diff{ target.fX - m_tInfo.fX, target.fY - m_tInfo.fY };
 	float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
-	//도착 판정 기준
 	float fArriveEps = 6.f;
 
 	if (dist <= fArriveEps)
@@ -243,35 +248,6 @@ bool CUnit::UpdateMove(Order& order)
 	m_tInfo.fY += dir.fY * dt * m_fSpeed;
 
 	return false;
-}
-
-void CUnit::PopOrder()
-{
-	//현재 오더 제거 -> 오더가 끝났을 경우 상태 정리 -> 다음 오더가 있을 경우 즉시 시작
-	if (m_OrderQ.empty()) return;
-
-	//현재 오더 가져오기
-	Order finished = m_OrderQ.front();
-	m_OrderQ.pop_front();
-	//오더 타입별 정리
-	switch (finished.eType)
-	{
-	case eOrderType::MOVE:
-	{
-		m_vecPath.clear();
-		m_iPathIndex = 0;
-		break;
-	}
-	default:
-		break;
-	}
-	//다음 오더 처리
-	if (m_OrderQ.empty())
-	{
-		m_eState = eUnitState::IDLE;
-		return;
-	}
-	StartOrder(m_OrderQ.front());
 }
 
 void CUnit::StartOrder(Order& order)
@@ -321,4 +297,8 @@ RECT CUnit::GetWorldRect() const
 	rc.bottom = (LONG)(m_tInfo.fY + m_tInfo.fCY * 0.5f);
 
 	return rc;
+}
+
+void CUnit::FinalizeBuild(Order& order)
+{
 }

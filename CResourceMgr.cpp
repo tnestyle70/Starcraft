@@ -13,8 +13,8 @@ CResourceMgr::~CResourceMgr()
 
 void CResourceMgr::Reset()
 {
-	m_eState.mineral = 1000;
-	m_eState.gas = 1000;
+	m_eState.mineral = 10000000;
+	m_eState.gas = 100000000;
 	m_eState.supplyUsed = 0;
 	m_eState.supplyCap = 1000;
 }

@@ -23,6 +23,8 @@ void CCommandCenter::Initialize()
 	CBuilding::Initialize();
 	m_tInfo.fCX = 128.f;
 	m_tInfo.fCY = 160.f;
+	lstrcpy(m_szGreenKey, L"COMMANDCENTER_GREEN");
+	lstrcpy(m_szRedKey, L"COMMANDCENTER_RED");
 	m_pFrameKey = L"CommandCenter";
 	m_eRender = RENDER_WORLD;
 	m_tFrame.iStart = 0;
@@ -34,10 +36,10 @@ int CCommandCenter::Update()
 {
 	int ret = CBuilding::Update();
 
-	//if (m_eState == eBuildingState::COMPLETE)
-	//{
-	//	UpdateProduction();
-	//}
+	if (m_eState == eBuildingState::COMPLETE)
+	{
+		UpdateProduction();
+	}
 	UpdateProduction();
 	UpdateHotKeys();
 
@@ -95,7 +97,9 @@ void CCommandCenter::Render(HDC hDC)
 		(int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
 		(int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
 		RGB(0, 255, 0));
-}
+
+	RenderProgressbar(hDC);
+}	
 
 void CCommandCenter::Release()
 {
@@ -120,12 +124,13 @@ void CCommandCenter::SetBuildingData()
 	m_iMaxHP = 100;
 	m_fConstructDuration = 10.f;
 	//타일 단위 크기
-	m_iHeight = 4;
-	m_iWidth = 4;
+	m_iHeight = 5;
+	m_iWidth = 5;
 }
 
 void CCommandCenter::ConstructComplete()
 {
+
 }
 
 void CCommandCenter::CommandCardSlot(std::vector<CommandSlot>& outSlot)
@@ -165,7 +170,7 @@ bool CCommandCenter::ExecuteCommand(eCommandID command, CommandContext& context)
 		if (!CResourceMgr::Get_Instance()->TrySpend(cost, true))
 			return false;
 		//생산 시간
-		m_queue.push_back({ eCommandID::SCV, 3.f, 3.f, 50, 0 });
+		m_queue.push_back({ eCommandID::SCV, 2.f, 2.f, 50, 0 });
 		return true;
 		break;
 	case eCommandID::CANCLE:
@@ -225,11 +230,11 @@ void CCommandCenter::UpdateProduction()
 	{
 		eCommandID done = m_queue.front().command;
 		m_queue.pop_front();
-		ConstructComplete(done);
+		ProductionComplete(done);
 	}
 }
 
-void CCommandCenter::ConstructComplete(eCommandID command)
+void CCommandCenter::ProductionComplete(eCommandID command)
 {
 	if (command == eCommandID::SCV)
 	{

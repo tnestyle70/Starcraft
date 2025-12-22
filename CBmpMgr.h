@@ -14,6 +14,13 @@ public:
 	void	Insert_Bmp(const TCHAR* pFilePath, const TCHAR* pImgKey);
 	HDC		Find_Image(const TCHAR* pImgKey);
 	void	Release();
+	//Alpha Ã¤³Î ·»´õ
+	void Render_Alpha(const TCHAR* pImageKey, const TCHAR* pAlphaKey,
+		HDC hDC, int x, int y, int width, int height);
+	void Render_Alpha_Simple(const TCHAR* pImageKey,
+		HDC hDC, int x, int y, int width, int height);
+	void Render_Alpha_Tint(const TCHAR* pImageKey, const TCHAR* pAlphaKey,
+		HDC hDC, int x, int y, int width, int height, COLORREF tintColor);
 
 public:
 	static CBmpMgr* Get_Instance()

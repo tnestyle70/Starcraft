@@ -141,6 +141,12 @@
     <Filter Include="02. Design\11. UI\00. MainUI">
       <UniqueIdentifier>{42aa3c73-c549-4290-abce-7c00603f20a7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Obj\01. Building\04. SupplyDepot">
+      <UniqueIdentifier>{9fb12e7a-c77d-4f66-a472-3d77156fd061}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\05. Vulture">
+      <UniqueIdentifier>{21a04b22-e77a-4bf5-8759-52d1e7cbb7ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -269,6 +275,9 @@
     <ClInclude Include="CMainUI.h">
       <Filter>02. Design\11. UI\00. MainUI</Filter>
     </ClInclude>
+    <ClInclude Include="CSupplyDepot.h">
+      <Filter>01. Obj\01. Building\04. SupplyDepot</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Starcraft.cpp">
@@ -381,6 +390,9 @@
     </ClCompile>
     <ClCompile Include="CMainUI.cpp">
       <Filter>02. Design\11. UI\00. MainUI</Filter>
+    </ClCompile>
+    <ClCompile Include="CSupplyDepot.cpp">
+      <Filter>01. Obj\01. Building\04. SupplyDepot</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

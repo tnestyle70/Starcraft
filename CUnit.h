@@ -4,10 +4,12 @@
 #include <deque>
 #include <vector>
 
+class CBuilding;
+
 enum class eUnitState {IDLE, MOVE, ATTACK, DIE};
 
 enum class eOrderType
-{STOP, MOVE, ATTACK_MOVE, ATTACK_TARGET, HOLD};
+{MOVE, STOP, MOVE_AND_BUILD, ATTACK_MOVE, ATTACK_TARGET, HOLD};
 
 struct Order
 {
@@ -16,6 +18,8 @@ struct Order
 	//월드 좌표 way point
 	vector<Vec2> path;
 	int iPathIndex;
+	CBuilding* pBuilding = nullptr;
+	Order() : eType(eOrderType::MOVE), iPathIndex(0) {}
 };
 
 class CUnit : public Commandable, public CObj
@@ -31,19 +35,14 @@ public:
 	virtual void Release()		PURE;
 public: //Commandable의 커맨드 카드 슬롯 구현
 	virtual void UpdateHotKeys();
+	virtual void FinalizeBuild(Order& order);
 	void CommandCardSlot(vector<CommandSlot>& outSlot);
-	bool ExecuteCommand(eCommandID command, CommandContext& context) override;
-public:
-	void IssueMove();
-	void IssueStop();
-	void IssueHold();
-	void IssuePatrol();
-	void IssueAttackMove();
-	void ClearOrders() { m_OrderQ.clear(); };
+	bool ExecuteCommand(eCommandID command, CommandContext& context);
 	void PushOrder(const Order& order) {m_OrderQ.push_back(order);};
+	void CompleteOrder();
+	void ClearOrder();
 public:
 	bool UpdateMove(Order& order);
-	void PopOrder();
 	void StartOrder(Order& order);
 public:
 	int DirTo16WayIndex(Vec2& vDir);

@@ -18,6 +18,10 @@ enum class eCommandID
 	REPARI = 9,
 	// 유닛 아이콘 (10~)
 	SCV = 11,
+	MARINE = 12,
+	MEDIC = 13,
+	TANK = 16,
+	BATTLECRUISER = 20,
 	//건물 아이콘
 	COMMAND_CENTER = 22,
 	SUPPLY_DEPOT = 23,

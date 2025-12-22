@@ -5,7 +5,7 @@
 
 enum class eBuildingType
 {
-	COMMAND_CENTER, BARRACK, FACTORY, STARPORT
+	COMMAND_CENTER, BARRACK, FACTORY, STARPORT, SUPPLY_DEPOT
 };
 
 enum class eBuildingState
@@ -35,6 +35,11 @@ public:
 	void Late_Update() override;
 	void Render(HDC hDC) override;
 	void Release() override;
+protected:
+	virtual void SetBuildingData() PURE;
+	virtual void ConstructComplete() PURE;
+	virtual void Destroy() PURE;
+	void RenderProgressbar(HDC hDC);
 public:
 	virtual void CommandCardSlot(vector<CommandSlot>& outSlot);
 	virtual void UpdateHotKeys();
@@ -66,10 +71,12 @@ public:
 
 	RECT GetWorldRect() const;
 protected:
-	virtual void SetBuildingData() PURE; 
-	virtual void ConstructComplete() PURE;
-	virtual void Destroy() PURE;
+	//건물 별로 Green, Red
+	TCHAR m_szGreenKey[64];
+	TCHAR m_szRedKey[64];
 protected:
+	//생산큐
+	std::deque<ProdJob> m_queue;
 	//배치 가능, 건설 여부
 	bool m_bGhost;
 	bool m_bComplete;

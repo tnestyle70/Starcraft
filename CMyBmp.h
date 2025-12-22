@@ -10,7 +10,7 @@ public:
 
 public:
 	HDC		Get_MemDC() { return m_hMemDC; }
-
+	HBITMAP Get_Bitmap() { return m_hBitmap; }
 public:
 	void	Load_Bmp(const TCHAR* pFilePath);
 	void	Release();

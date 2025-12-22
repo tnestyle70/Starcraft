@@ -104,30 +104,9 @@ void CCommandMgr::Update()
             pBuilding->AppplyOccupy();
             pBuilding->SetBuilder(m_pBuilder);
             CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pBuilding);
-            /*
-            //실제 건물 생성
-            CBuilding* pBuilding = CBuildingFactory::Create(m_ePlaceType);
-            if (pBuilding)
-            {
-                //고스트와 동일 위치로 배치
-                Vec2 pos = m_pGhost->Get_Pos();
-                pBuilding->Set_Pos(pos.fX, pos.fY);
-                //월드 위치를 cell로 변환해서 전달
-                Vec2 cell = CTileMgr::Get_Instance()->WorldToCell(m_pGhost->Get_Pos());
-                pBuilding->SetBuilder(m_pBuilder);
-                //타일 점유 확정 짓기
-                pBuilding->AppplyOccupy();
-                //월드에 등록하기
-                CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pBuilding);
-                //건설 진행 애니메이션 스프라이트
-            }
-            //고스트 제거 + 모드 종료
-            CancleBuilding();
-            */
         }
         return;
     }
-  
     if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE))
     {
         CancleBuilding();
@@ -166,7 +145,7 @@ void CCommandMgr::IssueMove(Vec2& worldGoal)
             order.iPathIndex = 0;
         }
         //우클릭 이동일 경우 기존 오더 비우기
-        pUnit->ClearOrders();
+        pUnit->ClearOrder();
         pUnit->PushOrder(order);
     }
     return;

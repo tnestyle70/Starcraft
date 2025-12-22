@@ -84,6 +84,11 @@ void CStage::Initialize()
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/CommandCenter/CommandCenter4.bmp", L"CommandCenter");
 	CObj* pCommandCenter = CAbstractFactory<CCommandCenter>::Create(290.f, 250.f);
 	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pCommandCenter);
+	//배럭, 스타포트, 보급고, 군수공장
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Barrack/Barrack.bmp", L"Barracks");
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Starport/Starport.bmp", L"Starport");
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/SupplyDepot/SupplyDepot.bmp", L"SupplyDepot");
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Factory/Factory.bmp", L"Factory");
 
 	//UIMgr 초기화 (여기서 MainUI.bmp 로드 + 알파 비트맵 생성)
 	CUIMgr::Get_Instance()->Initialize();

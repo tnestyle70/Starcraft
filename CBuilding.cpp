@@ -6,6 +6,7 @@
 #include "CInputMgr.h"
 #include "CSelectionMgr.h"
 #include "CUIMgr.h"
+#include "CBmpMgr.h"
 
 CBuilding::CBuilding() : m_bGhost(false), m_bComplete(false), m_bCanPlace(false),
 	m_iHP(0), m_iMaxHP(0), m_fConstructDuration(0.f), m_fConstructElapsed(0.f), m_iWidth(0), m_iHeight(0)
@@ -57,43 +58,45 @@ void CBuilding::Late_Update()
 
 void CBuilding::Render(HDC hdc)
 {
-	//TODO CObj 기본 이미지 렌더 호출하기
-	if (!m_bGhost) return;
+	float scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
+	float scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
 
 	int row0 = m_iPlaceRow;
 	int col0 = m_iPlaceCol;
 
-	// 혹시 SetPlace 안 된 상황 대비
-	if (row0 < 0 || col0 < 0)
+	int drawX = (col0 * TILECX - scrX);
+	int drawY = (row0 * TILECY - scrY);
+
+	//건물 이미지의 크기
+	int buildingWidth = m_iWidth * TILECX;
+	int buildingHeight = m_iHeight * TILECY;
+
+	if (m_bGhost)
 	{
-		if (!CalcSizeTopLeft(Get_Pos(), row0, col0))
-			return;
+		const TCHAR* pImageKey = m_bCanPlace ? m_szGreenKey : m_szRedKey;
+		HDC hGhostDC = CBmpMgr::Get_Instance()->Find_Image(pImageKey);
+		BitBlt(hdc, drawX, drawY,
+			buildingWidth, buildingHeight,
+			hGhostDC,
+			0, 0, SRCCOPY);
 	}
-
-	float scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
-	float scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
-
-	RECT rc;
-	rc.left = (int)(col0 * TILECX - scrX);
-	rc.top = (int)(row0 * TILECY - scrY);
-	rc.right = (int)((col0 + m_iWidth) * TILECX - scrX);
-	rc.bottom = (int)((row0 + m_iHeight) * TILECY - scrY);
-
-	// 채움(원하면 주석 처리하고 테두리만 남겨도 됨)
-	HBRUSH b = CreateSolidBrush(m_bCanPlace ? RGB(0, 200, 0) : RGB(200, 0, 0));
-	FillRect(hdc, &rc, b);  // :contentReference[oaicite:1]{index=1}
-	DeleteObject(b);
-
-	// 테두리
-	HPEN pen = CreatePen(PS_SOLID, 2, m_bCanPlace ? RGB(0, 120, 0) : RGB(120, 0, 0));
-	HGDIOBJ oldPen = SelectObject(hdc, pen);
-	HGDIOBJ oldBrush = SelectObject(hdc, GetStockObject(HOLLOW_BRUSH));
-
-	Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom); // :contentReference[oaicite:2]{index=2}
-
-	SelectObject(hdc, oldBrush);
-	SelectObject(hdc, oldPen);
-	DeleteObject(pen);
+	else
+	{
+		//완성된 건물 그리기
+		const TCHAR* pImageKey = m_szGreenKey;
+		HDC hBuildingDC = CBmpMgr::Get_Instance()->Find_Image(pImageKey);
+		GdiTransparentBlt(hdc,
+			drawX,
+			drawY,
+			buildingWidth,
+			buildingHeight,
+			hBuildingDC,
+			scrX,
+			scrY,
+			buildingWidth,		// 복사할 이미지의 가로 사이즈
+			buildingHeight,		// 복사할 이미지의 세로 사이즈
+			RGB(0, 255, 0));
+	}
 }
 
 void CBuilding::Release()
@@ -167,6 +170,30 @@ bool CBuilding::ExecuteCommand(eCommandID command, CommandContext& context)
 	}
 	return false;
 }
+
+void CBuilding::UpdateConstruct()
+{
+	//if (!m_pBuilder) return;
+
+	float fDeltaTime = CTimeMgr::Get_Instance()->GetDT();
+	m_fConstructElapsed += fDeltaTime;
+
+	float time = (m_fConstructDuration > 0.f) ?
+		(m_fConstructElapsed / m_fConstructDuration) : 1.f;
+	if (time > 1.f) time = 1.f;
+
+	m_iHP = (int)(m_iMaxHP * time);
+	if (m_iHP < 1) m_iHP = 1;
+
+	if (time >= 1.f)
+	{
+		m_iHP = m_iMaxHP;
+		m_bComplete = true;
+		m_eState = eBuildingState::COMPLETE;
+		ConstructComplete();
+	}
+}
+
 
 void CBuilding::SetGhost(bool bGhost)
 {
@@ -246,29 +273,6 @@ bool CBuilding::CalcSizeTopLeft(const Vec2& worldPos, int& outRow, int& outCol) 
 	return true;
 }
 
-void CBuilding::UpdateConstruct()
-{
-	//if (!m_pBuilder) return;
-
-	float fDeltaTime = CTimeMgr::Get_Instance()->GetDT();
-	m_fConstructElapsed += fDeltaTime;
-
-	float time = (m_fConstructDuration > 0.f) ?
-		(m_fConstructElapsed / m_fConstructDuration) : 1.f;
-	if (time > 1.f) time = 1.f;
-
-	m_iHP = (int)(m_iMaxHP * time);
-	if (m_iHP < 1) m_iHP = 1;
-
-	if (time >= 1.f)
-	{
-		m_iHP = m_iMaxHP;
-		m_bComplete = true;
-		m_eState = eBuildingState::COMPLETE;
-		ConstructComplete();
-	}
-}
-
 RECT CBuilding::GetWorldRect() const
 {
 	RECT rc{};
@@ -279,4 +283,56 @@ RECT CBuilding::GetWorldRect() const
 	rc.bottom = (LONG)(m_tInfo.fY + m_tInfo.fCY * 0.5f);
 
 	return rc;
+}
+
+void CBuilding::RenderProgressbar(HDC hDC)
+{
+	if (m_queue.empty())
+		return;
+
+	int scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
+	int scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
+	//진행 바 위치
+	int barX = 300.f;
+	int barY = 400.f;
+	HDC hEmptyBarDC = CBmpMgr::Get_Instance()->Find_Image(L"PROGRESS_EMPTY");
+	if (hEmptyBarDC)
+	{
+		GdiTransparentBlt(hDC,
+			barX, barY,
+			108, 9,
+			hEmptyBarDC,
+			0, 0,
+			108, 9,
+			RGB(0, 255, 0));
+	}
+
+	// 2. 진행률 계산
+	float progress = 1.0f - (m_queue.front().remainTime / m_queue.front().totalTime);
+
+	// 3. HP_RECT 타일을 하나씩 그리기
+	HDC hRectDC = CBmpMgr::Get_Instance()->Find_Image(L"HP_RECT");
+
+	if (hRectDC)
+	{
+		const int RECT_WIDTH = 4;   // HP_RECT 하나의 너비
+		const int RECT_HEIGHT = 5;  // HP_RECT 높이
+		const int TOTAL_RECTS = 27; // 108 / 6 = 18개
+
+		int fillRects = (int)(TOTAL_RECTS * progress);
+
+		// fillRects 개수만큼 타일 그리기
+		for (int i = 0; i < fillRects; ++i)
+		{
+			int rectX = barX + (i * RECT_WIDTH);
+
+			GdiTransparentBlt(hDC,
+				rectX, barY,
+				RECT_WIDTH, RECT_HEIGHT,
+				hRectDC,
+				0, 0,
+				RECT_WIDTH, RECT_HEIGHT,
+				RGB(0, 255, 0));
+		}
+	}
 }
