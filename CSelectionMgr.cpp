@@ -162,20 +162,19 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 
 void CSelectionMgr::Render(HDC hDC)
 {
-	if (!m_bDragging) return;
+	if (m_bDragging)
+	{
+		// 드래그 중일 때 초록색 박스 그리기
+		HPEN hPen = CreatePen(PS_SOLID, 2, RGB(0, 255, 0));  // 초록색
+		HBRUSH hBrush = (HBRUSH)GetStockObject(NULL_BRUSH);  // 투명 브러시
 
-	// 채움(칸 느낌): 해치 브러시
-	HBRUSH fill = CreateHatchBrush(HS_DIAGCROSS, RGB(0, 255, 0));
-	HBRUSH oldB = (HBRUSH)SelectObject(hDC, fill);
+		HPEN hOldPen = (HPEN)SelectObject(hDC, hPen);
+		HBRUSH hOldBrush = (HBRUSH)SelectObject(hDC, hBrush);
 
-	// 테두리: 점선 펜
-	HPEN pen = CreatePen(PS_DOT, 1, RGB(0, 255, 0));
-	HPEN oldP = (HPEN)SelectObject(hDC, pen);  // PS_DOT는 폭 1 이하에서 유효 :contentReference[oaicite:3]{index=3}
+		Rectangle(hDC, m_ptStart.x, m_ptStart.y, m_ptCur.x, m_ptCur.y);
 
-	Rectangle(hDC, m_rcScreen.left, m_rcScreen.top, m_rcScreen.right, m_rcScreen.bottom); 
-
-	SelectObject(hDC, oldP);
-	SelectObject(hDC, oldB);
-	DeleteObject(pen);
-	DeleteObject(fill);
+		SelectObject(hDC, hOldPen);
+		SelectObject(hDC, hOldBrush);
+		DeleteObject(hPen);
+	}
 }

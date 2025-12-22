@@ -3,7 +3,8 @@
 
 enum eKey
 {
-	LEFT_MOUSE, RIGHT_MOUSE, S_KEY ,ESCAPE0 ,KEY_END
+	LEFT_MOUSE, RIGHT_MOUSE, S_KEY, B_KEY, G_KEY,
+	ESCAPE0 ,KEY_END
 };
 
 class CInputMgr
@@ -23,6 +24,10 @@ public:
 	bool KeyPress(eKey eKey) const;
 	bool KeyDown(eKey eKey) const;
 	bool KeyUp(eKey eKey) const;
+public:
+	bool KeyPressVK(int vkCode) const;
+	bool KeyDownVK(int vkCode) const;
+	bool KeyUpVK(int vkCode) const;
 private:
 	CInputMgr();
 	~CInputMgr();

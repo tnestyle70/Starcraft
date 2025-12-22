@@ -39,6 +39,8 @@ void CInputMgr::Initialize()
 	m_iVKCode[LEFT_MOUSE] = VK_LBUTTON;
 	m_iVKCode[RIGHT_MOUSE] = VK_RBUTTON;
 	m_iVKCode[S_KEY] = 'S';
+	m_iVKCode[B_KEY] = 'B';
+	m_iVKCode[G_KEY] = 'G';
 	m_iVKCode[ESCAPE0] = '0';
 }
 
@@ -88,4 +90,28 @@ bool CInputMgr::KeyDown(eKey eKey) const
 bool CInputMgr::KeyUp(eKey eKey) const
 {
 	return !m_bCurrentKey[eKey] && m_bPrevKey[eKey];
+}
+//가상 키보드 입력 받는 함수
+bool CInputMgr::KeyPressVK(int vkCode) const
+{
+	SHORT sState = GetAsyncKeyState(vkCode);
+	return (sState & 0x8000) != 0;
+}
+
+bool CInputMgr::KeyDownVK(int vkCode) const
+{
+	// 이전 프레임 상태를 추적하려면 별도 배열 필요
+	// 간단하게는 현재 누름 + 이전에 안 눌림 체크
+	SHORT sState = GetAsyncKeyState(vkCode);
+	bool bCurrent = (sState & 0x8000) != 0;
+	bool bPrev = (sState & 0x0001) != 0; // 이전 상태 비트
+	return bCurrent && !bPrev;
+}
+
+bool CInputMgr::KeyUpVK(int vkCode) const
+{
+	SHORT sState = GetAsyncKeyState(vkCode);
+	bool bCurrent = (sState & 0x8000) != 0;
+	bool bPrev = (sState & 0x0001) != 0;
+	return !bCurrent && bPrev;
 }

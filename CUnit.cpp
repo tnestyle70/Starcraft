@@ -2,6 +2,9 @@
 #include "CUnit.h"
 #include "CTimeMgr.h"
 #include "CNavMgr.h"
+#include "CSelectionMgr.h"
+#include "CInputMgr.h"
+#include "CUIMgr.h"
 
 CUnit::CUnit() : m_fSpeed(0.f), m_bDead(false), m_iHP(0), m_iMaxHP(0),
 	m_bActiveOrder(false)
@@ -19,6 +22,9 @@ int CUnit::Update()
 {
 	if (m_bDead)
 		return DEAD;
+
+	//HotKey Update
+	UpdateHotKeys();
 
 	if (m_OrderQ.empty())
 	{
@@ -56,6 +62,39 @@ int CUnit::Update()
 	__super::Update_Rect();
 
 	return 0;
+}
+
+void CUnit::UpdateHotKeys()
+{
+	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+	//선택된 유닛이 없거나 CUnit 클래스가 아닐 경우 return
+	if (selected.size() != 1)
+		return;
+	if (selected[0] != this)
+		return;
+	//Commandable 확인
+	Commandable* command = dynamic_cast<Commandable*>(this);
+	if (!command)
+		return;
+	//슬롯 정보
+	vector<CommandSlot> slots;
+	command->CommandCardSlot(slots);
+
+	//각 슬롯의 단축키 확인
+	for (int i = 0; i < slots.size(); ++i)
+	{
+		if (!slots[i].visible || !slots[i].clickable)
+			continue;
+		//단축키가 눌렸는지 확인
+		if (CInputMgr::Get_Instance()->KeyDownVK(slots[i].hotkey))
+		{
+			CUIMgr::Get_Instance()->SetButtonFeedback(i, true);
+			//명령 실행
+			CommandContext context{};
+			command->ExecuteCommand(slots[i].commandID, context);
+			break;
+		}
+	}
 }
 
 void CUnit::CommandCardSlot(vector<CommandSlot>& outSlot)

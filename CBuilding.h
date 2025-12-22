@@ -36,6 +36,9 @@ public:
 	void Render(HDC hDC) override;
 	void Release() override;
 public:
+	virtual void CommandCardSlot(vector<CommandSlot>& outSlot);
+	virtual void UpdateHotKeys();
+	virtual bool ExecuteCommand(eCommandID command, CommandContext& context);
 	void SetBuilder(CUnit* pBuilder) { m_pBuilder = pBuilder; }
 	//건물 상태 배치, 건설, 완료, 파괴
 	void SetGhost(bool bGhost);

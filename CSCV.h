@@ -13,6 +13,9 @@ public:
 	void Render(HDC hDC) override;
 	void Release() override;
 public:
+	void UpdateHotKeys() override;
+	void UpdateBuilding();
+	bool ExecuteCommand(eCommandID command, CommandContext& context);
 	void CommandCardSlot(vector<CommandSlot>& outSlot);
 };
 

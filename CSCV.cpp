@@ -3,6 +3,9 @@
 #include "CBmpMgr.h"
 #include "CScrollMgr.h"
 #include "CInputMgr.h"
+#include "CSelectionMgr.h"
+#include "CUIMgr.h"
+#include "CResourceMgr.h"
 
 CSCV::CSCV()
 {
@@ -38,6 +41,9 @@ int CSCV::Update()
 
     if (iResult == DEAD)
         return DEAD;
+
+    //핫키 업데이트
+    UpdateHotKeys();
 
     DWORD now = GetTickCount();
 
@@ -132,21 +138,76 @@ void CSCV::Release()
 {
 }
 
+void CSCV::UpdateHotKeys()
+{
+    //SCV 유닛 하나만 선택되었을 경우 실행
+    auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+    if (selected.size() != 1)
+        return;
+    //선택된 객체가 this인지 확인
+    if (selected[0] != this)
+        return;
+    //슬롯 정보
+    vector<CommandSlot> slots;
+    this->CommandCardSlot(slots);
+    //각 슬롯의 단축키 확인
+    for (int i = 0; i < slots.size(); ++i)
+    {
+        if (!slots[i].visible || !slots[i].clickable)
+            continue;
+        //단축키가 눌렸는지 확인
+        if (CInputMgr::Get_Instance()->KeyDownVK(slots[i].hotkey))
+        {
+            CUIMgr::Get_Instance()->SetButtonFeedback(i, true);
+            //명령 실행
+            CommandContext context{};
+            this->ExecuteCommand(slots[i].commandID, context);
+        }
+    }
+}
+
+void CSCV::UpdateBuilding()
+{
+}
+
+bool CSCV::ExecuteCommand(eCommandID command, CommandContext& context)
+{
+    ResourceCost cost{};
+
+    switch (command)
+    {
+    case eCommandID::COMMAND_CENTER:
+        break;
+    case eCommandID::SUPPLY_DEPOT:
+        break;
+    default:
+        break;
+    }
+
+    return false;
+}
+
 void CSCV::CommandCardSlot(vector<CommandSlot>& outSlot)
 {
     // 1. 부모 클래스의 공통 슬롯을 먼저 가져오기
     CUnit::CommandCardSlot(outSlot);
 
-    //6번 : CommandCenter 생성
+    //7번 : CommandCenter 생성
     outSlot[6].commandID = eCommandID::COMMAND_CENTER;
     outSlot[6].iconKey = TEXT("ICON_COMMAND_CENTER");
-    outSlot[6].hotkey = 'A';
+    outSlot[6].hotkey = 'B';
     outSlot[6].clickable = true;
     outSlot[6].visible = true;
-    //7번 : CommandCenter 생성
+    //8번 : SupplyDepot 생성
     outSlot[7].commandID = eCommandID::SUPPLY_DEPOT;
     outSlot[7].iconKey = TEXT("ICON_SUPPLY_DEPOT");
-    outSlot[7].hotkey = 'S';
+    outSlot[7].hotkey = 'T';
     outSlot[7].clickable = true;
     outSlot[7].visible = true;
+    //9번 : Barracks 생성
+    outSlot[8].commandID = eCommandID::BARRACKS;
+    outSlot[8].iconKey = TEXT("ICON_BARRACKS");
+    outSlot[8].hotkey = 'G';
+    outSlot[8].clickable = true;
+    outSlot[8].visible = true;
 }

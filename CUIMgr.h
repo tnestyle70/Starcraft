@@ -24,6 +24,7 @@ namespace IconIndex
     //건물 아이콘
     const int COMMAND_CENTER = 22; //커맨드 센터
     const int SUPPLY_DEPOT = 23; //보급고
+    const int BARRACKS = 24; //배럭
 }
 
 
@@ -76,6 +77,6 @@ private:
 private:
     static const int ICON_WIDTH = 44;
     static const int ICON_HEIGHT = 44;
-    static const int SLOT_GAP_X = 8;
+    static const int SLOT_GAP_X = 11;
     static const int SLOT_GAP_Y = 6;
 };

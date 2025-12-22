@@ -55,7 +55,6 @@ int CUIMgr::Update()
             m_fFeedbackTimer = 0.f;
         }
     }
-
     return 0;
 }
 
@@ -128,10 +127,13 @@ void CUIMgr::RenderCommandSlots(HDC hDC, vector<CommandSlot>& slots, int baseX, 
         int iconIndex = GetIconIndex(slots[i].commandID);
         if (iconIndex < 0)
             continue;
-        //상태 결정
         eIconState state = eIconState::YELLOW;
-
-        if (!slots[i].clickable)
+        if (m_iActiveFeedbackSlot == i)
+        {
+            //상태 결정
+            state = eIconState::WHITE;
+        }
+        else if (!slots[i].clickable)
             state = eIconState::GRAY; //클릭 불가능 - 회색
         //자원 부족, 다른 조건 체크 추가
         int col = i % 3;
@@ -196,6 +198,8 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         return IconIndex::PATROL;
     case eCommandID::HOLD:
         return IconIndex::HOLD;
+    case eCommandID::RALLY:
+        return IconIndex::RALLY;
 
         // 유닛 생산
     case eCommandID::SCV:
@@ -205,6 +209,8 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         return IconIndex::COMMAND_CENTER;
     case eCommandID::SUPPLY_DEPOT:
         return IconIndex::SUPPLY_DEPOT;
+    case eCommandID::BARRACKS:
+        return IconIndex::BARRACKS;
         /*
     case eCommandID::MARIN:
         return IconIndex::MARIN;

@@ -21,6 +21,7 @@ enum class eCommandID
 	//건물 아이콘
 	COMMAND_CENTER = 22,
 	SUPPLY_DEPOT = 23,
+	BARRACKS = 24,
 	NONE = 100
 };
 

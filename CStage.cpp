@@ -141,6 +141,7 @@ void CStage::Render(HDC hDC)
 
 	// 3. UI ·»´õ (°¡Àå À§)
 	CUIMgr::Get_Instance()->Render(hDC);
+	CSelectionMgr::Get_Instance()->Render(hDC);
 }
 
 void CStage::Release()

@@ -130,18 +130,9 @@ void CCommandCenter::ConstructComplete()
 
 void CCommandCenter::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 {
-	outSlot.clear();
-	outSlot.resize(9);
-	//미리 값 채우기
-	for (int i = 0; i < 9; ++i)
-	{
-		outSlot[i].slotIndex = i;
-		outSlot[i].commandID = eCommandID::NONE;
-		outSlot[i].iconKey = TEXT("");
-		outSlot[i].hotkey = 0;
-		outSlot[i].clickable = false;
-		outSlot[i].visible = false;
-	}
+    // 1. 부모 클래스의 공통 슬롯을 먼저 가져오기
+    CBuilding::CommandCardSlot(outSlot);
+
 	//0번 슬롯 SCV 생산
 	outSlot[0].commandID = eCommandID::SCV;
 	outSlot[0].iconKey = TEXT("ICON_SCV");
@@ -149,11 +140,11 @@ void CCommandCenter::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 	outSlot[0].clickable = true;
 	outSlot[0].visible = true;
 	//8번 : Cancle(Queue 취소)
-	outSlot[7].commandID = eCommandID::CANCLE;
-	outSlot[7].iconKey = TEXT("ICON_CANCLE");
-	outSlot[7].hotkey = VK_ESCAPE;
-	outSlot[7].clickable = true;
-	outSlot[7].visible = true;
+	outSlot[8].commandID = eCommandID::CANCLE;
+	outSlot[8].iconKey = TEXT("ICON_CANCLE");
+	outSlot[8].hotkey = VK_ESCAPE;
+	outSlot[8].clickable = true;
+	outSlot[8].visible = true;
 }
 
 bool CCommandCenter::ExecuteCommand(eCommandID command, CommandContext& context)
@@ -195,22 +186,30 @@ bool CCommandCenter::ExecuteCommand(eCommandID command, CommandContext& context)
 
 void CCommandCenter::UpdateHotKeys()
 {
-	//S키를 눌렀을 경우 SCV 생산
-	if (!CInputMgr::Get_Instance()->KeyDown(S_KEY))
-		return;
-
+	//SCV 유닛 하나만 선택되었을 경우 실행
 	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
 	if (selected.size() != 1)
 		return;
-
-	CObj* pSelected = selected[0];
-	CCommandCenter* cc = dynamic_cast<CCommandCenter*>(pSelected);
-	if (!cc)
+	//선택된 객체가 this인지 확인
+	if (selected[0] != this)
 		return;
-	CommandContext context{};
-	cc->ExecuteCommand(eCommandID::SCV, context);
-	//UIMgr 쪽에 버튼 클릭 피드백 전달(0번 슬롯)
-	CUIMgr::Get_Instance()->SetButtonFeedback(0, true);
+	//슬롯 정보
+	vector<CommandSlot> slots;
+	this->CommandCardSlot(slots);
+	//각 슬롯의 단축키 확인
+	for (int i = 0; i < slots.size(); ++i)
+	{
+		if (!slots[i].visible || !slots[i].clickable)
+			continue;
+		//단축키가 눌렸는지 확인
+		if (CInputMgr::Get_Instance()->KeyDownVK(slots[i].hotkey))
+		{
+			CUIMgr::Get_Instance()->SetButtonFeedback(i, true);
+			//명령 실행
+			CommandContext context{};
+			this->ExecuteCommand(slots[i].commandID, context);
+		}
+	}
 }
 
 void CCommandCenter::UpdateProduction()

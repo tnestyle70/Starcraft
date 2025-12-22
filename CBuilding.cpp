@@ -3,6 +3,9 @@
 #include "CTimeMgr.h"
 #include "CTileMgr.h"
 #include "CScrollMgr.h"
+#include "CInputMgr.h"
+#include "CSelectionMgr.h"
+#include "CUIMgr.h"
 
 CBuilding::CBuilding() : m_bGhost(false), m_bComplete(false), m_bCanPlace(false),
 	m_iHP(0), m_iMaxHP(0), m_fConstructDuration(0.f), m_fConstructElapsed(0.f), m_iWidth(0), m_iHeight(0)
@@ -29,6 +32,8 @@ int CBuilding::Update()
 {
 	if (m_eState == eBuildingState::DESTROY)
 		return DEAD;
+	//핫키 업데이트
+	UpdateHotKeys();
 
 	if (m_eState == eBuildingState::DEPLOY)
 	{
@@ -93,6 +98,74 @@ void CBuilding::Render(HDC hdc)
 
 void CBuilding::Release()
 {
+}
+
+void CBuilding::CommandCardSlot(vector<CommandSlot>& outSlot)
+{
+	outSlot.clear();
+	outSlot.resize(9);
+	//미리 값 채우기
+	for (int i = 0; i < 9; ++i)
+	{
+		outSlot[i].slotIndex = i;
+		outSlot[i].commandID = eCommandID::NONE;
+		outSlot[i].iconKey = TEXT("");
+		outSlot[i].hotkey = 0;
+		outSlot[i].clickable = false;
+		outSlot[i].visible = false;
+	}
+	//3 * 3 기준
+	//6번 슬롯
+	outSlot[5].commandID = eCommandID::RALLY;
+	outSlot[5].iconKey = TEXT("ICON_RALLY");
+	outSlot[5].hotkey = 'R';
+	outSlot[5].clickable = true;
+	outSlot[5].visible = true;
+}
+
+void CBuilding::UpdateHotKeys()
+{
+	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+	//선택된 유닛이 없거나 CUnit 클래스가 아닐 경우 return
+	if (selected.size() != 1)
+		return;
+	if (selected[0] != this)
+		return;
+	//Commandable 확인
+	Commandable* command = dynamic_cast<Commandable*>(this);
+	if (!command)
+		return;
+	//슬롯 정보
+	vector<CommandSlot> slots;
+	command->CommandCardSlot(slots);
+
+	//각 슬롯의 단축키 확인
+	for (int i = 0; i < slots.size(); ++i)
+	{
+		if (!slots[i].visible || !slots[i].clickable)
+			continue;
+		//단축키가 눌렸는지 확인
+		if (CInputMgr::Get_Instance()->KeyDownVK(slots[i].hotkey))
+		{
+			CUIMgr::Get_Instance()->SetButtonFeedback(i, true);
+			//명령 실행
+			CommandContext context{};
+			command->ExecuteCommand(slots[i].commandID, context);
+			break;
+		}
+	}
+}
+
+bool CBuilding::ExecuteCommand(eCommandID command, CommandContext& context)
+{
+	switch (command)
+	{
+	case eCommandID::RALLY:
+		break;
+	default:
+		break;
+	}
+	return false;
 }
 
 void CBuilding::SetGhost(bool bGhost)
