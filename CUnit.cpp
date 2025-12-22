@@ -6,6 +6,8 @@
 #include "CInputMgr.h"
 #include "CUIMgr.h"
 #include "CBuilding.h"
+#include "CTileMgr.h"
+#include "CObjMgr.h"
 
 CUnit::CUnit() : m_fSpeed(0.f), m_bDead(false), m_iHP(0), m_iMaxHP(0),
 	m_bActiveOrder(false)
@@ -50,6 +52,17 @@ int CUnit::Update()
 	case eOrderType::MOVE_AND_BUILD:
 		finished = UpdateMove(order);
 		break;
+	case eOrderType::CONSTRUCTING:
+	{
+		m_eState = eUnitState::IDLE;
+		finished = false; //자동 완료 방지
+		//건물 완성 여부 확인
+		if (order.pBuilding && order.pBuilding->IsComplete())
+		{
+			finished = true;
+		}
+		break;
+	}
 	case eOrderType::STOP:
 		//바로 종료
 		finished = true;
@@ -66,6 +79,7 @@ int CUnit::Update()
 	}
 
 	__super::Update_Rect();
+
 	return 0;
 }
 
@@ -118,6 +132,48 @@ void CUnit::UpdateHotKeys()
 			break;
 		}
 	}
+}
+
+bool CUnit::StartBuild(Order& order)
+{
+	if (!order.pBuilding)
+		return false;
+	CBuilding* pBuilding = order.pBuilding;
+
+	//배치 가능 여부 재확인
+	if (!pBuilding->CanPlace(order.dst))
+	{
+		delete pBuilding;
+		order.pBuilding = nullptr;
+		return false;
+	}
+
+	//최종 위치 조정
+	int row, col;
+	if (pBuilding->CalcSizeTopLeft(order.dst, row, col))
+	{
+		Vec2 centerPos = CTileMgr::Get_Instance()->CellToWorldCenter(
+			row + pBuilding->GetHeight() * 0.5f,
+			col + pBuilding->GetWidth() * 0.5f);
+		pBuilding->Set_Pos(centerPos.fX, centerPos.fY);
+	}
+
+	//고스트 해제 + 리소스 차감 + 건설 시작
+	pBuilding->SetGhost(false);
+	//리소스 부족으로 실패
+	if (pBuilding->IsGhost())
+	{
+		delete pBuilding;
+		order.pBuilding = nullptr;
+		return false;
+	}
+	//타일 점유
+	pBuilding->AppplyOccupy();
+
+	//맵에 건설 중인 상태로 추가
+	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pBuilding);
+
+	return true;
 }
 
 void CUnit::CommandCardSlot(vector<CommandSlot>& outSlot)
@@ -191,15 +247,36 @@ void CUnit::CompleteOrder()
 	switch (orderFinished.eType)
 	{
 	case eOrderType::MOVE_AND_BUILD:
-		FinalizeBuild(orderFinished);
+		//이동 완료 -> 건설 시작(Constructing)
+		if (!StartBuild(orderFinished))
+		{
+			m_OrderQ.pop_front();
+			m_bActiveOrder = false;
+			return;
+		}
+		orderFinished.eType = eOrderType::CONSTRUCTING;
+		m_bActiveOrder = false;
+		return;
+	case eOrderType::CONSTRUCTING:
+		//건설 완료 검증
+		if (orderFinished.pBuilding && orderFinished.pBuilding->IsComplete())
+		{
+			//건설이 완료될 경우 오더 종료
+			orderFinished.pBuilding = nullptr;
+		}
+		else
+		{
+			return;
+		}
 		break;
 	}
-	//오더제거
+	//오더 제거 
 	m_OrderQ.pop_front();
 	m_bActiveOrder = false;
-	//오더가 없을 경우 IDLE
 	if (m_OrderQ.empty())
+	{
 		m_eState = eUnitState::IDLE;
+	}
 }
 
 void CUnit::ClearOrder()
@@ -255,6 +332,7 @@ void CUnit::StartOrder(Order& order)
 	switch (order.eType)
 	{
 	case eOrderType::MOVE:
+	case eOrderType::MOVE_AND_BUILD:
 	{
 		m_eState = eUnitState::MOVE;
 
@@ -297,8 +375,4 @@ RECT CUnit::GetWorldRect() const
 	rc.bottom = (LONG)(m_tInfo.fY + m_tInfo.fCY * 0.5f);
 
 	return rc;
-}
-
-void CUnit::FinalizeBuild(Order& order)
-{
 }

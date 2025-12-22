@@ -27,6 +27,4 @@ protected:
 private:
 	void UpdateProduction();
 	void ConstructComplete(eCommandID command);
-private:
-	std::deque<ProdJob> m_queue;
 };

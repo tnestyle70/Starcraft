@@ -224,6 +224,40 @@ void CSCV::UpdateBuilding()
     }
 }
 
+void CSCV::PlaceBuilding(const Vec2& worldPos)
+{
+    if (!m_pGhostBuilding)
+        return;
+    //배치 가능 여부 확인
+    if (!m_pGhostBuilding->CanPlace(worldPos))
+    {
+        CancelBuilding();
+        return;
+    }
+    //목적지에 도착을 했을 경우 건물 빌드하도록 설계
+    Vec2 start = Get_Pos();
+    //AStart를 통해 계산한 위치를 반환 받아서 CUnit 쪽에 넘겨주기 
+    Vec2 world = worldPos;
+    vector<Vec2> path = CNavMgr::Get_Instance()->RequestPathWorld(start, world);
+    Order order;
+    order.eType = eOrderType::MOVE_AND_BUILD;
+    order.dst = worldPos;
+    order.path = move(path);
+    order.pBuilding = m_pGhostBuilding;
+    order.iPathIndex = 0;
+
+    if (order.path.empty())
+    {
+        order.path.push_back(worldPos);
+    }
+    // 오더 큐에 추가
+    ClearOrder();  // 기존 오더 취소
+    PushOrder(order);
+    // Ghost 소유권 이전 완료
+    m_pGhostBuilding = nullptr;
+    m_bBuildingMode = false;
+}
+
 bool CSCV::ExecuteCommand(eCommandID command, CommandContext& context)
 {
     ResourceCost cost{};
@@ -328,62 +362,4 @@ void CSCV::CancelBuilding()
         m_pGhostBuilding = nullptr;
     }
     m_bBuildingMode = false;
-}
-
-void CSCV::PlaceBuilding(const Vec2& worldPos)
-{
-    if (!m_pGhostBuilding)
-        return;
-    //목적지에 도착을 했을 경우 건물 빌드하도록 설계
-    //해당 위치로 이동
-    Vec2 start = Get_Pos();
-    //AStart를 통해 계산한 위치를 반환 받아서 CUnit 쪽에 넘겨주기 
-    Vec2 world = worldPos;
-    vector<Vec2> path = CNavMgr::Get_Instance()->RequestPathWorld(start, world);
-    Order order;
-    order.eType = eOrderType::MOVE_AND_BUILD;
-    order.dst = worldPos;
-    order.path = move(path);
-    order.pBuilding = m_pGhostBuilding;
-    order.iPathIndex = 0;
-    if (order.path.empty())
-    {
-        order.path.push_back(worldPos);
-        order.iPathIndex = 0;
-    }
-    dynamic_cast<CUnit*>(this)->PushOrder(order);
-    //도착시에 건물 짓기
-    //소유권 order의 pBuilding에 넘기고 해제
-    m_pGhostBuilding = nullptr;
-    m_bBuildingMode = false;
-}
-
-void CSCV::FinalizeBuild(Order& order)
-{
-    if (!order.pBuilding)
-        return;
-    CBuilding* pBuilding = order.pBuilding;
-
-    pBuilding->SetGhost(false);
-    //고스트 모드 확인 
-    if (pBuilding->IsGhost())
-    {
-        delete pBuilding;
-        order.pBuilding = nullptr;
-        return;
-    }
-    //타일 점유
-    pBuilding->AppplyOccupy();
-    //최종 배치
-    int row, col;
-    if (pBuilding->CalcSizeTopLeft(order.dst, row, col))
-    {
-        Vec2 centerPos = CTileMgr::Get_Instance()->CellToWorldCenter(
-            row + pBuilding->GetHeight() * 0.5f,
-            col + pBuilding->GetWidth() * 0.5f);
-        pBuilding->Set_Pos(centerPos.fX, centerPos.fY);
-    }
-    CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pBuilding);
-    //소유권 이전(포인터 정리)
-    order.pBuilding = nullptr;
 }

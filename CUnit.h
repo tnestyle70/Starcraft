@@ -9,7 +9,7 @@ class CBuilding;
 enum class eUnitState {IDLE, MOVE, ATTACK, DIE};
 
 enum class eOrderType
-{MOVE, STOP, MOVE_AND_BUILD, ATTACK_MOVE, ATTACK_TARGET, HOLD};
+{MOVE, STOP, MOVE_AND_BUILD, CONSTRUCTING ,ATTACK_MOVE, ATTACK_TARGET, HOLD};
 
 struct Order
 {
@@ -35,7 +35,7 @@ public:
 	virtual void Release()		PURE;
 public: //Commandable의 커맨드 카드 슬롯 구현
 	virtual void UpdateHotKeys();
-	virtual void FinalizeBuild(Order& order);
+	virtual bool StartBuild(Order& order);
 	void CommandCardSlot(vector<CommandSlot>& outSlot);
 	bool ExecuteCommand(eCommandID command, CommandContext& context);
 	void PushOrder(const Order& order) {m_OrderQ.push_back(order);};

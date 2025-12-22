@@ -9,7 +9,7 @@
 #include "CBmpMgr.h"
 
 CBuilding::CBuilding() : m_bGhost(false), m_bComplete(false), m_bCanPlace(false),
-	m_iHP(0), m_iMaxHP(0), m_fConstructDuration(0.f), m_fConstructElapsed(0.f), m_iWidth(0), m_iHeight(0)
+	m_iHP(0), m_iMaxHP(0), m_fConstructDuration(3.f), m_fConstructRemain(0.f), m_iWidth(0), m_iHeight(0)
 {
 	ZeroMemory(&m_eType, sizeof(eBuildingType));
 	ZeroMemory(&m_eState, sizeof(eBuildingState));
@@ -173,19 +173,22 @@ bool CBuilding::ExecuteCommand(eCommandID command, CommandContext& context)
 
 void CBuilding::UpdateConstruct()
 {
-	//if (!m_pBuilder) return;
+	if (!m_pBuilder)
+		return;
 
 	float fDeltaTime = CTimeMgr::Get_Instance()->GetDT();
-	m_fConstructElapsed += fDeltaTime;
 
-	float time = (m_fConstructDuration > 0.f) ?
-		(m_fConstructElapsed / m_fConstructDuration) : 1.f;
-	if (time > 1.f) time = 1.f;
+	m_fConstructRemain -= fDeltaTime;
+	if (m_fConstructRemain < 0.f)
+		m_fConstructRemain = 0.f;
+	//전체 진행률 계산
+	float progress = 1.f - (m_fConstructRemain / m_fConstructDuration);
+	if (progress > 1.f) 
+		progress = 1.f;
 
-	m_iHP = (int)(m_iMaxHP * time);
-	if (m_iHP < 1) m_iHP = 1;
+	m_iHP = max(1, (int)(m_iMaxHP * progress));
 
-	if (time >= 1.f)
+	if (m_fConstructRemain <= 0)
 	{
 		m_iHP = m_iMaxHP;
 		m_bComplete = true;
@@ -193,7 +196,6 @@ void CBuilding::UpdateConstruct()
 		ConstructComplete();
 	}
 }
-
 
 void CBuilding::SetGhost(bool bGhost)
 {
@@ -206,17 +208,15 @@ void CBuilding::SetGhost(bool bGhost)
 		return;
 	}
 	//bDeploy 상태가 아닐 경우 배치 확정 -> 건설 시작 시도
-	if (m_eState != eBuildingState::DEPLOY)
+	if (m_eState != eBuildingState::DEPLOY || !m_bGhost)
 		return;
-	if (!m_bGhost)
-		return;
-	
+	//비용 지불할 수 없으면 return
 	if (!CResourceMgr::Get_Instance()->TrySpend(m_tCost, false))
 		return;
 
 	m_bGhost = false;
 	m_eState = eBuildingState::CONSTRUCT;
-	m_fConstructElapsed = 0.f;
+	m_fConstructRemain = m_fConstructDuration;
 	m_iHP = 1;
 }
 
@@ -292,18 +292,25 @@ void CBuilding::RenderProgressbar(HDC hDC)
 
 	int scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
 	int scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
-	//진행 바 위치
-	int barX = 300.f;
-	int barY = 400.f;
+
+	const int BAR_WIDTH = 108;
+	const int BAR_HEIGHT = 9;
+
+	const int PANEL_HEIGHT = 233;
+	const int PANEL_TOP = WINCY - PANEL_HEIGHT;
+
+	int barX = (WINCX - BAR_WIDTH) / 2;  // Centers it
+	int barY = PANEL_TOP + 15;            // 15px from top of panel
+
 	HDC hEmptyBarDC = CBmpMgr::Get_Instance()->Find_Image(L"PROGRESS_EMPTY");
 	if (hEmptyBarDC)
 	{
 		GdiTransparentBlt(hDC,
 			barX, barY,
-			108, 9,
+			BAR_WIDTH, BAR_HEIGHT,
 			hEmptyBarDC,
 			0, 0,
-			108, 9,
+			BAR_WIDTH, BAR_HEIGHT,
 			RGB(0, 255, 0));
 	}
 
@@ -334,5 +341,53 @@ void CBuilding::RenderProgressbar(HDC hDC)
 				RECT_WIDTH, RECT_HEIGHT,
 				RGB(0, 255, 0));
 		}
+	}
+	RenderProductionText(hDC, barX, barY);
+}
+
+void CBuilding::RenderProductionText(HDC hDC, int barX, int barY)
+{
+	if (m_queue.empty())
+		return;
+	const TCHAR* unitName = L"";
+	switch (m_queue.front().command)
+	{
+	case eCommandID::SCV:
+		unitName = L"Training SCV";
+		break;
+	case eCommandID::MARINE:
+		unitName = L"Training Marine";
+		break;
+	case eCommandID::MEDIC:
+		unitName = L"Training Medic";
+		break;
+	default:
+		unitName = L"Producing";
+		break;
+	}
+	// Set text properties
+	SetBkMode(hDC, TRANSPARENT);
+	SetTextColor(hDC, RGB(255, 255, 255));
+
+	// Draw text above progress bar
+	RECT textRect;
+	textRect.left = barX;
+	textRect.top = barY - 18;
+	textRect.right = barX + 108;
+	textRect.bottom = barY - 2;
+
+	DrawText(hDC, unitName, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+	// 큐 정보
+	if (m_queue.size() > 1)
+	{
+		wchar_t queueText[32];
+		swprintf_s(queueText, L"(+%d)", (int)m_queue.size() - 1);
+
+		textRect.top = barY + 9 + 2;
+		textRect.bottom = textRect.top + 20;
+
+		SetTextColor(hDC, RGB(200, 200, 200));
+		DrawText(hDC, queueText, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 	}
 }

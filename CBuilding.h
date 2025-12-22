@@ -40,6 +40,7 @@ protected:
 	virtual void ConstructComplete() PURE;
 	virtual void Destroy() PURE;
 	void RenderProgressbar(HDC hDC);
+	void RenderProductionText(HDC hDC, int barX, int barY);
 public:
 	virtual void CommandCardSlot(vector<CommandSlot>& outSlot);
 	virtual void UpdateHotKeys();
@@ -88,8 +89,9 @@ protected:
 	ResourceCost m_tCost; //미네랄, 가스 정보
 	int m_iHP;
 	int m_iMaxHP;
+	//건설 남은 시간
 	float m_fConstructDuration;
-	float m_fConstructElapsed;
+	float m_fConstructRemain;
 	//크기
 	int m_iWidth;
 	int m_iHeight;

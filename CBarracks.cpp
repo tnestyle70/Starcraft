@@ -99,6 +99,8 @@ void CBarracks::Render(HDC hDC)
 		(int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
 		(int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
 		RGB(0, 255, 0));
+
+	RenderProgressbar(hDC);
 }
 
 void CBarracks::Release()
@@ -246,11 +248,11 @@ void CBarracks::UpdateProduction()
 	{
 		eCommandID done = m_queue.front().command;
 		m_queue.pop_front();
-		ConstructComplete(done);
+		ProductionComplete(done);
 	}
 }
 
-void CBarracks::ConstructComplete(eCommandID command)
+void CBarracks::ProductionComplete(eCommandID command)
 {
 	if (command == eCommandID::MARINE)
 	{
@@ -259,7 +261,7 @@ void CBarracks::ConstructComplete(eCommandID command)
 		CObj* pMarine = CAbstractFactory<CMarine>::Create(pos.fX, pos.fY);
 		CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pMarine);
 	}
-	if (command == eCommandID::MEDIC)
+	else if (command == eCommandID::MEDIC)
 	{
 		Vec2 pos = Get_Pos();
 		pos.fX += 100.f;

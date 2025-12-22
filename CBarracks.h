@@ -26,7 +26,5 @@ protected:
 	void Destroy() override;
 private:
 	void UpdateProduction();
-	void ConstructComplete(eCommandID command);
-private:
-	std::deque<ProdJob> m_queue;
+	void ProductionComplete(eCommandID command);
 };

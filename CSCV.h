@@ -23,8 +23,6 @@ private:
 	void StartBuildMode(eBuildingType buildingType);
 	void CancelBuilding();
 	void PlaceBuilding(const Vec2& worldPos);
-	//CUnit쪽 깡통 가상 함수 오버라이딩
-	virtual void FinalizeBuild(Order& order) override;
 private:
 	CBuilding* m_pGhostBuilding;
 	bool m_bBuildingMode;
