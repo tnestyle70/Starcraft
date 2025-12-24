@@ -1,198 +1,29 @@
-﻿  CBarracks.cpp
+﻿  CMainUI.cpp
 C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBarracks.cpp')
+  (compiling source file '/CMainUI.cpp')
   
 C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBarracks.cpp')
+  (compiling source file '/CMainUI.cpp')
   
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CBarracks.cpp(244,11): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBarracks.cpp')
+C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CMainUI.cpp(417,28): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  (compiling source file '/CMainUI.cpp')
   
-  CBattleCruiser.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBattleCruiser.cpp')
+C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CMainUI.cpp(503,22): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  (compiling source file '/CMainUI.cpp')
   
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBattleCruiser.cpp')
+C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CMainUI.cpp(504,22): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  (compiling source file '/CMainUI.cpp')
   
-  CBuilding.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
+C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CMainUI.cpp(519,22): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  (compiling source file '/CMainUI.cpp')
   
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
+C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CMainUI.cpp(520,22): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  (compiling source file '/CMainUI.cpp')
   
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CBuilding.cpp(67,12): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
+C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CMainUI.cpp(544,18): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  (compiling source file '/CMainUI.cpp')
   
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CBuilding.cpp(68,12): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
+C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CMainUI.cpp(545,19): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  (compiling source file '/CMainUI.cpp')
   
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CBuilding.cpp(95,4): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CBuilding.cpp(94,4): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CBuilding.cpp(179,19): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CBuilding.cpp(293,11): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CBuilding.cpp(294,11): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CBuilding.cpp')
-  
-  CCommandCenter.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CCommandCenter.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CCommandCenter.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CCommandCenter.cpp(226,11): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CCommandCenter.cpp')
-  
-  CCommandMgr.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CCommandMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CCommandMgr.cpp')
-  
-  CFactory.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CFactory.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CFactory.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CFactory.cpp(224,11): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CFactory.cpp')
-  
-  CMarine.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CMarine.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CMarine.cpp')
-  
-  CMedic.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CMedic.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CMedic.cpp')
-  
-  CMenu.cpp
-  CObjMgr.cpp
-  CSCV.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CSCV.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CSCV.cpp')
-  
-  CSelectionMgr.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CSelectionMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CSelectionMgr.cpp')
-  
-  CStage.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CStage.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CStage.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CStage.cpp(114,12): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CStage.cpp')
-  
-  CStarport.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CStarport.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CStarport.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CStarport.cpp(224,11): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CStarport.cpp')
-  
-  CSupplyDepot.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CSupplyDepot.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CSupplyDepot.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CSupplyDepot.cpp(224,11): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CSupplyDepot.cpp')
-  
-  CTank.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTank.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTank.cpp')
-  
-  CTileMgr.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(113,15): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(114,15): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(127,16): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(128,16): warning C4244: '초기화 중': 'double'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(131,10): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(132,10): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(156,13): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(159,12): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(165,13): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CTileMgr.cpp(168,12): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CTileMgr.cpp')
-  
-  CUnit.cpp
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(21,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CUnit.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CInputMgr.h(22,38): warning C4244: 'return': 'LONG'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CUnit.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CUnit.cpp(159,8): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CUnit.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CUnit.cpp(158,8): warning C4244: '인수': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CUnit.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CUnit.cpp(313,11): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CUnit.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CUnit.cpp(350,12): warning C4244: '초기화 중': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CUnit.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CUnit.cpp(352,13): warning C4305: '초기화 중': 'double'에서 'float'(으)로 잘립니다.
-  (compiling source file '/CUnit.cpp')
-  
-C:\Users\tnest\source\repos\스타크래프트\Starcraft\Starcraft\CUnit.cpp(353,44): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  (compiling source file '/CUnit.cpp')
-  
-  Starcraft.cpp
-  코드를 생성하고 있습니다...
   Starcraft.vcxproj -> C:\Users\tnest\source\repos\스타크래프트\Starcraft\x64\Debug\Starcraft.exe

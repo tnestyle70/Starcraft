@@ -54,9 +54,15 @@ void CUIMgr::Initialize()
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/HpRect.bmp", L"HP_RECT");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/ProgressEmpty.bmp", L"PROGRESS_EMPTY");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/ProgressFull.bmp", L"PROGRESS_FULL");
+    //Wire 이미지
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/Wire/BigWire.bmp", L"WIRE");
+    //유닛 Spawn 이미지(SCV, 마린, 파이어벳, 고스트, 벌쳐, 시즈탱크, 골리앗)
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/UnitSpawn_Icon/SpawnIcon.bmp", L"SPAWN_ICON");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/MiniMap.bmp", L"MINIMAP");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Map/MiniMapFrame.bmp", L"MINIMAP_FRAME");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/Icon/ETC.bmp", L"ETC");
     //CMainUI 생성 및 초기화 (여기서 알파 비트맵 생성됨)
-    m_pMainUI = new CMainUI;
-    m_pMainUI->Initialize();
+    CMainUI::Get_Instance()->Initialize();
 }
 
 int CUIMgr::Update()
@@ -77,19 +83,13 @@ int CUIMgr::Update()
 
 void CUIMgr::Release()
 {
-    if (m_pMainUI)
-    {
-        m_pMainUI->Release();
-        delete m_pMainUI;
-        m_pMainUI = nullptr;
-    }
+    CMainUI::Get_Instance()->Destroy_Instance();
 }
 
 void CUIMgr::Render(HDC hDC)
 {
     //1. 배경 렌더링
-    if (m_pMainUI)
-        m_pMainUI->Render(hDC);
+    CMainUI::Get_Instance()->Render(hDC);
     //선택된 오브젝트 CommandSlot 렌더링
     auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
     
@@ -225,6 +225,8 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         return IconIndex::MARINE;
     case eCommandID::MEDIC:
         return IconIndex::MEDIC;
+    case eCommandID::VULTURE:
+        return IconIndex::VULTURE;
     case eCommandID::TANK:
         return IconIndex::TANK;
     case eCommandID::BATTLECRUISER:
@@ -236,9 +238,11 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         return IconIndex::SUPPLY_DEPOT;
     case eCommandID::BARRACKS:
         return IconIndex::BARRACKS;
+    case eCommandID::FACTORY:
+        return IconIndex::FACTORY;
+    case eCommandID::STARPORT:
+        return IconIndex::STARPORT;
         /*
-    case eCommandID::MARIN:
-        return IconIndex::MARIN;
     case eCommandID::FIREBAT:
         return IconIndex::FIREBAT;
     case eCommandID::MEDIC:

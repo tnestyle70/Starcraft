@@ -21,6 +21,12 @@ enum OBJID {OBJ_UI, OBJ_UNIT, OBJ_BUILDING ,OBJ_END};
 
 enum RENDERID{RENDER_BG, RENDER_WORLD, RENDER_UI, RENDER_UI_TOP, RENDER_END};
 
+enum class eBuildingType
+{
+	COMMAND_CENTER, BARRACKS, FACTORY, STARPORT, SUPPLY_DEPOT
+};
+
+
 namespace AtlasKey
 {
 	inline constexpr const wchar_t* MENU = L"UI_MENU";

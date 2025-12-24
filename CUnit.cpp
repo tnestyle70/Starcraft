@@ -54,12 +54,12 @@ int CUnit::Update()
 		break;
 	case eOrderType::CONSTRUCTING:
 	{
-		m_eState = eUnitState::IDLE;
-		finished = false; //자동 완료 방지
-		//건물 완성 여부 확인
+		m_eState = eUnitState::CONSTRUCTING;	
+		finished = false;
 		if (order.pBuilding && order.pBuilding->IsComplete())
 		{
 			finished = true;
+			m_eState = eUnitState::IDLE;  
 		}
 		break;
 	}
@@ -72,19 +72,20 @@ int CUnit::Update()
 		finished = true;
 		break;
 	}
-
 	if (finished)
 	{
 		CompleteOrder();
 	}
-
 	__super::Update_Rect();
-
 	return 0;
 }
 
 void CUnit::UpdateHotKeys()
 {
+	// CONSTRUCTING 상태에서는 일반 커맨드 사용 불가
+	if (m_eState == eUnitState::CONSTRUCTING)
+		return;
+
 	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
 
 	if (selected.empty())
@@ -103,7 +104,6 @@ void CUnit::UpdateHotKeys()
 		}
 		return;
 	}
-
 	//선택된 유닛이 없거나 CUnit 클래스가 아닐 경우 return
 	if (selected.size() != 1)
 		return;
@@ -132,109 +132,6 @@ void CUnit::UpdateHotKeys()
 			break;
 		}
 	}
-}
-
-bool CUnit::StartBuild(Order& order)
-{
-	if (!order.pBuilding)
-		return false;
-	CBuilding* pBuilding = order.pBuilding;
-
-	//배치 가능 여부 재확인
-	if (!pBuilding->CanPlace(order.dst))
-	{
-		delete pBuilding;
-		order.pBuilding = nullptr;
-		return false;
-	}
-
-	//최종 위치 조정
-	int row, col;
-	if (pBuilding->CalcSizeTopLeft(order.dst, row, col))
-	{
-		Vec2 centerPos = CTileMgr::Get_Instance()->CellToWorldCenter(
-			row + pBuilding->GetHeight() * 0.5f,
-			col + pBuilding->GetWidth() * 0.5f);
-		pBuilding->Set_Pos(centerPos.fX, centerPos.fY);
-	}
-
-	//고스트 해제 + 리소스 차감 + 건설 시작
-	pBuilding->SetGhost(false);
-	//리소스 부족으로 실패
-	if (pBuilding->IsGhost())
-	{
-		delete pBuilding;
-		order.pBuilding = nullptr;
-		return false;
-	}
-	//타일 점유
-	pBuilding->AppplyOccupy();
-
-	//맵에 건설 중인 상태로 추가
-	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pBuilding);
-
-	return true;
-}
-
-void CUnit::CommandCardSlot(vector<CommandSlot>& outSlot)
-{
-	outSlot.clear();
-	outSlot.resize(9);
-	//미리 값 채우기
-	for (int i = 0; i < 9; ++i)
-	{
-		outSlot[i].slotIndex = i;
-		outSlot[i].commandID = eCommandID::NONE;
-		outSlot[i].iconKey = TEXT("");
-		outSlot[i].hotkey = 0;
-		outSlot[i].clickable = false;
-		outSlot[i].visible = false;
-	}
-	//3 * 3 기준
-	//0번 슬롯
-	outSlot[0].commandID = eCommandID::MOVE;
-	outSlot[0].iconKey = TEXT("ICON_MOVE");
-	outSlot[0].hotkey = 'M';
-	outSlot[0].clickable = true;
-	outSlot[0].visible = true;
-	//1번 슬롯
-	outSlot[1].commandID = eCommandID::STOP;
-	outSlot[1].iconKey = TEXT("ICON_STOP");
-	outSlot[1].hotkey = 'S';
-	outSlot[1].clickable = true;
-	outSlot[1].visible = true;
-	//2번 슬롯
-	outSlot[2].commandID = eCommandID::HOLD;
-	outSlot[2].iconKey = TEXT("ICON_HOLD");
-	outSlot[2].hotkey = 'H';
-	outSlot[2].clickable = true;
-	outSlot[2].visible = true;
-	//3번 슬롯
-	outSlot[3].commandID = eCommandID::PATROL;
-	outSlot[3].iconKey = TEXT("ICON_PATROL");
-	outSlot[3].hotkey = 'P';
-	outSlot[3].clickable = true;
-	outSlot[3].visible = true;
-	//4번 슬롯
-	outSlot[4].commandID = eCommandID::ATTACK;
-	outSlot[4].iconKey = TEXT("ICON_ATTACK");
-	outSlot[4].hotkey = 'A';
-	outSlot[4].clickable = true;
-	outSlot[4].visible = true;
-}
-
-bool CUnit::ExecuteCommand(eCommandID command, CommandContext& context)
-{
-	switch (command)
-	{
-	case eCommandID::STOP:
-		CompleteOrder();
-		break;
-	default:
-		break;
-	}
-
-	return false;
 }
 
 void CUnit::CompleteOrder()
@@ -277,6 +174,38 @@ void CUnit::CompleteOrder()
 	{
 		m_eState = eUnitState::IDLE;
 	}
+}
+
+bool CUnit::StartBuild(Order& order)
+{
+	if (!order.pBuilding)
+		return false;
+
+	CBuilding* pBuilding = order.pBuilding;
+	//건물에게 건설 시작 요청(건물이 알아서 설계하도록 한다.)
+	if (!pBuilding->StartConstruct(order.dst))
+	{
+		delete pBuilding;
+		order.pBuilding = nullptr;
+		return false;
+	}
+	//건설 중인 상태 -> 애니메이션으로 상태 나누기!!!!!!!!!!
+	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pBuilding);
+	return true;
+}
+
+bool CUnit::ExecuteCommand(eCommandID command, CommandContext& context)
+{
+	switch (command)
+	{
+	case eCommandID::STOP:
+		CompleteOrder();
+		break;
+	default:
+		break;
+	}
+
+	return false;
 }
 
 void CUnit::ClearOrder()
@@ -375,4 +304,51 @@ RECT CUnit::GetWorldRect() const
 	rc.bottom = (LONG)(m_tInfo.fY + m_tInfo.fCY * 0.5f);
 
 	return rc;
+}
+
+void CUnit::CommandCardSlot(vector<CommandSlot>& outSlot)
+{
+	outSlot.clear();
+	outSlot.resize(9);
+	//미리 값 채우기
+	for (int i = 0; i < 9; ++i)
+	{
+		outSlot[i].slotIndex = i;
+		outSlot[i].commandID = eCommandID::NONE;
+		outSlot[i].iconKey = TEXT("");
+		outSlot[i].hotkey = 0;
+		outSlot[i].clickable = false;
+		outSlot[i].visible = false;
+	}
+	//3 * 3 기준
+	//0번 슬롯
+	outSlot[0].commandID = eCommandID::MOVE;
+	outSlot[0].iconKey = TEXT("ICON_MOVE");
+	outSlot[0].hotkey = 'M';
+	outSlot[0].clickable = true;
+	outSlot[0].visible = true;
+	//1번 슬롯
+	outSlot[1].commandID = eCommandID::STOP;
+	outSlot[1].iconKey = TEXT("ICON_STOP");
+	outSlot[1].hotkey = 'S';
+	outSlot[1].clickable = true;
+	outSlot[1].visible = true;
+	//2번 슬롯
+	outSlot[2].commandID = eCommandID::HOLD;
+	outSlot[2].iconKey = TEXT("ICON_HOLD");
+	outSlot[2].hotkey = 'H';
+	outSlot[2].clickable = true;
+	outSlot[2].visible = true;
+	//3번 슬롯
+	outSlot[3].commandID = eCommandID::PATROL;
+	outSlot[3].iconKey = TEXT("ICON_PATROL");
+	outSlot[3].hotkey = 'P';
+	outSlot[3].clickable = true;
+	outSlot[3].visible = true;
+	//4번 슬롯
+	outSlot[4].commandID = eCommandID::ATTACK;
+	outSlot[4].iconKey = TEXT("ICON_ATTACK");
+	outSlot[4].hotkey = 'A';
+	outSlot[4].clickable = true;
+	outSlot[4].visible = true;
 }

@@ -172,6 +172,7 @@
     <ClInclude Include="CTimeMgr.h" />
     <ClInclude Include="CUIMgr.h" />
     <ClInclude Include="CMarine.h" />
+    <ClInclude Include="CVulture.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -216,6 +217,7 @@
     <ClCompile Include="CUIMgr.cpp" />
     <ClCompile Include="CUnit.cpp" />
     <ClCompile Include="CMarine.cpp" />
+    <ClCompile Include="CVulture.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

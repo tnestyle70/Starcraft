@@ -22,6 +22,7 @@ private:
 public:
 	void BeginPlaceBuilding(eBuildingType type, CUnit* pBuilder);
 	void CancleBuilding();
+	bool IsPlacing();
 	void Update();
 	void Render(HDC hDC);
 public:

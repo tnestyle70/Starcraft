@@ -5,6 +5,7 @@
 #include "CBarracks.h"
 #include "CFactory.h"
 #include "CStarport.h"
+#include "CSupplyDepot.h"
 
 struct CBuildingFactory
 {
@@ -16,8 +17,7 @@ struct CBuildingFactory
 		case eBuildingType::COMMAND_CENTER:
 			pBuilding = new CCommandCenter;
 			break;
-			/*
-		case eBuildingType::BARRACK:
+		case eBuildingType::BARRACKS:
 			pBuilding = new CBarracks;
 			break;
 		case eBuildingType::FACTORY:
@@ -26,12 +26,15 @@ struct CBuildingFactory
 		case eBuildingType::STARPORT:
 			pBuilding = new CStarport;
 			break;
-			*/
+		case eBuildingType::SUPPLY_DEPOT:
+			pBuilding = new CSupplyDepot;
+			break;
 		default:
 			break;
 		}
 		if (!pBuilding) return nullptr;
 		pBuilding->Initialize();
+		pBuilding->SetBuildingData();
 		return pBuilding;
 	}
 };

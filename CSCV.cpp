@@ -14,8 +14,9 @@
 #include "CTileMgr.h"
 #include "CObjMgr.h"
 #include "CNavMgr.h"
+#include "CCommandMgr.h"
 
-CSCV::CSCV() : m_pGhostBuilding(nullptr), m_bBuildingMode(false)
+CSCV::CSCV() 
 {
 }
 
@@ -50,10 +51,14 @@ int CSCV::Update()
     if (iResult == DEAD)
         return DEAD;
 
-    //핫키 업데이트
-    UpdateHotKeys();
-    //건물 모드 업데이트
-    UpdateBuilding();
+    //CONSTRUCTING 상태면 애니메이션만 처리하고 끝
+    if (m_eState == eUnitState::CONSTRUCTING)
+    {
+        // 건설 중 애니메이션 (예: 망치질 모션)
+        m_tFrame.iStart = 0;  // 또는 건설 전용 프레임
+        __super::Update_Rect();
+        return NOEVENT;
+    }
 
     DWORD now = GetTickCount();
 
@@ -142,23 +147,15 @@ void CSCV::Render(HDC hDC)
         (int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
         (int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
         RGB(0, 255, 0));
-
-    if (m_pGhostBuilding && m_bBuildingMode)
-        m_pGhostBuilding->Render(hDC);
 }
 
 void CSCV::Release()
 {
-    //고스트 건물 해제 
-    if (m_pGhostBuilding)
-    {
-        delete m_pGhostBuilding;
-        m_pGhostBuilding = nullptr;
-    }
 }
 
 void CSCV::UpdateHotKeys()
 {
+    CUnit::UpdateHotKeys();
     //SCV 유닛 하나만 선택되었을 경우 실행
     auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
     if (selected.size() != 1)
@@ -166,6 +163,10 @@ void CSCV::UpdateHotKeys()
     //선택된 객체가 this인지 확인
     if (selected[0] != this)
         return;
+    //건설 중이면 키 입력 안 먹게
+    if (m_eState == eUnitState::CONSTRUCTING)
+        return;
+
     //슬롯 정보
     vector<CommandSlot> slots;
     this->CommandCardSlot(slots);
@@ -185,98 +186,30 @@ void CSCV::UpdateHotKeys()
     }
 }
 
-void CSCV::UpdateBuilding()
-{
-    //건설 모드가 아니면 리턴
-    if (!m_bBuildingMode || !m_pGhostBuilding)
-        return;
-    //마우스 월드 좌표
-    Vec2 worldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
-    //고스트 건물 위치 업데이트
-    m_pGhostBuilding->Set_Pos(worldMouse.fX, worldMouse.fY);
-    //타일 좌표로 변환
-    int row, col;
-    if (m_pGhostBuilding->CalcSizeTopLeft(worldMouse, row, col))
-    {
-        m_pGhostBuilding->SetPlace(row, col);
-    }
-    //고스트 건물 업데이트(배치 가능 여부 체크)
-    m_pGhostBuilding->Update();
-    //ESC키, 우클릭으로 건설 취소
-    if (CInputMgr::Get_Instance()->KeyDownVK(VK_ESCAPE))
-    {
-        CancelBuilding();
-        return;
-    }
-    if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE))
-    {
-        CancelBuilding();
-        return;
-    }
-    //좌클릭 건물 배치
-    if (CInputMgr::Get_Instance()->KeyDown(LEFT_MOUSE))
-    {
-        if (m_pGhostBuilding->CanPlace(worldMouse))
-        {
-            //SCV 이동 로직 수행하고 PlaceBuilding 진행
-            PlaceBuilding(worldMouse);
-        }
-    }
-}
-
-void CSCV::PlaceBuilding(const Vec2& worldPos)
-{
-    if (!m_pGhostBuilding)
-        return;
-    //배치 가능 여부 확인
-    if (!m_pGhostBuilding->CanPlace(worldPos))
-    {
-        CancelBuilding();
-        return;
-    }
-    //목적지에 도착을 했을 경우 건물 빌드하도록 설계
-    Vec2 start = Get_Pos();
-    //AStart를 통해 계산한 위치를 반환 받아서 CUnit 쪽에 넘겨주기 
-    Vec2 world = worldPos;
-    vector<Vec2> path = CNavMgr::Get_Instance()->RequestPathWorld(start, world);
-    Order order;
-    order.eType = eOrderType::MOVE_AND_BUILD;
-    order.dst = worldPos;
-    order.path = move(path);
-    order.pBuilding = m_pGhostBuilding;
-    order.iPathIndex = 0;
-
-    if (order.path.empty())
-    {
-        order.path.push_back(worldPos);
-    }
-    // 오더 큐에 추가
-    ClearOrder();  // 기존 오더 취소
-    PushOrder(order);
-    // Ghost 소유권 이전 완료
-    m_pGhostBuilding = nullptr;
-    m_bBuildingMode = false;
-}
-
 bool CSCV::ExecuteCommand(eCommandID command, CommandContext& context)
 {
     ResourceCost cost{};
+    //먼저 부모 명령 실행
+    if (CUnit::ExecuteCommand(command, context))
+        return true;
 
+    // CCommandMgr로 위임, 부모 명령 실행 이후 진행
     switch (command)
     {
     case eCommandID::COMMAND_CENTER:
-        //커맨드 센터 빌딩 시작
-        StartBuildMode(eBuildingType::COMMAND_CENTER);
-        break;
-    case eCommandID::SUPPLY_DEPOT:
-        //보급고 빌딩 시작
-        StartBuildMode(eBuildingType::SUPPLY_DEPOT);
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::COMMAND_CENTER, this);
         break;
     case eCommandID::BARRACKS:
-        //배럭 빌딩 시작
-        StartBuildMode(eBuildingType::BARRACK);
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::BARRACKS, this);
         break;
-    default:
+    case eCommandID::FACTORY:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::FACTORY, this);
+        break;
+    case eCommandID::STARPORT:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::STARPORT, this);
+        break;
+    case eCommandID::SUPPLY_DEPOT:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::SUPPLY_DEPOT, this);
         break;
     }
 
@@ -287,9 +220,18 @@ void CSCV::CommandCardSlot(vector<CommandSlot>& outSlot)
 {
     // 1. 부모 클래스의 공통 슬롯을 먼저 가져오기
     CUnit::CommandCardSlot(outSlot);
-    //건설 모드일 경우 커맨드 카드 표시X
-    if (m_bBuildingMode)
+    //CONSTRUCTING 중에는 건설 슬롯 안 보이게
+    if (m_eState == eUnitState::CONSTRUCTING)
         return;
+    //건설 모드 체크 CommandMgr로 변경
+    if (CCommandMgr::Get_Instance()->IsPlacing())
+        return;
+    //6번 : Factory 생성
+    outSlot[5].commandID = eCommandID::FACTORY;
+    outSlot[5].iconKey = TEXT("ICON_COMMAND_CENTER");
+    outSlot[5].hotkey = 'Y';
+    outSlot[5].clickable = true;
+    outSlot[5].visible = true;
     //7번 : CommandCenter 생성
     outSlot[6].commandID = eCommandID::COMMAND_CENTER;
     outSlot[6].iconKey = TEXT("ICON_COMMAND_CENTER");
@@ -310,56 +252,5 @@ void CSCV::CommandCardSlot(vector<CommandSlot>& outSlot)
     outSlot[8].visible = true;
 }
 
-void CSCV::StartBuildMode(eBuildingType buildingType)
-{
-    //이미 건설 모드일 경우 취소
-    if (m_pGhostBuilding)
-        return;
-    //건물 타입에 따른 고스트 건물 생성(알파 비트맵 마스크 씌우기)
-    CBuilding* pBuilding = nullptr;
-    switch (buildingType)
-    {
-    case eBuildingType::COMMAND_CENTER:
-        pBuilding = new CCommandCenter();
-        break;
-    case eBuildingType::BARRACK:
-        pBuilding = new CBarracks();
-        break;
-    case eBuildingType::FACTORY:
-        pBuilding = new CFactory();
-        break;
-    case eBuildingType::STARPORT:
-        pBuilding = new CStarport();
-        break;
-    case eBuildingType::SUPPLY_DEPOT:
-        pBuilding = new CSupplyDepot();
-        break;
-    default:
-        break;
-    }
-    if (!pBuilding)
-        return;
-    //건물 초기화
-    pBuilding->Initialize();
-    //고스트 모드로 설정
-    pBuilding->SetGhost(true);
-    //빌더 설정
-    pBuilding->SetBuilder(this);
-    //마우스 위치로 이동
-    Vec2 worldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
-    pBuilding->Set_Pos(worldMouse.fX, worldMouse.fY);
-    //고스트 건물 설정
-    m_pGhostBuilding = pBuilding;
-    m_bBuildingMode = true;
-}
 
-void CSCV::CancelBuilding()
-{
-    //고스트 건물 삭제
-    if (m_pGhostBuilding)
-    {
-        delete m_pGhostBuilding;
-        m_pGhostBuilding = nullptr;
-    }
-    m_bBuildingMode = false;
-}
+

@@ -33,15 +33,28 @@ void CStarport::Initialize()
 	m_tFrame.iEnd = 0;
 }
 
+void CStarport::SetBuildingData()
+{
+	m_eType = eBuildingType::STARPORT;
+	//비용, 스탯
+	m_tCost.mineral = 100;
+	m_tCost.gas = 0;
+	m_tCost.supply = 0;
+	m_iMaxHP = 1400;
+	m_fConstructDuration = 2.f;
+	//타일 단위 크기
+	m_iHeight = 4;
+	m_iWidth = 4;
+}
+
 int CStarport::Update()
 {
 	int ret = CBuilding::Update();
 
-	//if (m_eState == eBuildingState::COMPLETE)
-	//{
-	//	UpdateProduction();
-	//}
-	UpdateProduction();
+	if (m_eState == eBuildingState::CONSTRUCT)
+	{
+		UpdateProduction();
+	}
 	UpdateHotKeys();
 
 	__super::Update_Rect();
@@ -111,24 +124,6 @@ void CStarport::RenderSlot(HDC hDC, int slotIndex)
 int CStarport::GetIconIndex(eCommandID eCommand)
 {
 	return 0;
-}
-
-void CStarport::SetBuildingData()
-{
-	m_eType = eBuildingType::STARPORT;
-	//비용, 스탯
-	m_tCost.mineral = 100;
-	m_tCost.gas = 0;
-	m_tCost.supply = 0;
-	m_iMaxHP = 100;
-	m_fConstructDuration = 10.f;
-	//타일 단위 크기
-	m_iHeight = 4;
-	m_iWidth = 4;
-}
-
-void CStarport::ConstructComplete()
-{
 }
 
 void CStarport::CommandCardSlot(std::vector<CommandSlot>& outSlot)

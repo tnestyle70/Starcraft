@@ -6,7 +6,7 @@
 
 class CBuilding;
 
-enum class eUnitState {IDLE, MOVE, ATTACK, DIE};
+enum class eUnitState {IDLE, MOVE, CONSTRUCTING, ATTACK, DIE};
 
 enum class eOrderType
 {MOVE, STOP, MOVE_AND_BUILD, CONSTRUCTING ,ATTACK_MOVE, ATTACK_TARGET, HOLD};

@@ -33,6 +33,20 @@ void CSupplyDepot::Initialize()
 	m_tFrame.iEnd = 0;
 }
 
+void CSupplyDepot::SetBuildingData()
+{
+	m_eType = eBuildingType::SUPPLY_DEPOT;
+	//비용, 스탯
+	m_tCost.mineral = 100;
+	m_tCost.gas = 0;
+	m_tCost.supply = 0;
+	m_iMaxHP = 500;
+	m_fConstructDuration = 10.f;
+	//타일 단위 크기
+	m_iHeight = 3;
+	m_iWidth = 3;
+}
+
 int CSupplyDepot::Update()
 {
 	int ret = CBuilding::Update();
@@ -111,24 +125,6 @@ void CSupplyDepot::RenderSlot(HDC hDC, int slotIndex)
 int CSupplyDepot::GetIconIndex(eCommandID eCommand)
 {
 	return 0;
-}
-
-void CSupplyDepot::SetBuildingData()
-{
-	m_eType = eBuildingType::SUPPLY_DEPOT;
-	//비용, 스탯
-	m_tCost.mineral = 100;
-	m_tCost.gas = 0;
-	m_tCost.supply = 0;
-	m_iMaxHP = 100;
-	m_fConstructDuration = 10.f;
-	//타일 단위 크기
-	m_iHeight = 3;
-	m_iWidth = 3;
-}
-
-void CSupplyDepot::ConstructComplete()
-{
 }
 
 void CSupplyDepot::CommandCardSlot(std::vector<CommandSlot>& outSlot)

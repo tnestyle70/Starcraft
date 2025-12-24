@@ -278,6 +278,9 @@
     <ClInclude Include="CSupplyDepot.h">
       <Filter>01. Obj\01. Building\04. SupplyDepot</Filter>
     </ClInclude>
+    <ClInclude Include="CVulture.h">
+      <Filter>01. Obj\00. Unit\05. Vulture</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Starcraft.cpp">
@@ -393,6 +396,9 @@
     </ClCompile>
     <ClCompile Include="CSupplyDepot.cpp">
       <Filter>01. Obj\01. Building\04. SupplyDepot</Filter>
+    </ClCompile>
+    <ClCompile Include="CVulture.cpp">
+      <Filter>01. Obj\00. Unit\05. Vulture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

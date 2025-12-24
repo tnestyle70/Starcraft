@@ -3,14 +3,9 @@
 #include "CResourceMgr.h"
 #include "CUnit.h"
 
-enum class eBuildingType
-{
-	COMMAND_CENTER, BARRACK, FACTORY, STARPORT, SUPPLY_DEPOT
-};
-
 enum class eBuildingState
 {
-	DEPLOY, CONSTRUCT, COMPLETE, DESTROY
+	GHOST, CONSTRUCTING, CONSTRUCT, DESTROY
 };
 //생산큐에 들어간 작업 1개를 의미하는 구조체
 struct ProdJob
@@ -35,12 +30,12 @@ public:
 	void Late_Update() override;
 	void Render(HDC hDC) override;
 	void Release() override;
-protected:
+public:
 	virtual void SetBuildingData() PURE;
-	virtual void ConstructComplete() PURE;
 	virtual void Destroy() PURE;
-	void RenderProgressbar(HDC hDC);
-	void RenderProductionText(HDC hDC, int barX, int barY);
+public:
+	bool StartConstruct(const Vec2& worldPos);
+	void UpdateConstructing();
 public:
 	virtual void CommandCardSlot(vector<CommandSlot>& outSlot);
 	virtual void UpdateHotKeys();
@@ -61,7 +56,6 @@ public:
 	//배치 스냅 결과 계산
 	bool CalcSizeTopLeft(const Vec2& worldPos, int& outRow, int& outCol) const;
 	//건설 시작/진행
-	void UpdateConstruct();
 	bool IsComplete() { return m_bComplete; }
 	//타입/정보 
 	eBuildingType GetBuildingType() { return m_eType; }
@@ -71,6 +65,17 @@ public:
 	int GetHeight() { return m_iHeight; }
 
 	RECT GetWorldRect() const;
+	const TCHAR* GetProductionName();
+public:
+	void SetState(eBuildingState eState) { m_eState = eState; }
+	void SetHP(int iHP) { m_iHP = iHP; }
+	int GetMaxHP() { return m_iMaxHP; }
+protected:
+	void UpdateProgressbarInfo();
+protected:
+	void UpdateBuildingUIInfo();
+	const TCHAR* GetBuildingName();
+	int GetIconIndex(eCommandID command);
 protected:
 	//건물 별로 Green, Red
 	TCHAR m_szGreenKey[64];

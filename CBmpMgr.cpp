@@ -37,6 +37,17 @@ HDC CBmpMgr::Find_Image(const TCHAR* pImgKey)
 	return iter->second->Get_MemDC();
 }
 
+HBITMAP CBmpMgr::Find_Bitmap(const TCHAR* pImgKey)
+{
+    auto iter = find_if(m_mapBit.begin(), m_mapBit.end(), tagFinder(pImgKey));
+
+    if (iter == m_mapBit.end())
+        return nullptr;
+    return iter->second->Get_Bitmap();
+
+    return HBITMAP();
+}
+
 void CBmpMgr::Release()
 {
 	for_each(m_mapBit.begin(), m_mapBit.end(), DeleteMap());

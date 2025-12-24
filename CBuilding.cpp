@@ -7,9 +7,11 @@
 #include "CSelectionMgr.h"
 #include "CUIMgr.h"
 #include "CBmpMgr.h"
+#include "CObjMgr.h"
+#include "CMainUI.h"
 
 CBuilding::CBuilding() : m_bGhost(false), m_bComplete(false), m_bCanPlace(false),
-	m_iHP(0), m_iMaxHP(0), m_fConstructDuration(3.f), m_fConstructRemain(0.f), m_iWidth(0), m_iHeight(0)
+	m_iHP(0), m_iMaxHP(10), m_fConstructDuration(0.f), m_fConstructRemain(0.f), m_iWidth(0), m_iHeight(0)
 {
 	ZeroMemory(&m_eType, sizeof(eBuildingType));
 	ZeroMemory(&m_eState, sizeof(eBuildingState));
@@ -25,8 +27,8 @@ void CBuilding::Initialize()
 	//CBuilding을 초기화할 때 순수 가상함수로 선언되어있는 SetBuildingData를 호출해서
 	//건물 정보 초기화 일관되게 진행
 	SetBuildingData();
-	m_iHP = m_iMaxHP;
-	m_eState = eBuildingState::DEPLOY;
+	m_iHP = 0;
+	m_eState = eBuildingState::GHOST;
 }
 
 int CBuilding::Update()
@@ -36,18 +38,27 @@ int CBuilding::Update()
 	//핫키 업데이트
 	UpdateHotKeys();
 
-	if (m_eState == eBuildingState::DEPLOY)
+	switch (m_eState)
 	{
+	case eBuildingState::GHOST:
 		m_bCanPlace = CanPlace({ m_tInfo.fX, m_tInfo.fY });
+		break;
+	case eBuildingState::CONSTRUCTING:
+		UpdateConstructing();
+		break;
+	case eBuildingState::CONSTRUCT:
+		//건설 완료 : 자식 클래스 유닛에서 유닛 생산 처리
+		//UpdateProduction();
+		break;
+	case eBuildingState::DESTROY:
+		break;
+	default:
+		break;
 	}
-	else if (m_eState == eBuildingState::CONSTRUCT)
-	{
-		UpdateConstruct();
-	}
-	else if (m_eState == eBuildingState::COMPLETE)
-	{
-		//완료 업데이트 진행
-	}
+
+	//생산바, 빌딩 생산 정보 처리 
+	UpdateProgressbarInfo();
+	UpdateBuildingUIInfo();
 
 	return 0;
 }
@@ -70,7 +81,7 @@ void CBuilding::Render(HDC hdc)
 	//건물 이미지의 크기
 	int buildingWidth = m_iWidth * TILECX;
 	int buildingHeight = m_iHeight * TILECY;
-
+	//Ghost 모드일 경우 배치 가능 / 불가능 색상 판단
 	if (m_bGhost)
 	{
 		const TCHAR* pImageKey = m_bCanPlace ? m_szGreenKey : m_szRedKey;
@@ -82,7 +93,7 @@ void CBuilding::Render(HDC hdc)
 	}
 	else
 	{
-		//완성된 건물 그리기
+		//일반 모드 : 건물 표시
 		const TCHAR* pImageKey = m_szGreenKey;
 		HDC hBuildingDC = CBmpMgr::Get_Instance()->Find_Image(pImageKey);
 		GdiTransparentBlt(hdc,
@@ -103,6 +114,58 @@ void CBuilding::Release()
 {
 }
 
+bool CBuilding::StartConstruct(const Vec2& worldPos)
+{
+	//배치 가능 여부 확인
+	if (!CanPlace(worldPos))
+		return false;
+
+	//최종 위치 조정
+	int row, col;
+	if (CalcSizeTopLeft(worldPos, row, col))
+	{
+		Vec2 centerPos = CTileMgr::Get_Instance()->CellToWorldCenter(
+			row + GetHeight() * 0.5f,
+			col + GetWidth() * 0.5f);
+		Set_Pos(centerPos.fX, centerPos.fY);
+		SetPlace(row, col);
+	}
+	//3. 리소스 차감
+	if (!CResourceMgr::Get_Instance()->TrySpend(m_tCost, false))
+		return false;
+	// 4. 건설 시작
+	m_bGhost = false;
+	m_eState = eBuildingState::CONSTRUCTING;
+	m_fConstructRemain = m_fConstructDuration;
+	m_iHP = 1;
+	// 5. 타일 점유
+	AppplyOccupy();
+
+	return true;
+}
+
+void CBuilding::UpdateConstructing()
+{
+	float fDT = CTimeMgr::Get_Instance()->GetDT();
+
+	m_fConstructRemain -= fDT;
+	if (m_fConstructRemain < 0.f)
+		m_fConstructRemain = 0.f;
+	//전체 진행률 계산
+	float progress = 1.f - (m_fConstructRemain / m_fConstructDuration);
+	if (progress > 1.f)
+		progress = 1.f;
+
+	m_iHP = max(1, (int)(m_iMaxHP * progress));
+
+	if (m_fConstructRemain <= 0.f)
+	{
+		m_iHP = m_iMaxHP;
+		m_bComplete = true;
+		m_eState = eBuildingState::CONSTRUCT;
+	}
+}
+
 void CBuilding::CommandCardSlot(vector<CommandSlot>& outSlot)
 {
 	outSlot.clear();
@@ -117,22 +180,26 @@ void CBuilding::CommandCardSlot(vector<CommandSlot>& outSlot)
 		outSlot[i].clickable = false;
 		outSlot[i].visible = false;
 	}
+	//건설 중에는 커맨드 카드 표시 X
+	if (m_eState == eBuildingState::CONSTRUCTING)
+		return;
 	//3 * 3 기준
 	//6번 슬롯
-	outSlot[5].commandID = eCommandID::RALLY;
-	outSlot[5].iconKey = TEXT("ICON_RALLY");
-	outSlot[5].hotkey = 'R';
-	outSlot[5].clickable = true;
-	outSlot[5].visible = true;
+	if (m_eState == eBuildingState::CONSTRUCT)
+	{
+		outSlot[5].commandID = eCommandID::RALLY;
+		outSlot[5].iconKey = TEXT("ICON_RALLY");
+		outSlot[5].hotkey = 'R';
+		outSlot[5].clickable = true;
+		outSlot[5].visible = true;
+	}
 }
 
 void CBuilding::UpdateHotKeys()
 {
 	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
 	//선택된 유닛이 없거나 CUnit 클래스가 아닐 경우 return
-	if (selected.size() != 1)
-		return;
-	if (selected[0] != this)
+	if (selected.size() != 1 || selected[0] != this)
 		return;
 	//Commandable 확인
 	Commandable* command = dynamic_cast<Commandable*>(this);
@@ -164,6 +231,7 @@ bool CBuilding::ExecuteCommand(eCommandID command, CommandContext& context)
 	switch (command)
 	{
 	case eCommandID::RALLY:
+		//랠리 포인트 설정
 		break;
 	default:
 		break;
@@ -171,53 +239,11 @@ bool CBuilding::ExecuteCommand(eCommandID command, CommandContext& context)
 	return false;
 }
 
-void CBuilding::UpdateConstruct()
-{
-	if (!m_pBuilder)
-		return;
-
-	float fDeltaTime = CTimeMgr::Get_Instance()->GetDT();
-
-	m_fConstructRemain -= fDeltaTime;
-	if (m_fConstructRemain < 0.f)
-		m_fConstructRemain = 0.f;
-	//전체 진행률 계산
-	float progress = 1.f - (m_fConstructRemain / m_fConstructDuration);
-	if (progress > 1.f) 
-		progress = 1.f;
-
-	m_iHP = max(1, (int)(m_iMaxHP * progress));
-
-	if (m_fConstructRemain <= 0)
-	{
-		m_iHP = m_iMaxHP;
-		m_bComplete = true;
-		m_eState = eBuildingState::COMPLETE;
-		ConstructComplete();
-	}
-}
-
 void CBuilding::SetGhost(bool bGhost)
 {
-	//bDeploy 상태면 배치 상태로 전환
+	m_bGhost = bGhost;
 	if (bGhost)
-	{
-		m_bGhost = true;
-		m_bComplete = false;
-		m_eState = eBuildingState::DEPLOY;
-		return;
-	}
-	//bDeploy 상태가 아닐 경우 배치 확정 -> 건설 시작 시도
-	if (m_eState != eBuildingState::DEPLOY || !m_bGhost)
-		return;
-	//비용 지불할 수 없으면 return
-	if (!CResourceMgr::Get_Instance()->TrySpend(m_tCost, false))
-		return;
-
-	m_bGhost = false;
-	m_eState = eBuildingState::CONSTRUCT;
-	m_fConstructRemain = m_fConstructDuration;
-	m_iHP = 1;
+		m_eState = eBuildingState::GHOST;
 }
 
 bool CBuilding::CanPlace(const Vec2& worldPos)
@@ -285,109 +311,149 @@ RECT CBuilding::GetWorldRect() const
 	return rc;
 }
 
-void CBuilding::RenderProgressbar(HDC hDC)
+const TCHAR* CBuilding::GetProductionName()
 {
 	if (m_queue.empty())
-		return;
+		return L"";
 
-	int scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
-	int scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
-
-	const int BAR_WIDTH = 108;
-	const int BAR_HEIGHT = 9;
-
-	const int PANEL_HEIGHT = 233;
-	const int PANEL_TOP = WINCY - PANEL_HEIGHT;
-
-	int barX = (WINCX - BAR_WIDTH) / 2;  // Centers it
-	int barY = PANEL_TOP + 15;            // 15px from top of panel
-
-	HDC hEmptyBarDC = CBmpMgr::Get_Instance()->Find_Image(L"PROGRESS_EMPTY");
-	if (hEmptyBarDC)
-	{
-		GdiTransparentBlt(hDC,
-			barX, barY,
-			BAR_WIDTH, BAR_HEIGHT,
-			hEmptyBarDC,
-			0, 0,
-			BAR_WIDTH, BAR_HEIGHT,
-			RGB(0, 255, 0));
-	}
-
-	// 2. 진행률 계산
-	float progress = 1.0f - (m_queue.front().remainTime / m_queue.front().totalTime);
-
-	// 3. HP_RECT 타일을 하나씩 그리기
-	HDC hRectDC = CBmpMgr::Get_Instance()->Find_Image(L"HP_RECT");
-
-	if (hRectDC)
-	{
-		const int RECT_WIDTH = 4;   // HP_RECT 하나의 너비
-		const int RECT_HEIGHT = 5;  // HP_RECT 높이
-		const int TOTAL_RECTS = 27; // 108 / 6 = 18개
-
-		int fillRects = (int)(TOTAL_RECTS * progress);
-
-		// fillRects 개수만큼 타일 그리기
-		for (int i = 0; i < fillRects; ++i)
-		{
-			int rectX = barX + (i * RECT_WIDTH);
-
-			GdiTransparentBlt(hDC,
-				rectX, barY,
-				RECT_WIDTH, RECT_HEIGHT,
-				hRectDC,
-				0, 0,
-				RECT_WIDTH, RECT_HEIGHT,
-				RGB(0, 255, 0));
-		}
-	}
-	RenderProductionText(hDC, barX, barY);
-}
-
-void CBuilding::RenderProductionText(HDC hDC, int barX, int barY)
-{
-	if (m_queue.empty())
-		return;
-	const TCHAR* unitName = L"";
 	switch (m_queue.front().command)
 	{
 	case eCommandID::SCV:
-		unitName = L"Training SCV";
-		break;
+		return L"Training SCV";
 	case eCommandID::MARINE:
-		unitName = L"Training Marine";
-		break;
+		return L"Training Marine";
 	case eCommandID::MEDIC:
-		unitName = L"Training Medic";
+		return L"Training Medic";
+	case eCommandID::VULTURE:
+		return L"Training Vulture";
+	case eCommandID::TANK:
+		return L"Training Tank";
+	default:
+		return L"Producing";
+	}
+}
+
+void CBuilding::UpdateProgressbarInfo()
+{
+	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+	//해당 건물이 선택되어있는 상태인지 확인
+	bool bThisSelected = (selected.size() == 1 && selected[0] == this);
+	//선택되지 않은 상태면 넘어감
+	if (!bThisSelected)
+		return;
+	
+	//Progressbar의 정보를 CMainUI에 전달		객체의 선택 상태 확인
+	if (!m_queue.empty())
+	{
+		ProgressbarInfo info;
+		info.fProgress = 1.0f - (m_queue.front().remainTime / m_queue.front().totalTime);
+		info.pUnitName = GetProductionName();
+		info.iQueueCount = m_queue.size();
+		info.bIsVisible = true;
+
+		CMainUI::Get_Instance()->SetProgressInfo(info);
+	}
+	else //선택되지 않았거나 큐가 비어있을 경우 bar 숨김
+	{
+		ProgressbarInfo info;
+		info.bIsVisible = false;
+		CMainUI::Get_Instance()->SetProgressInfo(info);
+	}
+}
+
+void CBuilding::UpdateBuildingUIInfo()
+{
+	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+	//해당 건물이 선택되어있는 상태인지 확인
+	bool bThisSelected = (selected.size() == 1 && selected[0] == this);
+	if (!bThisSelected)
+		return;
+	//선택되지 않은 상태면 넘어감
+	if (!bThisSelected)
+	{
+		//선택이 해제 되었을 경우 UI 숨기기
+		BuildingUIInfo info;
+		info.IsVisible = false;
+		info.pBuildingName = nullptr;
+		info.pCurrentUnit = nullptr;
+		info.IsProducing = false;
+		info.fProgress = 0.f;
+		info.queue.clear();
+		info.iHP = 0;
+		info.iMaxHP = 0;
+		CMainUI::Get_Instance()->SetBuildingUIInfo(info);
+		return;
+	}
+	//선택된 상태라면 항상 건물 정보 표시
+	BuildingUIInfo info;
+	info.pBuildingName = GetBuildingName();
+	info.eType = GetBuildingType();
+	info.IsProducing = !m_queue.empty();
+	info.IsVisible = true;
+	info.iHP = m_iHP;
+	info.iMaxHP = m_iMaxHP;
+	// 생산 중일 때만 큐 정보 추가
+	if (!m_queue.empty())
+	{
+		info.fProgress = 1.0f - (m_queue.front().remainTime / m_queue.front().totalTime);
+		info.pCurrentUnit = GetProductionName();
+
+		for (size_t i = 0; i < m_queue.size() && i < 5; ++i)
+		{
+			BuildingUIInfo::QueueItem item;
+			item.command = m_queue[i].command;
+			item.iIconKey = GetIconIndex(m_queue[i].command);
+			info.queue.push_back(item);
+		}
+	}
+	else
+	{
+		info.pCurrentUnit = nullptr;
+		info.fProgress = 0.f;
+	}
+
+	CMainUI::Get_Instance()->SetBuildingUIInfo(info);
+}
+
+const TCHAR* CBuilding::GetBuildingName()
+{
+	switch (m_eType)
+	{
+	case eBuildingType::COMMAND_CENTER:
+		return L"Command Center";
+	case eBuildingType::BARRACKS:
+		return L"Barracks";
+	case eBuildingType::FACTORY:
+		return L"Factory";
+	case eBuildingType::STARPORT:
+		return L"Starport";
+	case eBuildingType::SUPPLY_DEPOT:
+		return L"Supply Depot";
+	default:
+		return L"Building";
+	}
+}
+
+int CBuilding::GetIconIndex(eCommandID command)
+{
+	switch (command)
+	{
+	case eCommandID::SCV:
+		return IconIndex::SCV;
+	case eCommandID::MARINE:
+		return IconIndex::MARINE;
+	case eCommandID::MEDIC:
+		return IconIndex::MEDIC;
+	case eCommandID::VULTURE:
+		return IconIndex::VULTURE;
+	case eCommandID::TANK:
+		return IconIndex::TANK;
+	case eCommandID::BATTLECRUISER:
+		return IconIndex::BATTLECRUISER;
 		break;
 	default:
-		unitName = L"Producing";
-		break;
+		return -1;
 	}
-	// Set text properties
-	SetBkMode(hDC, TRANSPARENT);
-	SetTextColor(hDC, RGB(255, 255, 255));
 
-	// Draw text above progress bar
-	RECT textRect;
-	textRect.left = barX;
-	textRect.top = barY - 18;
-	textRect.right = barX + 108;
-	textRect.bottom = barY - 2;
-
-	DrawText(hDC, unitName, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-
-	// 큐 정보
-	if (m_queue.size() > 1)
-	{
-		wchar_t queueText[32];
-		swprintf_s(queueText, L"(+%d)", (int)m_queue.size() - 1);
-
-		textRect.top = barY + 9 + 2;
-		textRect.bottom = textRect.top + 20;
-
-		SetTextColor(hDC, RGB(200, 200, 200));
-		DrawText(hDC, queueText, -1, &textRect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
-	}
+	return 0;
 }

@@ -32,15 +32,28 @@ void CCommandCenter::Initialize()
 	m_tFrame.iEnd = 0;
 }
 
+void CCommandCenter::SetBuildingData()
+{
+	m_eType = eBuildingType::COMMAND_CENTER;
+	//비용, 스탯
+	m_tCost.mineral = 100;
+	m_tCost.gas = 0;
+	m_tCost.supply = 0;
+	m_iMaxHP = 1500;
+	m_fConstructDuration = 2.f;
+	//타일 단위 크기
+	m_iHeight = 5;
+	m_iWidth = 5;
+}
+
 int CCommandCenter::Update()
 {
 	int ret = CBuilding::Update();
-
-	if (m_eState == eBuildingState::COMPLETE)
+	//건설이 완료되었을 경우에만 생산
+	if (m_eState == eBuildingState::CONSTRUCT)
 	{
 		UpdateProduction();
 	}
-	UpdateProduction();
 	UpdateHotKeys();
 
 	__super::Update_Rect();
@@ -97,8 +110,6 @@ void CCommandCenter::Render(HDC hDC)
 		(int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
 		(int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
 		RGB(0, 255, 0));
-
-	RenderProgressbar(hDC);
 }	
 
 void CCommandCenter::Release()
@@ -114,29 +125,13 @@ int CCommandCenter::GetIconIndex(eCommandID eCommand)
 	return 0;
 }
 
-void CCommandCenter::SetBuildingData()
-{
-	m_eType = eBuildingType::COMMAND_CENTER;
-	//비용, 스탯
-	m_tCost.mineral = 100;
-	m_tCost.gas = 0;
-	m_tCost.supply = 0;
-	m_iMaxHP = 100;
-	m_fConstructDuration = 10.f;
-	//타일 단위 크기
-	m_iHeight = 5;
-	m_iWidth = 5;
-}
-
-void CCommandCenter::ConstructComplete()
-{
-
-}
-
 void CCommandCenter::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 {
     // 1. 부모 클래스의 공통 슬롯을 먼저 가져오기
     CBuilding::CommandCardSlot(outSlot);
+
+	if (m_eState == eBuildingState::CONSTRUCTING)
+		return;
 
 	//0번 슬롯 SCV 생산
 	outSlot[0].commandID = eCommandID::SCV;
@@ -152,11 +147,39 @@ void CCommandCenter::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 	outSlot[8].visible = true;
 }
 
+void CCommandCenter::UpdateHotKeys()
+{
+	//SCV 유닛 하나만 선택되었을 경우 실행
+	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+	if (selected.size() != 1)
+		return;
+	//선택된 객체가 this인지 확인
+	if (selected[0] != this)
+		return;
+	//슬롯 정보
+	vector<CommandSlot> slots;
+	this->CommandCardSlot(slots);
+	//각 슬롯의 단축키 확인
+	for (int i = 0; i < slots.size(); ++i)
+	{
+		if (!slots[i].visible || !slots[i].clickable)
+			continue;
+		//단축키가 눌렸는지 확인
+		if (CInputMgr::Get_Instance()->KeyDownVK(slots[i].hotkey))
+		{
+			CUIMgr::Get_Instance()->SetButtonFeedback(i, true);
+			//명령 실행
+			CommandContext context{};
+			this->ExecuteCommand(slots[i].commandID, context);
+		}
+	}
+}
+
 bool CCommandCenter::ExecuteCommand(eCommandID command, CommandContext& context)
 {
 	//건물이 다 지어진 이후에 건설 가능
-	//if (m_eState != eBuildingState::COMPLETE)
-	//	return false;
+	if (m_eState != eBuildingState::CONSTRUCT)
+		return false;
 
 	ResourceCost cost{};
 
@@ -187,34 +210,6 @@ bool CCommandCenter::ExecuteCommand(eCommandID command, CommandContext& context)
 		break;
 	}
 	return false;
-}
-
-void CCommandCenter::UpdateHotKeys()
-{
-	//SCV 유닛 하나만 선택되었을 경우 실행
-	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
-	if (selected.size() != 1)
-		return;
-	//선택된 객체가 this인지 확인
-	if (selected[0] != this)
-		return;
-	//슬롯 정보
-	vector<CommandSlot> slots;
-	this->CommandCardSlot(slots);
-	//각 슬롯의 단축키 확인
-	for (int i = 0; i < slots.size(); ++i)
-	{
-		if (!slots[i].visible || !slots[i].clickable)
-			continue;
-		//단축키가 눌렸는지 확인
-		if (CInputMgr::Get_Instance()->KeyDownVK(slots[i].hotkey))
-		{
-			CUIMgr::Get_Instance()->SetButtonFeedback(i, true);
-			//명령 실행
-			CommandContext context{};
-			this->ExecuteCommand(slots[i].commandID, context);
-		}
-	}
 }
 
 void CCommandCenter::UpdateProduction()

@@ -5,6 +5,8 @@
 #include "CScrollMgr.h"
 #include "CObjMgr.h"
 #include "CInputMgr.h"
+#include "CCommandMgr.h"
+#include "CMainUI.h"
 
 CSelectionMgr* CSelectionMgr::m_pInstance = nullptr;
 
@@ -49,6 +51,19 @@ void CSelectionMgr::ClearSelection()
 			pObj->SetSelected(false);
 	}
 	m_vecSelected.clear();
+	//ProgressbarInfo 숨김 추가
+	ProgressbarInfo info;
+	info.bIsVisible = false;
+	CMainUI::Get_Instance()->SetProgressInfo(info);
+	//BuildingUIInfo 숨김 추가
+	BuildingUIInfo buildingInfo;
+	buildingInfo.IsVisible = false;
+	buildingInfo.pBuildingName = nullptr;
+	buildingInfo.pCurrentUnit = nullptr;
+	buildingInfo.IsProducing = false;
+	buildingInfo.fProgress = 0.f;
+	buildingInfo.queue.clear();
+	CMainUI::Get_Instance()->SetBuildingUIInfo(buildingInfo);
 }
 
 void CSelectionMgr::SelectSingleAt(const POINT& clientPt)
@@ -71,6 +86,9 @@ void CSelectionMgr::SelectSingleAt(const POINT& clientPt)
 
 void CSelectionMgr::Update()
 {
+	//건물 배치 중에는 선택 막기
+	if (CCommandMgr::Get_Instance()->IsPlacing())
+		return;
 	if (CInputMgr::Get_Instance()->KeyDown(LEFT_MOUSE))
 		OnLMouseDown();
 
@@ -107,6 +125,19 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 	m_ptCur = GetMouseClient();
 	m_rcScreen = NormalizeRect(m_ptStart, m_ptCur);
 	m_bDragging = false;
+	//ProgressbarInfo 숨김 추가
+	ProgressbarInfo info;
+	info.bIsVisible = false;
+	CMainUI::Get_Instance()->SetProgressInfo(info);
+	//BuildingUIInfo 숨김 추가
+	BuildingUIInfo buildingInfo;
+	buildingInfo.IsVisible = false;
+	buildingInfo.pBuildingName = nullptr;
+	buildingInfo.pCurrentUnit = nullptr;
+	buildingInfo.IsProducing = false;
+	buildingInfo.fProgress = 0.f;
+	buildingInfo.queue.clear();
+	CMainUI::Get_Instance()->SetBuildingUIInfo(buildingInfo);
 	//클릭 선택
 	if (IsClickSelection(m_rcScreen))
 	{
@@ -147,6 +178,11 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 		for (auto* pBuilding : building)
 		{
 			if (!pBuilding) continue;
+
+			//Ghost 건물 선택 안 됨
+			CBuilding* build = dynamic_cast<CBuilding*>(pBuilding);
+			if (build && build->IsGhost())
+				continue;
 			
 			RECT br = pBuilding->GetWorldRect();
 			RECT inter{};

@@ -13,6 +13,7 @@ private:
 public:
 	void	Insert_Bmp(const TCHAR* pFilePath, const TCHAR* pImgKey);
 	HDC		Find_Image(const TCHAR* pImgKey);
+	HBITMAP Find_Bitmap(const TCHAR* pImgKey);
 	void	Release();
 	//Alpha Ã¤³Î ·»´õ
 	void Render_Alpha(const TCHAR* pImageKey, const TCHAR* pAlphaKey,

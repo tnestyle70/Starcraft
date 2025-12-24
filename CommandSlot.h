@@ -20,12 +20,15 @@ enum class eCommandID
 	SCV = 11,
 	MARINE = 12,
 	MEDIC = 13,
+	VULTURE = 15,
 	TANK = 16,
 	BATTLECRUISER = 20,
 	//건물 아이콘
 	COMMAND_CENTER = 22,
 	SUPPLY_DEPOT = 23,
 	BARRACKS = 24,
+	FACTORY = 30,
+	STARPORT = 31,
 	NONE = 100
 };
 

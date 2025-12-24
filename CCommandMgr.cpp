@@ -51,6 +51,11 @@ void CCommandMgr::CancleBuilding()
     m_pBuilder = nullptr;
 }
 
+bool CCommandMgr::IsPlacing()
+{
+    return m_eMode == eCommandMode::PLAEC_BUILDING;
+}
+
 void CCommandMgr::Update()
 {
     //배치 모드가 아닐 경우 return 
@@ -88,26 +93,53 @@ void CCommandMgr::Update()
     bool can = m_pGhost->CanPlace(mouseWorld);
     m_pGhost->SetCanPlace(can);
     
-    //입력 처리
+    //건설 명령
     if (CInputMgr::Get_Instance()->KeyDown(LEFT_MOUSE))
     {
-        if (can)
-        {
+        if (can && m_pBuilder)
+        {           
+
+            CBuilding* pBuilding = m_pGhost;
+            Vec2 buildPos = pBuilding->Get_Pos();
+            m_pGhost = nullptr;
+            m_eMode = eCommandMode::NONE;
+
+            // SCV에게 건설 오더 추가
+            Order order;
+            order.eType = eOrderType::MOVE_AND_BUILD;
+            order.dst = buildPos;
+            order.pBuilding = pBuilding;
+            order.iPathIndex = 0;
+
+            Vec2 start = m_pBuilder->Get_Pos();
+            order.path = CNavMgr::Get_Instance()->RequestPathWorld(start, buildPos);
+            if (order.path.empty())
+            {
+                order.path.push_back(buildPos);
+            }
+
+            m_pBuilder->ClearOrder();
+            m_pBuilder->PushOrder(order);
+            m_eMode = eCommandMode::NONE;
+            m_pBuilder = nullptr;
+
+            /*
             //소유권 넘기기
             CBuilding* pBuilding = m_pGhost;
             m_pGhost = nullptr;
-            //모드 정리 
-            m_eMode = eCommandMode::NONE;
-            m_pBuilder = nullptr;
 
             pBuilding->SetGhost(false);
             pBuilding->AppplyOccupy();
             pBuilding->SetBuilder(m_pBuilder);
-            CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pBuilding);
+            //모드 정리 
+            m_eMode = eCommandMode::NONE;
+            m_pBuilder = nullptr;
+            */
         }
         return;
     }
-    if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE))
+    if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE) ||
+        CInputMgr::Get_Instance()->KeyDownVK(VK_ESCAPE))
     {
         CancleBuilding();
         return;

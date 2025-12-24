@@ -34,15 +34,28 @@ void CBarracks::Initialize()
 	m_tFrame.iEnd = 0;
 }
 
+void CBarracks::SetBuildingData()
+{
+	m_eType = eBuildingType::BARRACKS;
+	//비용, 스탯
+	m_tCost.mineral = 100;
+	m_tCost.gas = 0;
+	m_tCost.supply = 0;
+	m_iMaxHP = 1000;
+	m_fConstructDuration = 2.f;
+	//타일 단위 크기
+	m_iHeight = 5;
+	m_iWidth = 6;
+}
+
 int CBarracks::Update()
 {
 	int ret = CBuilding::Update();
-
-	//if (m_eState == eBuildingState::COMPLETE)
-	//{
-	//	UpdateProduction();
-	//}
-	UpdateProduction();
+	//건설 완료된 상태에서만 유닛 생산
+	if (m_eState == eBuildingState::CONSTRUCT)
+	{
+		UpdateProduction();
+	}
 	UpdateHotKeys();
 
 	__super::Update_Rect();
@@ -99,8 +112,6 @@ void CBarracks::Render(HDC hDC)
 		(int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
 		(int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
 		RGB(0, 255, 0));
-
-	RenderProgressbar(hDC);
 }
 
 void CBarracks::Release()
@@ -116,28 +127,13 @@ int CBarracks::GetIconIndex(eCommandID eCommand)
 	return 0;
 }
 
-void CBarracks::SetBuildingData()
-{
-	m_eType = eBuildingType::BARRACK;
-	//비용, 스탯
-	m_tCost.mineral = 100;
-	m_tCost.gas = 0;
-	m_tCost.supply = 0;
-	m_iMaxHP = 100;
-	m_fConstructDuration = 10.f;
-	//타일 단위 크기
-	m_iHeight = 5;
-	m_iWidth = 6;
-}
-
-void CBarracks::ConstructComplete()
-{
-}
-
 void CBarracks::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 {
 	// 1. 부모 클래스의 공통 슬롯을 먼저 가져오기
 	CBuilding::CommandCardSlot(outSlot);
+	//건설 중일 경우에는 표시 X
+	if (m_eState == eBuildingState::CONSTRUCTING)
+		return;
 
 	//0번 슬롯 MARINE 생산
 	outSlot[0].commandID = eCommandID::MARINE;
@@ -157,54 +153,6 @@ void CBarracks::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 	outSlot[8].hotkey = VK_ESCAPE;
 	outSlot[8].clickable = true;
 	outSlot[8].visible = true;
-}
-
-bool CBarracks::ExecuteCommand(eCommandID command, CommandContext& context)
-{
-	//건물이 다 지어진 이후에 건설 가능
-	//if (m_eState != eBuildingState::COMPLETE)
-	//	return false;
-
-	ResourceCost cost{};
-
-	switch (command)
-	{
-	case eCommandID::MARINE:
-		cost.mineral = 50;
-		cost.gas = 0;
-		cost.supply = 1;
-		//유닛이니까 true로 인구수 검사
-		if (!CResourceMgr::Get_Instance()->TrySpend(cost, true))
-			return false;
-		//생산 시간
-		m_queue.push_back({ eCommandID::MARINE, 3.f, 3.f, 50, 0 });
-		return true;
-		break;
-	case eCommandID::MEDIC:
-		cost.mineral = 50;
-		cost.gas = 0;
-		cost.supply = 1;
-		//유닛이니까 true로 인구수 검사
-		if (!CResourceMgr::Get_Instance()->TrySpend(cost, true))
-			return false;
-		//생산 시간
-		m_queue.push_back({ eCommandID::MEDIC, 3.f, 3.f, 50, 0 });
-		return true;
-		break;
-	case eCommandID::CANCLE:
-		//생산 중인 큐 취소
-		if (m_queue.empty())
-		{
-			return false;
-		}
-		m_queue.pop_back();
-		//환불 정책
-		return true;
-		break;
-	default:
-		break;
-	}
-	return false;
 }
 
 void CBarracks::UpdateHotKeys()
@@ -233,6 +181,51 @@ void CBarracks::UpdateHotKeys()
 			this->ExecuteCommand(slots[i].commandID, context);
 		}
 	}
+}
+
+bool CBarracks::ExecuteCommand(eCommandID command, CommandContext& context)
+{
+	//건물이 다 지어진 이후에 건설 가능
+	if (m_eState != eBuildingState::CONSTRUCT)
+		return false;
+
+	ResourceCost cost{};
+
+	switch (command)
+	{
+	case eCommandID::MARINE:
+		cost.mineral = 50;
+		cost.gas = 0;
+		cost.supply = 1;
+		//유닛이니까 true로 인구수 검사
+		if (!CResourceMgr::Get_Instance()->TrySpend(cost, true))
+			return false;
+		//생산 시간
+		m_queue.push_back({ eCommandID::MARINE, 3.f, 3.f, 50, 0 });
+		return true;
+	case eCommandID::MEDIC:
+		cost.mineral = 50;
+		cost.gas = 0;
+		cost.supply = 1;
+		//유닛이니까 true로 인구수 검사
+		if (!CResourceMgr::Get_Instance()->TrySpend(cost, true))
+			return false;
+		//생산 시간
+		m_queue.push_back({ eCommandID::MEDIC, 3.f, 3.f, 50, 0 });
+		return true;
+	case eCommandID::CANCLE:
+		//생산 중인 큐 취소
+		if (m_queue.empty())
+		{
+			return false;
+		}
+		m_queue.pop_back();
+		//환불 정책
+		return true;
+	default:
+		break;
+	}
+	return false;
 }
 
 void CBarracks::UpdateProduction()

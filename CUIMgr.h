@@ -23,12 +23,15 @@ namespace IconIndex
     const int SCV = 11;             // SCV
     const int MARINE = 12; //마린
     const int MEDIC = 13; //메딕
+    const int VULTURE = 15; //벌쳐
     const int TANK = 16; //탱크
     const int BATTLECRUISER = 20; //배틀크루저
     //건물 아이콘
     const int COMMAND_CENTER = 22; //커맨드 센터
     const int SUPPLY_DEPOT = 23; //보급고
     const int BARRACKS = 24; //배럭
+    const int FACTORY = 30;
+    const int STARPORT = 31;
 }
 
 

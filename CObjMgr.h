@@ -30,6 +30,8 @@ public:
 public:
 	vector<CUnit*>& GetUnits() { return m_vecUnits; }
 	vector<CBuilding*>& GetBuildings() { return m_vecBuildings; }
+public:
+	list<CObj*>& Get_ObjList(OBJID eID);
 private:
 	vector<CUnit*> m_vecUnits;
 	vector<CBuilding*> m_vecBuildings;

@@ -16,8 +16,11 @@
 #include "CTank.h"
 #include "CSCV.h"
 #include "CMedic.h"
+#include "CVulture.h"
 #include "CUIMgr.h"
 #include "CResourceMgr.h"
+#include "CCommandMgr.h"
+#include "CMainUI.h"
 
 CStage::CStage()
 {
@@ -79,11 +82,19 @@ void CStage::Initialize()
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Unit/Medic/Medic.bmp", L"Medic");
 	CObj* pMedic = CAbstractFactory<CMedic>::Create(400.f, 200.f);
 	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pMedic);
-
+	//Vulture
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Unit/Vulture/Vulture.bmp", L"Vulture");
+	CObj* pVulture = CAbstractFactory<CVulture>::Create(500.f, 200.f);
+	CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pVulture);
 	//커맨드 센터
-	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/CommandCenter/CommandCenter4.bmp", L"CommandCenter");
-	CObj* pCommandCenter = CAbstractFactory<CCommandCenter>::Create(290.f, 250.f);
-	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pCommandCenter);
+	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/CommandCenter/CommandCenter.bmp", L"CommandCenter");
+	CObj* pCC = CAbstractFactory<CCommandCenter>::Create(292.f, 236.f);
+	CCommandCenter* pComC = dynamic_cast<CCommandCenter*>(pCC);
+	//커맨드 센터 초기화
+	pComC->SetGhost(false); pComC->SetState(eBuildingState::CONSTRUCT);
+	pComC->SetHP(pComC->GetMaxHP()); pComC->AppplyOccupy();
+	CObjMgr::Get_Instance()->Add_Object(OBJ_BUILDING, pCC);
+
 	//배럭, 스타포트, 보급고, 군수공장
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Barrack/Barrack.bmp", L"Barracks");
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Starport/Starport.bmp", L"Starport");
@@ -102,6 +113,8 @@ int CStage::Update()
 	
 	CUIMgr::Get_Instance()->Update();
 
+	CCommandMgr::Get_Instance()->Update();
+
 	return 0;
 }
 
@@ -113,6 +126,15 @@ void CStage::Late_Update()
 
 	float fDT = CTimeMgr::Get_Instance()->GetDT();
 	CScrollMgr::Get_Instance()->Update_EdgeScroll(fDT);
+
+	if (CInputMgr::Get_Instance()->KeyDown(LEFT_MOUSE))
+	{
+		POINT mousePos;
+		GetCursorPos(&mousePos);
+		ScreenToClient(g_hWnd, &mousePos); //화면 좌표 -> 클라이언트 좌표
+		//스크롤 보정하지 않은 값 전달
+		CMainUI::Get_Instance()->HandleMinimapClick(mousePos);
+	}
 
 	if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE))
 	{
@@ -143,9 +165,11 @@ void CStage::Render(HDC hDC)
 	}
 	// 2. 오브젝트 렌더
 	CObjMgr::Get_Instance()->Render(hDC);
-
-	// 3. UI 렌더 (가장 위)
+	// 3. 커맨드 매니저
+	CCommandMgr::Get_Instance()->Render(hDC);
+	// 4. UI 렌더 (가장 위)
 	CUIMgr::Get_Instance()->Render(hDC);
+
 	CSelectionMgr::Get_Instance()->Render(hDC);
 }
 

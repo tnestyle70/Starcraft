@@ -22,7 +22,6 @@ public:
 	void UpdateHotKeys();
 protected:
 	void SetBuildingData() override;
-	void ConstructComplete() override;
 	void Destroy() override;
 private:
 	void UpdateProduction();

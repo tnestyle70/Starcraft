@@ -9,6 +9,7 @@
 #include "CObjMgr.h"
 #include "CSCV.h"
 #include "CTank.h"
+#include "CVulture.h"
 #include "CUIMgr.h"
 
 CFactory::CFactory()
@@ -32,16 +33,29 @@ void CFactory::Initialize()
 	m_tFrame.iFrame = 0;
 	m_tFrame.iEnd = 0;
 }
+void CFactory::SetBuildingData()
+{
+	m_eType = eBuildingType::FACTORY;
+	//비용, 스탯
+	m_tCost.mineral = 100;
+	m_tCost.gas = 0;
+	m_tCost.supply = 0;
+	m_iMaxHP = 1200;
+	m_fConstructDuration = 2.f;
+	//타일 단위 크기
+	m_iHeight = 5;
+	m_iWidth = 5;
+}
 
 int CFactory::Update()
 {
 	int ret = CBuilding::Update();
 
-	//if (m_eState == eBuildingState::COMPLETE)
-	//{
-	//	UpdateProduction();
-	//}
-	UpdateProduction();
+	//건설이 완료되었을 경우에만 생산
+	if (m_eState == eBuildingState::CONSTRUCT)
+	{
+		UpdateProduction();
+	}
 	UpdateHotKeys();
 
 	__super::Update_Rect();
@@ -113,78 +127,29 @@ int CFactory::GetIconIndex(eCommandID eCommand)
 	return 0;
 }
 
-void CFactory::SetBuildingData()
-{
-	m_eType = eBuildingType::FACTORY;
-	//비용, 스탯
-	m_tCost.mineral = 100;
-	m_tCost.gas = 0;
-	m_tCost.supply = 0;
-	m_iMaxHP = 100;
-	m_fConstructDuration = 10.f;
-	//타일 단위 크기
-	m_iHeight = 5;
-	m_iWidth = 5;
-}
-
-void CFactory::ConstructComplete()
-{
-}
-
 void CFactory::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 {
 	// 1. 부모 클래스의 공통 슬롯을 먼저 가져오기
 	CBuilding::CommandCardSlot(outSlot);
 
-	//0번 슬롯 TANK 생산
-	outSlot[0].commandID = eCommandID::TANK;
-	outSlot[0].iconKey = TEXT("ICON_TANK");
+	//0번 슬롯 VULTURE 생산
+	outSlot[0].commandID = eCommandID::VULTURE;
+	outSlot[0].iconKey = TEXT("ICON_VULTURE");
 	outSlot[0].hotkey = 'S';
 	outSlot[0].clickable = true;
 	outSlot[0].visible = true;
+	//0번 슬롯 TANK 생산
+	outSlot[1].commandID = eCommandID::TANK;
+	outSlot[1].iconKey = TEXT("ICON_TANK");
+	outSlot[1].hotkey = 'D';
+	outSlot[1].clickable = true;
+	outSlot[1].visible = true;
 	//8번 : Cancle(Queue 취소)
 	outSlot[8].commandID = eCommandID::CANCLE;
 	outSlot[8].iconKey = TEXT("ICON_CANCLE");
 	outSlot[8].hotkey = VK_ESCAPE;
 	outSlot[8].clickable = true;
 	outSlot[8].visible = true;
-}
-
-bool CFactory::ExecuteCommand(eCommandID command, CommandContext& context)
-{
-	//건물이 다 지어진 이후에 건설 가능
-	//if (m_eState != eBuildingState::COMPLETE)
-	//	return false;
-
-	ResourceCost cost{};
-
-	switch (command)
-	{
-	case eCommandID::TANK:
-		cost.mineral = 50;
-		cost.gas = 0;
-		cost.supply = 1;
-		//유닛이니까 true로 인구수 검사
-		if (!CResourceMgr::Get_Instance()->TrySpend(cost, true))
-			return false;
-		//생산 시간
-		m_queue.push_back({ eCommandID::MARINE, 3.f, 3.f, 50, 0 });
-		return true;
-		break;
-	case eCommandID::CANCLE:
-		//생산 중인 큐 취소
-		if (m_queue.empty())
-		{
-			return false;
-		}
-		m_queue.pop_back();
-		//환불 정책
-		return true;
-		break;
-	default:
-		break;
-	}
-	return false;
 }
 
 void CFactory::UpdateHotKeys()
@@ -215,6 +180,54 @@ void CFactory::UpdateHotKeys()
 	}
 }
 
+bool CFactory::ExecuteCommand(eCommandID command, CommandContext& context)
+{
+	//건물이 다 지어진 이후에 건설 가능
+	if (m_eState != eBuildingState::CONSTRUCT)
+		return false;
+
+	ResourceCost cost{};
+
+	switch (command)
+	{
+	case eCommandID::VULTURE:
+		cost.mineral = 50;
+		cost.gas = 0;
+		cost.supply = 1;
+		//유닛이니까 true로 인구수 검사
+		if (!CResourceMgr::Get_Instance()->TrySpend(cost, true))
+			return false;
+		//생산 시간
+		m_queue.push_back({ eCommandID::VULTURE, 2.f, 2.f, 50, 0 });
+		return true;
+		break;
+	case eCommandID::TANK:
+		cost.mineral = 50;
+		cost.gas = 0;
+		cost.supply = 1;
+		//유닛이니까 true로 인구수 검사
+		if (!CResourceMgr::Get_Instance()->TrySpend(cost, true))
+			return false;
+		//생산 시간
+		m_queue.push_back({ eCommandID::TANK, 2.f, 2.f, 50, 0 });
+		return true;
+		break;
+	case eCommandID::CANCLE:
+		//생산 중인 큐 취소
+		if (m_queue.empty())
+		{
+			return false;
+		}
+		m_queue.pop_back();
+		//환불 정책
+		return true;
+		break;
+	default:
+		break;
+	}
+	return false;
+}
+
 void CFactory::UpdateProduction()
 {
 	//건설 완료시 처리(사운드, 이펙트, 기능 오픈 포함 )
@@ -234,6 +247,13 @@ void CFactory::UpdateProduction()
 
 void CFactory::ConstructComplete(eCommandID command)
 {
+	if (command == eCommandID::VULTURE)
+	{
+		Vec2 pos = Get_Pos();
+		pos.fX += 100.f;
+		CObj* pVulture = CAbstractFactory<CVulture>::Create(pos.fX, pos.fY);
+		CObjMgr::Get_Instance()->Add_Object(OBJ_UNIT, pVulture);
+	}
 	if (command == eCommandID::TANK)
 	{
 		Vec2 pos = Get_Pos();

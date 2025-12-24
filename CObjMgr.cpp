@@ -201,3 +201,8 @@ CButton* CObjMgr::CreateButton(const wchar_t* framekey, float fX, float fY, cons
 
 	return pButton;
 }
+
+list<CObj*>& CObjMgr::Get_ObjList(OBJID eID)
+{
+	return m_ObjList[eID];
+}
