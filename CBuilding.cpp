@@ -9,9 +9,12 @@
 #include "CBmpMgr.h"
 #include "CObjMgr.h"
 #include "CMainUI.h"
+#include "CFogMgr.h"
 
 CBuilding::CBuilding() : m_bGhost(false), m_bComplete(false), m_bCanPlace(false),
-	m_iHP(0), m_iMaxHP(10), m_fConstructDuration(0.f), m_fConstructRemain(0.f), m_iWidth(0), m_iHeight(0)
+	m_iHP(0), m_iMaxHP(10), m_fConstructDuration(0.f), m_fConstructRemain(0.f),
+	m_iWidth(0), m_iHeight(0), m_iSightRange(14)
+
 {
 	ZeroMemory(&m_eType, sizeof(eBuildingType));
 	ZeroMemory(&m_eState, sizeof(eBuildingState));
@@ -56,9 +59,10 @@ int CBuilding::Update()
 		break;
 	}
 
-	//생산바, 빌딩 생산 정보 처리 
-	UpdateProgressbarInfo();
+	//빌딩 생산 정보 처리 
 	UpdateBuildingUIInfo();
+
+	__super::Update_Rect();
 
 	return 0;
 }
@@ -67,47 +71,86 @@ void CBuilding::Late_Update()
 {
 }
 
+static void DrawBuildOverlaySolid(HDC hdc, int x, int y, int w, int h, bool canPlace)
+{
+	COLORREF fill = canPlace ? RGB(0, 255, 0) : RGB(255, 0, 0);
+
+	HBRUSH hBrush = CreateSolidBrush(fill);
+	RECT rc{ x, y, x + w, y + h };
+
+	// 단색 채움
+	FillRect(hdc, &rc, hBrush); // :contentReference[oaicite:3]{index=3}
+
+	// 1px 테두리
+	FrameRect(hdc, &rc, hBrush); // :contentReference[oaicite:4]{index=4}
+
+	DeleteObject(hBrush);
+}
+
 void CBuilding::Render(HDC hdc)
 {
+	// (기존 fog 체크 유지)
+	Vec2 pos = Get_Pos();
+	int fogRow, fogCol;
+	if (CTileMgr::Get_Instance()->WorldToCell(pos, fogRow, fogCol))
+	{
+		eFogState fogState = CFogMgr::Get_Instance()->GetFogState(fogRow, fogCol);
+		if (fogState == eFogState::UNKNOWN) return;
+	}
+
 	float scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
 	float scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
 
 	int row0 = m_iPlaceRow;
 	int col0 = m_iPlaceCol;
 
-	int drawX = (col0 * TILECX - scrX);
-	int drawY = (row0 * TILECY - scrY);
+	int tileDrawX = (int)(col0 * TILECX - scrX);
+	int tileDrawY = (int)(row0 * TILECY - scrY);
 
-	//건물 이미지의 크기
 	int buildingWidth = m_iWidth * TILECX;
 	int buildingHeight = m_iHeight * TILECY;
-	//Ghost 모드일 경우 배치 가능 / 불가능 색상 판단
+
+	// 2) 건물 스프라이트는 "그냥 투명키로" 렌더
+	const TCHAR* pImageKey = m_szGreenKey; // 이제 빨/초 고스트 이미지 쓸 필요 없음(원본 키로 통일)
+	HDC hBuildingDC = CBmpMgr::Get_Instance()->Find_Image(pImageKey);
+
+	BITMAP bmpInfo;
+	HBITMAP hBitmap = (HBITMAP)GetCurrentObject(hBuildingDC, OBJ_BITMAP);
+	GetObject(hBitmap, sizeof(BITMAP), &bmpInfo);
+
+	int imageWidth = bmpInfo.bmWidth;
+	int imageHeight = bmpInfo.bmHeight;
+
+	int offsetX = (buildingWidth - imageWidth) * 0.5;
+	int offsetY = (buildingHeight - imageHeight) * 0.5;
+
+	int finalDrawX = tileDrawX + offsetX;
+	int finalDrawY = tileDrawY + offsetY;
+
+	// 1) 고스트면: 타일 오버레이 먼저!
 	if (m_bGhost)
 	{
-		const TCHAR* pImageKey = m_bCanPlace ? m_szGreenKey : m_szRedKey;
-		HDC hGhostDC = CBmpMgr::Get_Instance()->Find_Image(pImageKey);
-		BitBlt(hdc, drawX, drawY,
-			buildingWidth, buildingHeight,
-			hGhostDC,
-			0, 0, SRCCOPY);
-	}
-	else
-	{
-		//일반 모드 : 건물 표시
-		const TCHAR* pImageKey = m_szGreenKey;
-		HDC hBuildingDC = CBmpMgr::Get_Instance()->Find_Image(pImageKey);
+		//타일 기반 오버레이 그리기
+		int requiredValue = GetRequiredTileValue();
+		CTileMgr::Get_Instance()->RenderBuildingOverlay(hdc, row0, col0, m_iWidth, m_iHeight, requiredValue);
+		//오버레이 위에 건물 이미지 그리기
 		GdiTransparentBlt(hdc,
-			drawX,
-			drawY,
-			buildingWidth,
-			buildingHeight,
+			finalDrawX, finalDrawY,
+			imageWidth, imageHeight,
 			hBuildingDC,
-			scrX,
-			scrY,
-			buildingWidth,		// 복사할 이미지의 가로 사이즈
-			buildingHeight,		// 복사할 이미지의 세로 사이즈
+			0, 0,
+			imageWidth, imageHeight,
 			RGB(0, 255, 0));
 	}
+
+	// TransparentBlt 동일 계열: 색상키(여기선 초록 배경)로 투명 처리 :contentReference[oaicite:4]{index=4}
+	GdiTransparentBlt(hdc,
+		finalDrawX, finalDrawY,
+		imageWidth, imageHeight,
+		hBuildingDC,
+		0, 0,
+		imageWidth, imageHeight,
+		RGB(0, 255, 0));
 }
 
 void CBuilding::Release()
@@ -125,8 +168,8 @@ bool CBuilding::StartConstruct(const Vec2& worldPos)
 	if (CalcSizeTopLeft(worldPos, row, col))
 	{
 		Vec2 centerPos = CTileMgr::Get_Instance()->CellToWorldCenter(
-			row + GetHeight() * 0.5f,
-			col + GetWidth() * 0.5f);
+			m_iPlaceRow + GetHeight() * 0.5f,
+			m_iPlaceCol + GetWidth() * 0.5f);
 		Set_Pos(centerPos.fX, centerPos.fY);
 		SetPlace(row, col);
 	}
@@ -246,16 +289,31 @@ void CBuilding::SetGhost(bool bGhost)
 		m_eState = eBuildingState::GHOST;
 }
 
+void CBuilding::SetPlace(int row, int col)
+{
+	wchar_t buf[128];
+	swprintf_s(buf, L"SetPlace: row=%d col=%d", row, col);
+	OutputDebugString(buf);
+
+	m_iPlaceRow = row;
+	m_iPlaceCol = col;
+}
+
 bool CBuilding::CanPlace(const Vec2& worldPos)
 {
 	//타일 점유 빌드 가능 영역 검사 
 	CTileMgr* tileMgr = CTileMgr::Get_Instance();
 
-	int row, col;
-	if (!CalcSizeTopLeft(worldPos, row, col))
-		return false;
+	wchar_t buf[256];
+	swprintf_s(buf, L"CanPlace: using m_iPlaceRow=%d m_iPlaceCol=%d",
+		m_iPlaceRow, m_iPlaceCol);
+	OutputDebugString(buf);
 
-	return tileMgr->CanConstruct(row, col, m_iWidth, m_iHeight);
+	//int row, col;
+	//if (!CalcSizeTopLeft(worldPos, row, col))
+	//	return false;
+	int requiredValue = GetRequiredTileValue();
+	return tileMgr->CanConstruct(m_iPlaceRow, m_iPlaceCol, m_iWidth, m_iHeight, requiredValue);
 }
 
 void CBuilding::AppplyOccupy()
@@ -289,12 +347,21 @@ bool CBuilding::CalcSizeTopLeft(const Vec2& worldPos, int& outRow, int& outCol) 
 
 	int row, col;
 	if (!tileMgr->WorldToCell(worldPos, row, col)) return false;
-	//홀수 짝수 size 대응
+
+	wchar_t buf[256];
+	swprintf_s(buf, L"CalcSize: worldPos=(%.1f,%.1f) → cell=(%d,%d) width=%d height=%d",
+		worldPos.fX, worldPos.fY, row, col, m_iWidth, m_iHeight);
+	OutputDebugString(buf);
+
 	int halfW = (m_iWidth - 1) / 2;
 	int halfH = (m_iHeight - 1) / 2;
 
 	outRow = row - halfH;
 	outCol = col - halfW;
+
+	swprintf_s(buf, L"  → topLeft=(%d,%d) halfW=%d halfH=%d",
+		outRow, outCol, halfW, halfH);
+	OutputDebugString(buf);
 
 	return true;
 }
@@ -333,32 +400,13 @@ const TCHAR* CBuilding::GetProductionName()
 	}
 }
 
-void CBuilding::UpdateProgressbarInfo()
+void CBuilding::TakeDamage(int iAttackDamage)
 {
-	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
-	//해당 건물이 선택되어있는 상태인지 확인
-	bool bThisSelected = (selected.size() == 1 && selected[0] == this);
-	//선택되지 않은 상태면 넘어감
-	if (!bThisSelected)
+	if (IsGhost() || !IsComplete())
 		return;
-	
-	//Progressbar의 정보를 CMainUI에 전달		객체의 선택 상태 확인
-	if (!m_queue.empty())
-	{
-		ProgressbarInfo info;
-		info.fProgress = 1.0f - (m_queue.front().remainTime / m_queue.front().totalTime);
-		info.pUnitName = GetProductionName();
-		info.iQueueCount = m_queue.size();
-		info.bIsVisible = true;
-
-		CMainUI::Get_Instance()->SetProgressInfo(info);
-	}
-	else //선택되지 않았거나 큐가 비어있을 경우 bar 숨김
-	{
-		ProgressbarInfo info;
-		info.bIsVisible = false;
-		CMainUI::Get_Instance()->SetProgressInfo(info);
-	}
+	m_iHP -= iAttackDamage;
+	if (m_iHP < 0) m_iHP = 0;
+	if (m_iHP == 0) Set_Dead();
 }
 
 void CBuilding::UpdateBuildingUIInfo()
@@ -429,6 +477,8 @@ const TCHAR* CBuilding::GetBuildingName()
 		return L"Starport";
 	case eBuildingType::SUPPLY_DEPOT:
 		return L"Supply Depot";
+	case eBuildingType::REFINERY:
+		return L"Refinery";
 	default:
 		return L"Building";
 	}

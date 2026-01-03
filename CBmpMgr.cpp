@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CBmpMgr.h"
+#include "CAnimMgr.h"
 
 CBmpMgr* CBmpMgr::m_pInstance = nullptr;
 
@@ -19,11 +20,22 @@ void CBmpMgr::Insert_Bmp(const TCHAR* pFilePath, const TCHAR* pImgKey)
 	if (iter == m_mapBit.end())
 	{
 		CMyBmp* pBmp = new CMyBmp;
-		pBmp->Load_Bmp(pFilePath);
-
+		pBmp->Load_Image(pFilePath);
 		m_mapBit.insert({ pImgKey, pBmp });
 	}
+}
 
+void CBmpMgr::Insert_Png(const TCHAR* pFilePath, const TCHAR* pImgKey)
+{
+    auto		iter = find_if(m_mapBit.begin(), m_mapBit.end(), tagFinder(pImgKey));
+
+    if (iter == m_mapBit.end())
+    {
+        CMyPng* pPng = new CMyPng;
+        pPng->Load_Image(pFilePath);
+
+        m_mapBit.insert({ pImgKey, pPng });
+    }
 }
 
 HDC CBmpMgr::Find_Image(const TCHAR* pImgKey)
@@ -43,15 +55,64 @@ HBITMAP CBmpMgr::Find_Bitmap(const TCHAR* pImgKey)
 
     if (iter == m_mapBit.end())
         return nullptr;
-    return iter->second->Get_Bitmap();
 
-    return HBITMAP();
+    return iter->second->Get_Bitmap();
+}
+
+CMyPng* CBmpMgr::Find_Png(const TCHAR* pImgKey)
+{
+    auto iter = find_if(m_mapBit.begin(), m_mapBit.end(), tagFinder(pImgKey));
+
+    if (iter == m_mapBit.end())
+        return nullptr;
+    //PNG 타입인지 확인
+    if (iter->second->Get_Type() == eImageType::PNG)
+    {
+        return dynamic_cast<CMyPng*>(iter->second);
+    }
+    return nullptr;
+}
+
+void CBmpMgr::Insert_Png_Anim(const TCHAR* pFilePath, const TCHAR* pImgKey)
+{
+    if (!pFilePath || !pImgKey)
+        return;
+    wstring key = pImgKey;
+    auto it = m_mapPng.find(key);
+    if (it != m_mapPng.end()) //이미 존재하면 return
+        return;
+        
+    CMyPng* pPng = new CMyPng;
+    pPng->Load_Image(pFilePath);
+    m_mapPng.insert({ key, pPng });
+}
+
+CMyPng* CBmpMgr::Find_Png_Anim(const TCHAR* pImgKey)
+{
+    if (!pImgKey)
+        return nullptr;
+    auto it = m_mapPng.find(wstring(pImgKey));
+    if (it ==  m_mapPng.end()) //존재하지 않으면 return
+        return nullptr;
+    
+    if (it->second->Get_Type() == eImageType::PNG)
+        return static_cast<CMyPng*>(it->second);
+
+    return nullptr;
 }
 
 void CBmpMgr::Release()
 {
 	for_each(m_mapBit.begin(), m_mapBit.end(), DeleteMap());
 	m_mapBit.clear();
+
+    //for_each(m_mapPng.begin(), m_mapPng.end(), DeleteMap());
+    //m_mapPng.clear();
+
+    for (auto& kv : m_mapPng)
+        delete kv.second;
+    
+    m_mapPng.clear();
 }
 
 void CBmpMgr::Render_Alpha(const TCHAR* pImageKey, const TCHAR* pAlphaKey, 
@@ -80,7 +141,7 @@ void CBmpMgr::Render_Alpha_Simple(const TCHAR* pImageKey, HDC hDC,
     auto iter = m_mapBit.find(pImageKey);
     if (iter == m_mapBit.end()) return;
 
-    CMyBmp* pBmp = iter->second;
+    CMyImage* pBmp = iter->second;
     HDC hMemDC = pBmp->Get_MemDC();  // CMyBmp의 DC 가져오기
     HBITMAP hBitmap = pBmp->Get_Bitmap();  // 비트맵 핸들 가져오기
 
@@ -106,7 +167,7 @@ void CBmpMgr::Render_Alpha_Tint(const TCHAR* pImageKey, const TCHAR* pAlphaKey, 
     auto iterColor = m_mapBit.find(pImageKey);
     if (iterColor == m_mapBit.end()) return;
 
-    CMyBmp* pColorBmp = iterColor->second;
+    CMyImage* pColorBmp = iterColor->second;
     HDC hColorDC = pColorBmp->Get_MemDC();
     HBITMAP hColorBitmap = pColorBmp->Get_Bitmap();
 
@@ -114,7 +175,7 @@ void CBmpMgr::Render_Alpha_Tint(const TCHAR* pImageKey, const TCHAR* pAlphaKey, 
     auto iterAlpha = m_mapBit.find(pAlphaKey);
     if (iterAlpha == m_mapBit.end()) return;
 
-    CMyBmp* pAlphaBmp = iterAlpha->second;
+    CMyImage* pAlphaBmp = iterAlpha->second;
     HDC hAlphaDC = pAlphaBmp->Get_MemDC();
     HBITMAP hAlphaBitmap = pAlphaBmp->Get_Bitmap();
 

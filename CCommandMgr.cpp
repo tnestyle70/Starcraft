@@ -90,9 +90,12 @@ void CCommandMgr::Update()
         m_pGhost->Set_Pos(mouseWorld.fX, mouseWorld.fY);
     }
     //배치 가능 여부 mouseWorld를 기준으로 판단
-    bool can = m_pGhost->CanPlace(mouseWorld);
-    m_pGhost->SetCanPlace(can);
-    
+    bool can;
+    if (CInputMgr::Get_Instance()->KeyDown(LEFT_MOUSE))
+    {
+        can = m_pGhost->CanPlace(mouseWorld);
+        m_pGhost->SetCanPlace(can);
+    }
     //건설 명령
     if (CInputMgr::Get_Instance()->KeyDown(LEFT_MOUSE))
     {
@@ -154,13 +157,16 @@ void CCommandMgr::Render(HDC hDC)
 
 void CCommandMgr::IssueMove(Vec2& worldGoal)
 {
-	auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
-	if (selected.empty()) return;
+    auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+    if (selected.empty())
+        return;
+    int unitCount = selected.size();
 
-    for (CObj* pObj : selected)
+    if (unitCount == 1)
     {
-        CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
-        if (!pUnit) continue;
+        //단일 유닛 : 직진
+        CUnit* pUnit = dynamic_cast<CUnit*>(selected[0]);
+        if (!pUnit) return;
 
         Vec2 start = pUnit->Get_Pos();
         //AStart를 통해 계산한 위치를 반환 받아서 CUnit 쪽에 넘겨주기 
@@ -180,5 +186,117 @@ void CCommandMgr::IssueMove(Vec2& worldGoal)
         pUnit->ClearOrder();
         pUnit->PushOrder(order);
     }
-    return;
+    //격자형 배치
+    else
+    {
+        int cols = (int)ceil(sqrt(unitCount));  // 한 줄에 몇 개
+        float spacing = 25.f;  // 유닛 간 간격
+
+        int index = 0;
+        for (auto* obj : selected)
+        {
+            CUnit* unit = dynamic_cast<CUnit*>(obj);
+            if (!unit) continue;
+
+            int row = index / cols;
+            int col = index % cols;
+
+            // 중앙 정렬을 위한 오프셋
+            float offsetX = (col - cols / 2.0f) * spacing;
+            float offsetY = (row - unitCount / cols / 2.0f) * spacing;
+
+            Vec2 formationGoal;
+            formationGoal.fX = worldGoal.fX + offsetX;
+            formationGoal.fY = worldGoal.fY + offsetY;
+
+            Order order;
+            order.eType = eOrderType::MOVE;
+            order.dst = formationGoal;
+            order.path.clear();
+
+            unit->ClearOrder();
+            unit->PushOrder(order);
+
+            index++;
+        }
+    }
+    //원형 배치
+    /*
+    else
+    {
+        float formationRadius = 15.f + (unitCount * 2.f);
+        float angleStep = 360.f / unitCount;
+
+        int index = 0;
+        for (auto* obj : selected)
+        {
+            CUnit* unit = dynamic_cast<CUnit*>(obj);
+            if (!unit)
+                continue;
+
+            // 원형 배치
+            float angle = angleStep * index;
+            float angleRad = angle * 3.14159f / 180.f;
+
+            Vec2 formationGoal;
+            formationGoal.fX = worldGoal.fX + cosf(angleRad) * formationRadius;
+            formationGoal.fY = worldGoal.fY + sinf(angleRad) * formationRadius;
+
+            Order order;
+            order.eType = eOrderType::MOVE;
+            order.dst = formationGoal;  // 각자 다른 목표!
+            order.path.clear();
+
+            unit->ClearOrder();
+            unit->PushOrder(order);
+
+            index++;
+        }
+    }
+    */
+}
+
+void CCommandMgr::IssueAttack(CObj* pTarget)
+{
+    auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+    if (selected.empty() || !pTarget)
+        return;
+    for (auto* pObj : selected)
+    {
+        CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
+        if (!pUnit) continue;
+
+        Order order;
+        order.eType = eOrderType::ATTACK;
+        order.pTarget = pTarget;
+        order.dst = pTarget->Get_Pos();
+        order.path.clear();
+        order.iPathIndex = 0;
+
+        pUnit->ClearOrder();
+        pUnit->PushOrder(order);
+    }
+}
+
+void CCommandMgr::IssueAttackMove(Vec2& worldGoal)
+{
+    auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+    if (selected.empty())
+        return;
+
+    for (auto* obj : selected)
+    {
+        CUnit* pUnit = dynamic_cast<CUnit*>(obj);
+        if (!pUnit) continue;
+
+        Order order;
+        order.eType = eOrderType::ATTACK_MOVE;
+        order.dst = worldGoal;
+        order.pTarget = nullptr;
+        order.path.clear();
+        order.iPathIndex = 0;
+
+        pUnit->ClearOrder();
+        pUnit->PushOrder(order);
+    }
 }

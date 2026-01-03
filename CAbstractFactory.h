@@ -6,6 +6,7 @@
 #include "CFactory.h"
 #include "CStarport.h"
 #include "CSupplyDepot.h"
+#include "CRefinery.h"
 
 struct CBuildingFactory
 {
@@ -28,6 +29,9 @@ struct CBuildingFactory
 			break;
 		case eBuildingType::SUPPLY_DEPOT:
 			pBuilding = new CSupplyDepot;
+			break;
+		case eBuildingType::REFINERY:
+			pBuilding = new CRefinery;
 			break;
 		default:
 			break;

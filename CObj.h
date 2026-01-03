@@ -14,6 +14,7 @@ public:
 	virtual void Release()		PURE;
 public:
 	virtual bool IsDead() const { return false; };
+	virtual void TakeDamage(int iAttackDamage) {};
 	INFO Get_Info() { return m_tInfo; }
 	RECT* Get_Rect() { return &m_tRect; }
 	Vec2 Get_Pos() { return { m_tInfo.fX, m_tInfo.fY }; }
@@ -26,20 +27,29 @@ public:
 	void Update_Rect();
 	void Move_Frame();
 
+	bool Is_Dead() { return m_bDead; }
+	void Set_Dead() { m_bDead = true; }
+
 	RENDERID		Get_RenderID() const { return m_eRender; }
 public:
 	int m_iZOrder = 0;
 	virtual int GetSortY() const { return m_tRect.bottom; } 
 public:
 	bool IsSelected() { return m_bSelected; }
+	bool IsSelectable() const { return m_bSelectable; }
 	void SetSelected(bool bSelected){ m_bSelected = bSelected; }
+	Vec2 GetVelocity() { return m_velocity; }
+	void SetVelocity(const Vec2& v) { m_velocity = v; }
 protected:
 	//선택 상태 CObj로 올리기
 	bool m_bSelected;
+	bool m_bSelectable;
 	INFO m_tInfo; //상태
 	RECT m_tRect;
+	bool m_bDead;
 	FRAME m_tFrame; //애니메이션
 	RENDERID m_eRender;
 	const TCHAR* m_pFrameKey;
 	int m_iDrawID;
+	Vec2 m_velocity;
 };

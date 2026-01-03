@@ -6,6 +6,7 @@
 #include "CScrollMgr.h"
 #include "CCommandMgr.h"
 #include <WindowsX.h>
+#include "CGdiPlusMgr.h"
 
 #define MAX_LOADSTRING 100
 
@@ -77,6 +78,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = nullptr; // 임시: 가속키 리소스 안 쓰기
     //HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_STARCRAFT));
 
+    //Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    //ULONG_PTR gdiplusToken;
+    //Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    CGdiPlusMgr::Get_Instance();
+
     CMainGame game;
     game.Initialize();
 
@@ -102,6 +108,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
     game.Release();
+
+    CGdiPlusMgr::Destroy_Instance();
+
     return (int)msg.wParam;
 }
 

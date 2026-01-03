@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CSceneMgr.h"
+#include "CObjMgr.h"
 
 CSceneMgr* CSceneMgr::m_pInstance = nullptr;
 
@@ -22,13 +23,16 @@ void CSceneMgr::Scene_Change(SCENEID eID)
 		if (m_pScene)
 		{
 			m_pScene->Release();
-			Safe_Delete(m_pScene);
+			//Safe_Delete(m_pScene);
 		}
 
 		switch (m_eCurScene)
 		{
 		case SC_MENU:
 			m_pScene = new CMenu;
+			break;
+		case SC_MENU_RACE:
+			m_pScene = new CMenuRace;
 			break;
 		case SC_STAGE:
 			m_pScene = new CStage;

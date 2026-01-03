@@ -3,6 +3,7 @@
 
 CMyBmp::CMyBmp()
 {
+	m_eType = eImageType::BMP;
 }
 
 CMyBmp::~CMyBmp()
@@ -10,7 +11,7 @@ CMyBmp::~CMyBmp()
 	Release();
 }
 
-void CMyBmp::Load_Bmp(const TCHAR* pFilePath)
+void CMyBmp::Load_Image(const TCHAR* pFilePath)
 {
 	HDC hDC = GetDC(g_hWnd);
 	//매개 변수로 전달한 dc와 호환되는 dc를 할당 
@@ -28,12 +29,15 @@ void CMyBmp::Load_Bmp(const TCHAR* pFilePath)
 
 		//SelectObject : 준비한 dc를 gdi 오브젝트로 불러온 비트맵에 선택하여 적용
 
-	m_hOldmap = (HBITMAP)SelectObject(m_hMemDC, m_hBitmap);
+	m_hOldBitmap = (HBITMAP)SelectObject(m_hMemDC, m_hBitmap);
 }
 
 void CMyBmp::Release()
 {
-	SelectObject(m_hMemDC, m_hOldmap);
+	SelectObject(m_hMemDC, m_hOldBitmap);
 	DeleteObject(m_hBitmap);
 	DeleteDC(m_hMemDC);
+	m_hMemDC = nullptr;
+	m_hBitmap = nullptr;
+	m_hOldBitmap = nullptr;
 }

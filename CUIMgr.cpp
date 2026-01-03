@@ -48,19 +48,25 @@ void CUIMgr::Initialize()
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Starport/Starport_Red.bmp", L"STARPORT_RED");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Factory/Factory.bmp", L"FACTORY_GREEN");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Factory/Factory_Red.bmp", L"FACTORY_RED");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Refinery/Refinery4.bmp", L"REFINERY_GREEN");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Build/Refinery/Refinery_Red.bmp", L"REFINERY_RED");
     //알파마스크
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/trash/Structure/BuildAlpha.bmp", L"BUILD_ALPAH");
     //ProgressUI
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/HpRect.bmp", L"HP_RECT");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/MpRect.bmp", L"MP_RECT");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/UIRect.bmp", L"UI_RECT");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/ProgressEmpty.bmp", L"PROGRESS_EMPTY");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/ProgressFull.bmp", L"PROGRESS_FULL");
     //Wire 이미지
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/Wire/BigWire.bmp", L"WIRE");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/Wire/SmallWire.bmp", L"SMALL_WIRE");
     //유닛 Spawn 이미지(SCV, 마린, 파이어벳, 고스트, 벌쳐, 시즈탱크, 골리앗)
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/UnitSpawn_Icon/SpawnIcon.bmp", L"SPAWN_ICON");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/MiniMap.bmp", L"MINIMAP");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/Map/MiniMapFrame.bmp", L"MINIMAP_FRAME");
     CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/Icon/ETC.bmp", L"ETC");
+    CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/UI/UpgradeDetail2.bmp", L"TRAIN_FRAME");
     //CMainUI 생성 및 초기화 (여기서 알파 비트맵 생성됨)
     CMainUI::Get_Instance()->Initialize();
 }
@@ -217,6 +223,10 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         return IconIndex::HOLD;
     case eCommandID::RALLY:
         return IconIndex::RALLY;
+    case eCommandID::NORMAL_BUILDING:
+        return IconIndex::NORMAL_BUILDING;
+    case eCommandID::ADVANCED_BUILDING:
+        return IconIndex::ADVANCED_BUILDING;
 
         // 유닛 생산
     case eCommandID::SCV:
@@ -229,6 +239,10 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         return IconIndex::VULTURE;
     case eCommandID::TANK:
         return IconIndex::TANK;
+    case eCommandID::SIEGE_TANK:
+        return IconIndex::SIEGE_TANK;
+    case eCommandID::GOLIATH:
+        return IconIndex::GOLIATH;
     case eCommandID::BATTLECRUISER:
         return IconIndex::BATTLECRUISER;
         // 건물 건설
@@ -236,6 +250,8 @@ int CUIMgr::GetIconIndex(eCommandID commandID)
         return IconIndex::COMMAND_CENTER;
     case eCommandID::SUPPLY_DEPOT:
         return IconIndex::SUPPLY_DEPOT;
+    case eCommandID::REFINERY:
+        return IconIndex::REFINERY;
     case eCommandID::BARRACKS:
         return IconIndex::BARRACKS;
     case eCommandID::FACTORY:

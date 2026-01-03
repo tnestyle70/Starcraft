@@ -20,7 +20,7 @@ void CMainGame::Initialize()
 {
 	m_hDC = GetDC(g_hWnd);
 
-	CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_MENU);
+	CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_MENU_RACE);
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/MyFolder/MenuBack.bmp", L"Back");
 
 	CTimeMgr::Get_Instance()->Initialize();
@@ -30,6 +30,7 @@ void CMainGame::Initialize()
 void CMainGame::Update()
 {
 	CSceneMgr::Get_Instance()->Update();
+
 	CInputMgr::Get_Instance()->Update();
 }
 

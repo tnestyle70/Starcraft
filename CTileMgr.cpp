@@ -3,7 +3,6 @@
 #include "CAbstractFactory.h"
 #include "CScrollMgr.h"
 
-
 CTileMgr* CTileMgr::m_pInstance = nullptr;
 
 CTileMgr::CTileMgr()
@@ -75,6 +74,14 @@ void CTileMgr::Release()
 
 CObj* CTileMgr::GetTile(int row, int col)
 {
+	//범위 체크
+	if (row < 0 || row >= TILEY || col < 0 || col >= TILEX)
+		return nullptr;
+	//벡터 크기 체크
+	int index = row * TILEX + col;
+	if (index < 0 || index >= (int)m_vecTile.size())
+		return nullptr;
+
 	//row, col에 해당하는 CTile을 반환
 	return m_vecTile[row * TILEX + col];
 }
@@ -174,6 +181,75 @@ void CTileMgr::RenderGrid(HDC hDC, float fScrX, float fScrY)
 	DeleteObject(pen);
 }
 
+void CTileMgr::RenderBuildingOverlay(HDC hDC, int topRow, int topCol, int width, int height, int requirecValue)
+{
+	float scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
+	float scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
+
+	// 각 타일에 대해 건설 가능 여부를 확인하고 오버레이 그리기
+	for (int r = topRow; r < topRow + height; ++r)
+	{
+		for (int c = topCol; c < topCol + width; ++c)
+		{
+			// 범위 체크
+			if (!InRange(r, c))
+				continue;
+
+			// 타일의 월드 좌표 (좌상단)
+			Vec2 worldTL = CellToWorldTopLeft(r, c);
+
+			// 스크린 좌표로 변환
+			int screenX = (int)(worldTL.fX - scrX);
+			int screenY = (int)(worldTL.fY - scrY);
+
+			// 화면 밖이면 스킵
+			if (screenX + TILECX < 0 || screenX > WINCX ||
+				screenY + TILECY < 0 || screenY > WINCY)
+				continue;
+
+			// 건설 가능 여부 확인
+			bool canBuild = IsBuildableTile(r, c, requirecValue) && !IsOccupy(r, c);
+
+			// 색상 결정
+			COLORREF overlayColor = canBuild ? RGB(0, 255, 0) : RGB(255, 0, 0);
+
+			// 반투명 사각형 그리기를 위한 메모리 DC 생성
+			HDC hMemDC = CreateCompatibleDC(hDC);
+			HBITMAP hMemBitmap = CreateCompatibleBitmap(hDC, TILECX, TILECY);
+			HBITMAP hOldBitmap = (HBITMAP)SelectObject(hMemDC, hMemBitmap);
+
+			// 색상으로 채우기
+			HBRUSH hBrush = CreateSolidBrush(overlayColor);
+			RECT fillRect = { 0, 0, TILECX, TILECY };
+			FillRect(hMemDC, &fillRect, hBrush);
+
+			// 알파블렌드로 반투명하게 그리기
+			BLENDFUNCTION bf;
+			bf.BlendOp = AC_SRC_OVER;
+			bf.BlendFlags = 0;
+			bf.SourceConstantAlpha = 80;  // 반투명도 (0-255)
+			bf.AlphaFormat = 0;
+
+			AlphaBlend(hDC,
+				screenX,
+				screenY,
+				TILECX,
+				TILECY,
+				hMemDC,
+				0, 0,
+				TILECX,
+				TILECY,
+				bf);
+
+			// 정리
+			DeleteObject(hBrush);
+			SelectObject(hMemDC, hOldBitmap);
+			DeleteObject(hMemBitmap);
+			DeleteDC(hMemDC);
+		}
+	}
+}
+
 bool CTileMgr::IsOccupy(int row, int col)
 {
 	int idx = row * TILEX + col;
@@ -198,25 +274,33 @@ bool CTileMgr::InRange(int& row, int& col) const
 		col >= 0 && col < TILEX);
 }
 
-bool CTileMgr::IsBuildableTile(int row, int col)
+bool CTileMgr::IsBuildableTile(int row, int col, int requiredValue)
 {
-	if (!InRange(row, col)) return false;
+	if (!InRange(row, col)) 
+		return false;
 	CObj* pObjTile = GetTile(row, col);
 	CTile* pTile = dynamic_cast<CTile*>(pObjTile);
-	if (!pTile) return false;
+	if (!pTile) 
+		return false;
 
 	int iOption = pTile->Get_Option();
+
+	//가스 3만 체크
+	if (requiredValue >= 0)
+		return (iOption == requiredValue);
+
+	//기본 0만 건설 가능
 	return (iOption == 0);
 }
-
-bool CTileMgr::CanConstruct(int row, int col, int width, int height)
+ 
+bool CTileMgr::CanConstruct(int row, int col, int width, int height, int requiredValue)
 {
 	for (int r = row; r < row + height; ++r)
 	{
 		for (int c = col; c < col + width; ++c)
 		{
 			if (!InRange(r, c)) return false;
-			if (!IsBuildableTile(r, c)) return false;
+			if (!IsBuildableTile(r, c, requiredValue)) return false;
 			if (IsOccupy(r, c)) return false;
 		}
 	}
@@ -261,7 +345,7 @@ void CTileMgr::Save_Tile()
 	int			iOption(0), iCost(0);
 	DWORD		dwByte(0);
 	//디버깅 
-	int cnt = 0, opt0 = 0, opt1 = 0, optOther = 0;
+	int cnt = 0, opt0 = 0, opt1 = 0,  opt2 = 0 ,optOther = 0;
 
 	for (auto& pTile : m_vecTile)
 	{
@@ -271,6 +355,7 @@ void CTileMgr::Save_Tile()
 
 		if (iOption == 0) opt0++;
 		else if (iOption == 1) opt1++;
+		else if (iOption == 2) opt2++;
 		else optOther++;
 
 		WriteFile(hFile, &iOption, sizeof(int), &dwByte, nullptr);
@@ -283,7 +368,7 @@ void CTileMgr::Save_Tile()
 	CloseHandle(hFile);
 
 	wchar_t buf[128];
-	swprintf_s(buf, L"SAVE TOTAL=%d\nopt0=%d opt1=%d other=%d", cnt, opt0, opt1, optOther);
+	swprintf_s(buf, L"SAVE TOTAL=%d\nopt0=%d opt1=%d\n opt2=%d other=%d", cnt, opt0, opt1, opt2 ,optOther);
 	MessageBox(g_hWnd, buf, L"Save Debug", MB_OK);
 
 	//MessageBox(g_hWnd, L"Tile Save 완료", _T("성공"), MB_OK);
@@ -313,7 +398,7 @@ void CTileMgr::Load_Tile()
 	DWORD		dwByte(0);
 	INFO		tTile{};
 	//디버깅
-	int cnt = 0, cntOpt1 = 0;
+	int cnt = 0, cntOpt1 = 0, cntOpt2 = 0;
 	while (true)
 	{
 		DWORD br1 = 0, br2 = 0, br3 = 0;
@@ -325,6 +410,7 @@ void CTileMgr::Load_Tile()
 			br1 != sizeof(int) || br2 != sizeof(int) || br3 != sizeof(INFO))
 			break;
 		if (iOption == 1) cntOpt1++;
+		else if (iOption == 2) cntOpt2++;
 		cnt++;
 		//if (dwByte == 0)
 		//	break;
@@ -337,8 +423,9 @@ void CTileMgr::Load_Tile()
 	}
 
 	CloseHandle(hFile);
+
 	wchar_t buf[128];
-	swprintf_s(buf, L"TOTAL=%d\nopt1=%d", cnt, cntOpt1);
+	swprintf_s(buf, L"TOTAL=%d\nopt1=%d\nopt2=%d", cnt,cntOpt1, cntOpt2);
 
 	MessageBox(g_hWnd, buf, L"Tile Load 완료", MB_OK);
 }

@@ -3,7 +3,7 @@
 
 enum eKey
 {
-	LEFT_MOUSE, RIGHT_MOUSE, S_KEY, B_KEY, G_KEY, ESCAPE,
+	LEFT_MOUSE, RIGHT_MOUSE, A_KEY,S_KEY, B_KEY, G_KEY, ESCAPE,
 	ESCAPE0 ,KEY_END
 };
 
@@ -17,6 +17,7 @@ public:
 	void Update();
 public:
 	Vec2 GetWorldMouse();
+	Vec2 GetScreenMouse();
 
 	float GetMouseX() { return m_ptMouse.x; }
 	float GetMouseY() { return m_ptMouse.y; }

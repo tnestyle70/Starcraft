@@ -7,6 +7,9 @@
 #include "CInputMgr.h"
 #include "CCommandMgr.h"
 #include "CMainUI.h"
+#include "CMineral.h"
+#include "CGas.h"
+#include "CSCV.h"
 
 CSelectionMgr* CSelectionMgr::m_pInstance = nullptr;
 
@@ -51,10 +54,6 @@ void CSelectionMgr::ClearSelection()
 			pObj->SetSelected(false);
 	}
 	m_vecSelected.clear();
-	//ProgressbarInfo 숨김 추가
-	ProgressbarInfo info;
-	info.bIsVisible = false;
-	CMainUI::Get_Instance()->SetProgressInfo(info);
 	//BuildingUIInfo 숨김 추가
 	BuildingUIInfo buildingInfo;
 	buildingInfo.IsVisible = false;
@@ -64,12 +63,19 @@ void CSelectionMgr::ClearSelection()
 	buildingInfo.fProgress = 0.f;
 	buildingInfo.queue.clear();
 	CMainUI::Get_Instance()->SetBuildingUIInfo(buildingInfo);
+	//UnitUIInfo 숨김 추가
+	UnitUIInfo UnitInfo;
+	UnitInfo.IsVisible = false;
+	UnitInfo.pUnitName = nullptr;
+	UnitInfo.iMaxHP = 0;
+	UnitInfo.iHP = 0;
+	UnitInfo.eType = eUnitType::NONE;
+	CMainUI::Get_Instance()->SetUnitUIInfo(UnitInfo);
 }
 
 void CSelectionMgr::SelectSingleAt(const POINT& clientPt)
 {
-	//이전 선택 초기화
-	ClearSelection();
+	bool bCtrlPressed = CInputMgr::Get_Instance()->KeyPressVK(VK_CONTROL);
 
 	const float fScrX = CScrollMgr::Get_Instance()->Get_ScrollX();
 	const float fScrY = CScrollMgr::Get_Instance()->Get_ScrollY();
@@ -77,11 +83,28 @@ void CSelectionMgr::SelectSingleAt(const POINT& clientPt)
 	Vec2 vWorld{ clientPt.x + fScrX, clientPt.y + fScrY };
 
 	CObj* pHit = CObjMgr::Get_Instance()->PickObjAt(vWorld);
-	if (pHit) 
+	if (!pHit || !pHit->IsSelectable())
 	{
-		pHit->SetSelected(true);
-		m_vecSelected.push_back(pHit);
+		if (!bCtrlPressed)
+		{
+			ClearSelection();
+		}
+		return;
 	}
+	//ctrl 클릭
+	if (bCtrlPressed)
+	{
+		CUnit* pClickedUnit = dynamic_cast<CUnit*>(pHit);
+		if (pClickedUnit)
+		{
+			SelectSameTypeUnits(pClickedUnit);
+			return;
+		}
+	}
+	//일반 클릭 처리
+	ClearSelection();
+	pHit->SetSelected(true);
+	m_vecSelected.push_back(pHit);
 }
 
 void CSelectionMgr::Update()
@@ -90,13 +113,21 @@ void CSelectionMgr::Update()
 	if (CCommandMgr::Get_Instance()->IsPlacing())
 		return;
 	if (CInputMgr::Get_Instance()->KeyDown(LEFT_MOUSE))
+	{
 		OnLMouseDown();
-
+		
+	}
+	//좌클릭(선택)
 	if (m_bDragging && CInputMgr::Get_Instance()->KeyPress(LEFT_MOUSE))
 		OnMouseMove();
 
 	if (CInputMgr::Get_Instance()->KeyUp(LEFT_MOUSE))
 		OnLMouseUp();
+	//우클릭(명령)
+	if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE))
+		OnRMouseDown();
+	if (CInputMgr::Get_Instance()->KeyUp(RIGHT_MOUSE))
+		OnRMouseUp();
 }
 
 void CSelectionMgr::OnLMouseDown() //드래그 중
@@ -125,10 +156,6 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 	m_ptCur = GetMouseClient();
 	m_rcScreen = NormalizeRect(m_ptStart, m_ptCur);
 	m_bDragging = false;
-	//ProgressbarInfo 숨김 추가
-	ProgressbarInfo info;
-	info.bIsVisible = false;
-	CMainUI::Get_Instance()->SetProgressInfo(info);
 	//BuildingUIInfo 숨김 추가
 	BuildingUIInfo buildingInfo;
 	buildingInfo.IsVisible = false;
@@ -142,6 +169,11 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 	if (IsClickSelection(m_rcScreen))
 	{
 		SelectSingleAt(m_ptCur);
+		//단일 선택시에 멀티 UI 숨김 처리
+		MultiUnitUIInfo multiInfo;
+		multiInfo.IsVisible = false;
+		multiInfo.iUnitCount = 0;
+		CMainUI::Get_Instance()->SetMultiUnitUIInfo(multiInfo);
 		return;
 	}
 	//중심이 rect 안에 존재하는 유닛 전부 선택
@@ -157,11 +189,12 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 	rcWorld.right += (LONG)fScrX;
 	rcWorld.bottom += (LONG)fScrY;
 	
-	//전체 마린 훑어서 유닛 월드 Rect가 rcWorld와 겹치면 선택
+	//전체 유닛 훑어서 월드 Rect가 rcWorld와 겹치면 선택
 	auto& units = CObjMgr::Get_Instance()->GetUnits();
 	for (CUnit* u : units)
 	{
-		if (!u || u->IsDead()) continue;
+		if (!u || u->IsDead() || !u->IsSelectable()) 
+			continue;
 
 		RECT ur = u->GetWorldRect(); //유닛 충돌 + 바운딩 박스(월드 좌표 기준)
 		RECT inter{};
@@ -171,13 +204,45 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 			m_vecSelected.push_back(u);
 		}
 	}
+	//멀티 유닛 선택 처리(WireFrame 부분 추가)
+	if (m_vecSelected.size() > 1)
+	{
+		//멀티 유닛 UI 구성
+		MultiUnitUIInfo info;
+		info.IsVisible = true;
+		info.iUnitCount = min(12, (int)m_vecSelected.size()); //최대 16개
+		for (int i = 0; i < info.iUnitCount; ++i)
+		{
+			CUnit* pUnit = dynamic_cast<CUnit*>(m_vecSelected[i]);
+			if (pUnit)
+			{
+				info.units[i].eType = pUnit->Get_UnitType();
+				info.units[i].iHP = pUnit->Get_HP();
+				info.units[i].iMaxHP = pUnit->Get_MaxHP();
+				info.units[i].pUnit = pUnit;
+			}
+		}
+		CMainUI::Get_Instance()->SetMultiUnitUIInfo(info);
+		//단일 유닛 UI 숨김
+		UnitUIInfo unitInfo;
+		unitInfo.IsVisible = false;
+		CMainUI::Get_Instance()->SetUnitUIInfo(unitInfo);
+	}
+	else if (m_vecSelected.size() == 1)
+	{
+		MultiUnitUIInfo info;
+		info.IsVisible = false;
+		CMainUI::Get_Instance()->SetMultiUnitUIInfo(info);
+	}
+
 	//유닛 없으면 건물 선택
 	if (m_vecSelected.empty())
 	{
 		auto& building = CObjMgr::Get_Instance()->GetBuildings();
 		for (auto* pBuilding : building)
 		{
-			if (!pBuilding) continue;
+			if (!pBuilding || !pBuilding->IsSelectable()) 
+				continue;
 
 			//Ghost 건물 선택 안 됨
 			CBuilding* build = dynamic_cast<CBuilding*>(pBuilding);
@@ -191,6 +256,233 @@ void CSelectionMgr::OnLMouseUp() //드래그 종료
 				pBuilding->SetSelected(true);
 				m_vecSelected.push_back(pBuilding);
 				break; // 건물은 1개만
+			}
+		}
+	}
+	//아군 없으면 적 선택
+	auto& ememy = CObjMgr::Get_Instance()->GetEnemies();
+	
+}
+
+void CSelectionMgr::SelectSameTypeUnits(CUnit* pRefUnit)
+{
+	if (!pRefUnit) return;
+	//이전 선택 해제
+	ClearSelection();
+	eUnitType targetType = pRefUnit->Get_UnitType();
+	const int MAX_SELECTION = 12; //최대 선택 개수 제한
+	//유닛 선택 화면에 있는 유닛만 선택
+	float srcX = CScrollMgr::Get_Instance()->Get_ScrollX();
+	float srcY = CScrollMgr::Get_Instance()->Get_ScrollY();
+	RECT screenWorld;
+	screenWorld.left = (LONG)srcX;
+	screenWorld.top = (LONG)srcY;
+	screenWorld.right = (LONG)(srcX + WINCX);
+	screenWorld.bottom = (LONG)(srcY + WINCY);
+
+	auto& units = CObjMgr::Get_Instance()->GetUnits();
+
+	for (CUnit* pUnit : units)
+	{
+		if (!pUnit || pUnit->IsDead() || !pUnit->IsSelectable())
+			continue;
+		if (m_vecSelected.size() > MAX_SELECTION)
+			continue;
+		//동일 타입인지 확인
+		if (pUnit->Get_UnitType() != targetType)
+			continue;
+		//화면 내에 있는지 체크
+		Vec2 pos = pUnit->Get_Pos();
+		if (pos.fX >= screenWorld.left && pos.fX <= screenWorld.right &&
+			pos.fY >= screenWorld.top && pos.fY <= screenWorld.bottom) 
+		{
+			pUnit->SetSelected(true);
+			m_vecSelected.push_back(pUnit);
+		}
+	}
+	//멀티 유닛 UI업데이트
+	if (m_vecSelected.size() > 1)
+	{
+		MultiUnitUIInfo info;
+		info.IsVisible = true;
+		info.iUnitCount = min(12, (int)m_vecSelected.size());
+		for (int i = 0; i < info.iUnitCount; ++i)
+		{
+			CUnit* pUnit = dynamic_cast<CUnit*>(m_vecSelected[i]);
+			if (pUnit)
+			{
+				info.units[i].eType = pUnit->Get_UnitType();
+				info.units[i].iHP = pUnit->Get_HP();
+				info.units[i].iMaxHP = pUnit->Get_MaxHP();
+				info.units[i].pUnit = pUnit;
+			}
+		}
+		CMainUI::Get_Instance()->SetMultiUnitUIInfo(info);
+		//단일 유닛 UI 숨기기
+		UnitUIInfo unitInfo;
+		unitInfo.IsVisible = false;
+		CMainUI::Get_Instance()->SetUnitUIInfo(unitInfo);
+	}
+}
+
+void CSelectionMgr::OnRMouseDown()
+{
+	m_bRightClick = true;
+	m_ptRStart = GetMouseClient();
+}
+
+void CSelectionMgr::OnRMouseUp()
+{
+	if (!m_bRightClick)
+		return;
+	m_bRightClick = false;
+	//방향성, SelectionMgr에서 우클릭을 통합해서 처리하는 방향은 맞는데, 미네랄 쪽 nullptr 처리에서 문제가 생겨버림
+	//선택된 OBJ가 없으면 무시
+	if (m_vecSelected.empty()) //MainUI의 CUnit*쪽이 터지므로 여기서는 다른 처리를 해야 함 Mineral 쪽이 애초에 선택되면 안 됨?
+		return;
+	//월드 좌표 계산
+	POINT clientPT = GetMouseClient();
+	float srcX = CScrollMgr::Get_Instance()->Get_ScrollX();
+	float srcY = CScrollMgr::Get_Instance()->Get_ScrollY();
+	Vec2 worldPos{ clientPT.x + srcX, clientPT.y + srcY };
+	//클릭한 위치에 어떤 것이 있는지 확인
+	CObj* pTarget = FindClickTarget(worldPos);
+	//스마트 커맨드 실행
+	IssueSmartCommand(pTarget, worldPos);
+}
+
+CObj* CSelectionMgr::FindClickTarget(const Vec2& worldPos)
+{
+	const float CLICK_RADIUS = 50.f; //클릭 판정 범위
+
+	CObj* pClosest = nullptr;
+	float minDist = CLICK_RADIUS;
+
+	//자원
+	list<CObj*> resourceList = CObjMgr::Get_Instance()->Get_ObjList(OBJ_RESOURCE);
+	for (auto* pObj : resourceList)
+	{
+		if (!pObj || pObj->IsDead())
+			continue;
+		Vec2 resourcePos = pObj->Get_Pos();
+		float dx = worldPos.fX - resourcePos.fX;
+		float dy = worldPos.fY - resourcePos.fY;
+		float dist = sqrtf(dx * dx + dy * dy);
+
+		if (dist < minDist) //더 가까운 것으로 발견
+		{
+			minDist = dist;
+			pClosest = pObj;
+		}
+	}
+	//가장 가까운 자원 반환
+	if (pClosest)
+		return pClosest;
+
+
+	//적 유닛
+	list<CObj*> enemyList = CObjMgr::Get_Instance()->Get_ObjList(OBJ_ENEMY);
+	for (auto* pObj : enemyList)
+	{
+		if (!pObj || pObj->IsDead())
+			continue;
+		Vec2 enemyPos = pObj->Get_Pos();
+		float dx = worldPos.fX - enemyPos.fX;
+		float dy = worldPos.fY - enemyPos.fY;
+		float dist = sqrtf(dx * dx + dy * dy);
+		if (dist < CLICK_RADIUS)
+		{
+			return pObj;
+		}
+	}
+	return nullptr;
+}
+
+void CSelectionMgr::IssueSmartCommand(CObj* pTarget, const Vec2& worldPos)
+{
+	if (pTarget)
+	{
+		//미네랄 클릭 -> SCV GATHER 명령
+		CMineral* pMineral = dynamic_cast<CMineral*>(pTarget);
+		if (pMineral)
+		{
+			for (auto* pObj : m_vecSelected)
+			{
+				CSCV* pSCV = dynamic_cast<CSCV*>(pObj);
+				if (pSCV)
+				{
+					Order gatherOrder;
+					gatherOrder.eType = eOrderType::GATHER;
+					gatherOrder.pTarget = pMineral;
+					gatherOrder.dst = pMineral->Get_Pos();
+
+					pSCV->SetResourceType(eResourceType::MINERAL);
+					pSCV->PushOrder(gatherOrder);
+				}
+			}
+			return;
+		}
+		//TODO가스 클릭 구현
+		CGas* pGas = dynamic_cast<CGas*>(pTarget);
+		if (pGas)
+		{
+			for (auto* pObj : m_vecSelected)
+			{
+				CSCV* pSCV = dynamic_cast<CSCV*>(pObj);
+				if (pSCV)
+				{
+					Order gatherOrder;
+					gatherOrder.eType = eOrderType::GATHER;
+					gatherOrder.pTarget = pGas;
+					gatherOrder.dst = pGas->Get_Pos();
+
+					pSCV->SetResourceType(eResourceType::GAS);
+					pSCV->PushOrder(gatherOrder);
+				}
+			}
+			return;
+		}
+
+		//적 유닛 클릭 -> ATTACK 명령
+		list<CObj*> enemyList = CObjMgr::Get_Instance()->Get_ObjList(OBJ_ENEMY);
+		bool isEnemy = false;
+		for (auto* pEnemy : enemyList)
+		{
+			if (pEnemy == pTarget)
+			{
+				isEnemy = true;
+				break;
+			}
+		}
+		if (isEnemy)
+		{
+			for (auto* pObj : m_vecSelected)
+			{
+				CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
+				if (pUnit && !pUnit->IsDead())
+				{
+					Order attackOrder;
+					attackOrder.eType = eOrderType::ATTACK;
+					attackOrder.pTarget = pTarget;
+					attackOrder.dst = pTarget->Get_Pos();
+					pUnit->PushOrder(attackOrder);
+				}
+			}
+			return;
+		}
+	}
+	else
+	{
+		//빈 땅 클릭 -> MOVE
+		for (auto* pObj : m_vecSelected)
+		{
+			CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
+			if (pUnit)
+			{
+				Order moveOrder;
+				moveOrder.eType = eOrderType::MOVE;
+				moveOrder.dst = worldPos;
+				pUnit->PushOrder(moveOrder);
 			}
 		}
 	}
@@ -212,5 +504,53 @@ void CSelectionMgr::Render(HDC hDC)
 		SelectObject(hDC, hOldPen);
 		SelectObject(hDC, hOldBrush);
 		DeleteObject(hPen);
+	}
+}
+
+void CSelectionMgr::RenderSelectionCircle(HDC hDC)
+{
+	int iScrollX = (int)CScrollMgr::Get_Instance()->Get_ScrollX();
+	int iScrollY = (int)CScrollMgr::Get_Instance()->Get_ScrollY();
+
+	for (auto* pObj : m_vecSelected)
+	{
+		INFO info = pObj->Get_Info();
+		int iDrawX = (int)(info.fX - info.fCX / 2.f - iScrollX);
+		int iDrawY = (int)(info.fY - info.fCY / 2.f - iScrollY);
+
+		//선택 원(예: m_bSelected가 true일 때) 추후에 bmp로 교체
+		if (pObj->IsSelected())
+		{
+			HBRUSH oldB = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
+			HPEN pen = CreatePen(PS_SOLID, 2, RGB(0, 255, 0));
+			HPEN oldP = (HPEN)SelectObject(hDC, pen);
+
+			int cx = iDrawX + (int)(info.fCX * 0.5f);
+			int cy = iDrawY + (int)(info.fCY * 0.7f);   // 발밑 느낌으로 살짝 아래
+
+			float fRatio;
+
+			if ((max(info.fCX, info.fCY)) >= 160)
+			{
+				fRatio = 0.6f;
+			}
+			else if ((max(info.fCX, info.fCY)) < 160 && 
+				(max(info.fCX, info.fCY)) >= 100)
+			{
+				fRatio = 0.4f;
+			}
+			else 
+			{
+				fRatio = 0.3f;
+			}
+
+			int r = (int)(max(info.fCX, info.fCY) * fRatio);
+
+			Ellipse(hDC, cx - r, cy - r / 2, cx + r, cy + r / 2);
+
+			SelectObject(hDC, oldP);
+			SelectObject(hDC, oldB);
+			DeleteObject(pen);
+		}
 	}
 }

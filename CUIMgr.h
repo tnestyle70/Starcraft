@@ -16,22 +16,25 @@ namespace IconIndex
     const int CANCLE = 5;             // 정지 (금지)
     const int RALLY = 6;           // 공격 (조준점)
     const int GATHER = 7;           // 자원 채취 (폭발)
-    const int BUILD = 8;            // 건설 (렌치)
-    const int REPAIR = 9;           // 수리 (삼각형 렌치)
-
+    const int REPAIR = 8;          // 수리 (삼각형 렌치)
+    const int NORMAL_BUILDING = 9; //일반 건물
+    const int ADVANCED_BUILDING = 10; //고급 건물
     // 유닛 아이콘 (10~)
     const int SCV = 11;             // SCV
     const int MARINE = 12; //마린
     const int MEDIC = 13; //메딕
     const int VULTURE = 15; //벌쳐
     const int TANK = 16; //탱크
+    const int GOLIATH = 17; //골리앗
+    const int SIEGE_TANK = 40; //시즈 탱크
     const int BATTLECRUISER = 20; //배틀크루저
     //건물 아이콘
     const int COMMAND_CENTER = 22; //커맨드 센터
     const int SUPPLY_DEPOT = 23; //보급고
-    const int BARRACKS = 24; //배럭
-    const int FACTORY = 30;
-    const int STARPORT = 31;
+    const int REFINERY = 24; //정제소 
+    const int BARRACKS = 25; //배럭
+    const int FACTORY = 30; //군수공장
+    const int STARPORT = 31; //스타포트
 }
 
 

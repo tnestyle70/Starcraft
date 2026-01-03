@@ -33,6 +33,7 @@ public:
 public:
 	virtual void SetBuildingData() PURE;
 	virtual void Destroy() PURE;
+	virtual int GetRequiredTileValue() const { return 0; } //기본 빈 땅
 public:
 	bool StartConstruct(const Vec2& worldPos);
 	void UpdateConstructing();
@@ -43,7 +44,7 @@ public:
 	void SetBuilder(CUnit* pBuilder) { m_pBuilder = pBuilder; }
 	//건물 상태 배치, 건설, 완료, 파괴
 	void SetGhost(bool bGhost);
-	void SetPlace(int row, int col) { m_iPlaceRow = row, m_iPlaceCol = col; }
+	void SetPlace(int row, int col);
 	int GetPlaceRow() { return m_iPlaceRow; }
 	int GetPlaceCol() { return m_iPlaceCol; }
 	void SetCanPlace(bool bCanPlace) { m_bCanPlace = bCanPlace; }
@@ -69,9 +70,12 @@ public:
 public:
 	void SetState(eBuildingState eState) { m_eState = eState; }
 	void SetHP(int iHP) { m_iHP = iHP; }
-	int GetMaxHP() { return m_iMaxHP; }
-protected:
-	void UpdateProgressbarInfo();
+	int Get_HP() { return m_iHP; }
+	int Get_MaxHP() { return m_iMaxHP; }
+	void TakeDamage(int iAttackDamage) override;
+	void SetFrameKey(const TCHAR* key) { m_pFrameKey = key; }
+	int GetSightRange() { return m_iSightRange; }
+	void SetSightRange(int range) { m_iSightRange = range; }
 protected:
 	void UpdateBuildingUIInfo();
 	const TCHAR* GetBuildingName();
@@ -103,4 +107,6 @@ protected:
 	//배치 위치
 	int m_iPlaceRow = -1;
 	int m_iPlaceCol = -1;
+	//시야
+	int m_iSightRange;
 };

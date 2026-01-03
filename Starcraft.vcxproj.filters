@@ -57,9 +57,6 @@
     <Filter Include="02. Design\04. ScrollMgr">
       <UniqueIdentifier>{eba7094c-af7e-43e8-ae83-10a7447f53dd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. Design\05. AnimationMgr">
-      <UniqueIdentifier>{4f4c7923-8691-4cbb-b4f6-8cbd90233676}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\06. SceneMgr">
       <UniqueIdentifier>{36f708e2-2485-46b9-9137-b6289f1e7e77}</UniqueIdentifier>
     </Filter>
@@ -87,12 +84,6 @@
     <Filter Include="02. Design\10. RTS\03. FogOfWar">
       <UniqueIdentifier>{44692e7e-e8df-48de-a40e-6123bc2593ce}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. Design\07. BmpMgr">
-      <UniqueIdentifier>{fe0e718c-dcc7-48ec-9a94-41ce45bbeccf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. Design\07. BmpMgr\CMyBmp">
-      <UniqueIdentifier>{2f78ff89-24e9-47a0-9ad2-446431419f94}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\09. Core\01. InputMgr">
       <UniqueIdentifier>{4291742b-94f1-44fd-a661-04d1e6c5a63e}</UniqueIdentifier>
     </Filter>
@@ -116,9 +107,6 @@
     </Filter>
     <Filter Include="02. Design\10. RTS\04. NavMgr">
       <UniqueIdentifier>{a3ae7ab4-4e7e-4f2b-91bb-cb27d7199075}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. Design\10. RTS\02. BuildingMgr">
-      <UniqueIdentifier>{51332616-68f3-4192-94f6-2f8f3c81a358}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. Design\10. RTS\05. ResourceMgr">
       <UniqueIdentifier>{a7292ca5-512c-44cd-96d6-9b7f347e1a96}</UniqueIdentifier>
@@ -146,6 +134,42 @@
     </Filter>
     <Filter Include="01. Obj\00. Unit\05. Vulture">
       <UniqueIdentifier>{21a04b22-e77a-4bf5-8759-52d1e7cbb7ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\05. AnimationMgr">
+      <UniqueIdentifier>{4f4c7923-8691-4cbb-b4f6-8cbd90233676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\06. SteeringMgr">
+      <UniqueIdentifier>{d6b65574-fd1d-457d-acb6-125e0393fbf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. BattleCruiser\00. Bullet">
+      <UniqueIdentifier>{8a9c1d5c-61a2-4210-b2ba-adce49a1de0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\02. CursorMgr">
+      <UniqueIdentifier>{51332616-68f3-4192-94f6-2f8f3c81a358}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\05. Refinery">
+      <UniqueIdentifier>{300ede7b-0c4a-4d74-b9f8-7c205fcd24c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\03. Resource">
+      <UniqueIdentifier>{3de53073-6f56-4642-b47a-41cca6ca3dd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\07. ImageMgr">
+      <UniqueIdentifier>{fe0e718c-dcc7-48ec-9a94-41ce45bbeccf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\07. ImageMgr\CMyBmp">
+      <UniqueIdentifier>{2f78ff89-24e9-47a0-9ad2-446431419f94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\07. ImageMgr\CMyPng">
+      <UniqueIdentifier>{64caac1c-f005-4f56-b268-1ee119e2e07a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\05. Vulture\00. Bullet">
+      <UniqueIdentifier>{3d0c5f5e-785f-4596-a0a4-b7946da147dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\06. Goliath">
+      <UniqueIdentifier>{71114b5d-7f19-4549-823b-50c1d5f66f3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\06. Goliath\00. Bullet">
+      <UniqueIdentifier>{661c68c8-9127-4f3d-a63b-5778eeecbfc9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -189,10 +213,10 @@
       <Filter>03. Scene\01. Menu</Filter>
     </ClInclude>
     <ClInclude Include="CBmpMgr.h">
-      <Filter>02. Design\07. BmpMgr</Filter>
+      <Filter>02. Design\07. ImageMgr</Filter>
     </ClInclude>
     <ClInclude Include="CMyBmp.h">
-      <Filter>02. Design\07. BmpMgr\CMyBmp</Filter>
+      <Filter>02. Design\07. ImageMgr\CMyBmp</Filter>
     </ClInclude>
     <ClInclude Include="CAbstractFactory.h">
       <Filter>02. Design\00. AbstractFactory</Filter>
@@ -281,6 +305,60 @@
     <ClInclude Include="CVulture.h">
       <Filter>01. Obj\00. Unit\05. Vulture</Filter>
     </ClInclude>
+    <ClInclude Include="CSteeringMgr.h">
+      <Filter>02. Design\10. RTS\06. SteeringMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CFogMgr.h">
+      <Filter>02. Design\10. RTS\03. FogOfWar</Filter>
+    </ClInclude>
+    <ClInclude Include="CProjectile.h">
+      <Filter>01. Obj\00. Unit</Filter>
+    </ClInclude>
+    <ClInclude Include="CBCBullet.h">
+      <Filter>01. Obj\00. Unit\01. BattleCruiser\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CBCYamato.h">
+      <Filter>01. Obj\00. Unit\01. BattleCruiser\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CCursorMgr.h">
+      <Filter>02. Design\10. RTS\02. CursorMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CRefinery.h">
+      <Filter>01. Obj\01. Building\05. Refinery</Filter>
+    </ClInclude>
+    <ClInclude Include="CMineral.h">
+      <Filter>01. Obj\03. Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="CGas.h">
+      <Filter>01. Obj\03. Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="CMyImage.h">
+      <Filter>02. Design\07. ImageMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CGdiPlusMgr.h">
+      <Filter>02. Design\07. ImageMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CMyPng.h">
+      <Filter>02. Design\07. ImageMgr\CMyPng</Filter>
+    </ClInclude>
+    <ClInclude Include="CAnimButton.h">
+      <Filter>02. Design\11. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="CAnimMgr.h">
+      <Filter>02. Design\07. ImageMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CMenuRace.h">
+      <Filter>03. Scene\01. Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="CVBullet.h">
+      <Filter>01. Obj\00. Unit\05. Vulture\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CGoliath.h">
+      <Filter>01. Obj\00. Unit\06. Goliath</Filter>
+    </ClInclude>
+    <ClInclude Include="CGBullet.h">
+      <Filter>01. Obj\00. Unit\06. Goliath\00. Bullet</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Starcraft.cpp">
@@ -314,10 +392,10 @@
       <Filter>03. Scene\01. Menu</Filter>
     </ClCompile>
     <ClCompile Include="CBmpMgr.cpp">
-      <Filter>02. Design\07. BmpMgr</Filter>
+      <Filter>02. Design\07. ImageMgr</Filter>
     </ClCompile>
     <ClCompile Include="CMyBmp.cpp">
-      <Filter>02. Design\07. BmpMgr\CMyBmp</Filter>
+      <Filter>02. Design\07. ImageMgr\CMyBmp</Filter>
     </ClCompile>
     <ClCompile Include="CInputMgr.cpp">
       <Filter>02. Design\09. Core\01. InputMgr</Filter>
@@ -399,6 +477,60 @@
     </ClCompile>
     <ClCompile Include="CVulture.cpp">
       <Filter>01. Obj\00. Unit\05. Vulture</Filter>
+    </ClCompile>
+    <ClCompile Include="CSteeringMgr.cpp">
+      <Filter>02. Design\10. RTS\06. SteeringMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CFogMgr.cpp">
+      <Filter>02. Design\10. RTS\03. FogOfWar</Filter>
+    </ClCompile>
+    <ClCompile Include="CProjectile.cpp">
+      <Filter>01. Obj\00. Unit</Filter>
+    </ClCompile>
+    <ClCompile Include="CBCBullet.cpp">
+      <Filter>01. Obj\00. Unit\01. BattleCruiser\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CBCYamato.cpp">
+      <Filter>01. Obj\00. Unit\01. BattleCruiser\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CCursorMgr.cpp">
+      <Filter>02. Design\10. RTS\02. CursorMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CRefinery.cpp">
+      <Filter>01. Obj\01. Building\05. Refinery</Filter>
+    </ClCompile>
+    <ClCompile Include="CMineral.cpp">
+      <Filter>01. Obj\03. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="CGas.cpp">
+      <Filter>01. Obj\03. Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="CGdiPlusMgr.cpp">
+      <Filter>02. Design\07. ImageMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CMyImage.cpp">
+      <Filter>02. Design\07. ImageMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CMyPng.cpp">
+      <Filter>02. Design\07. ImageMgr\CMyPng</Filter>
+    </ClCompile>
+    <ClCompile Include="CAnimButton.cpp">
+      <Filter>02. Design\11. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="CAnimMgr.cpp">
+      <Filter>02. Design\07. ImageMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CMenuRace.cpp">
+      <Filter>03. Scene\01. Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="CVBullet.cpp">
+      <Filter>01. Obj\00. Unit\05. Vulture\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CGoliath.cpp">
+      <Filter>01. Obj\00. Unit\06. Goliath</Filter>
+    </ClCompile>
+    <ClCompile Include="CGBullet.cpp">
+      <Filter>01. Obj\00. Unit\06. Goliath\00. Bullet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -45,6 +45,8 @@ public:
 	}
 public:
 	void IssueMove(Vec2& worldGoal);
+	void IssueAttack(CObj* pTarget);
+	void IssueAttackMove(Vec2& worldGoal);
 private:
 	static CCommandMgr* m_pInstance;
 };

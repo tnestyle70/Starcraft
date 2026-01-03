@@ -44,8 +44,8 @@ public:
 	float		Get_ScrollX() { return m_fScrollX; }
 	float		Get_ScrollY() { return m_fScrollY; }
 
-	void		Set_ScrollX(float fX) { m_fScrollX += fX; }
-	void		Set_ScrollY(float fY) { m_fScrollY += fY; }
+	void		Set_ScrollX(float fX) { m_fScrollX = fX; }
+	void		Set_ScrollY(float fY) { m_fScrollY = fY; }
 
 private:
 	static CScrollMgr* m_pInstance;

@@ -33,7 +33,7 @@ struct BuildingUIInfo
     bool IsVisible;
     BuildingUIInfo()
         : pBuildingName(nullptr)
-        , eType(eBuildingType::COMMAND_CENTER) // 또는 적절한 기본값
+        , eType(eBuildingType::NONE) // 또는 적절한 기본값
         , IsProducing(false)
         , pCurrentUnit(nullptr)
         , fProgress(0.f)
@@ -43,6 +43,41 @@ struct BuildingUIInfo
     {
         queue.clear(); // 명시적으로 비우기 (사실 필요없긴 함)
     }
+};
+
+struct UnitUIInfo
+{
+    int iHP;
+    int iMaxHP;
+    const TCHAR* pUnitName;
+    eUnitType eType;
+    bool IsVisible;
+    UnitUIInfo()
+        : pUnitName(nullptr)
+        , eType(eUnitType::NONE) // 또는 적절한 기본값
+        , IsVisible(false)
+        , iHP(0)
+        , iMaxHP(0)
+    {}
+};
+
+struct MultiUnitWireInfo
+{
+    eUnitType eType;
+    int iHP;
+    int iMaxHP;
+    CObj* pUnit; //클릭시 포커스
+    MultiUnitWireInfo() : eType(eUnitType::NONE),
+        iHP(0), iMaxHP(0), pUnit(nullptr) {}
+};
+
+struct MultiUnitUIInfo
+{
+    bool IsVisible;
+    int iUnitCount;
+    MultiUnitWireInfo units[16];
+    MultiUnitUIInfo() : IsVisible(false),
+        iUnitCount(0) {}
 };
 
 class CMainUI
@@ -59,27 +94,42 @@ public:
 public:
     void RenderFrame(HDC hDC);
     HBITMAP CreateAlphaBitmap(HDC hdc, HDC hSrcDC, int width, int height, COLORREF transparentColor);
-    //Progressbar
-    void SetProgressInfo(const ProgressbarInfo& info);
-    void RenderProgressbar(HDC hDC);
-    void RenderProgressText(HDC hDC, int barX, int barY);
     //Building 
     void SetBuildingUIInfo(const BuildingUIInfo& info);
     void RenderBuildingInfo(HDC hDC);
     void RenderBuildingName(HDC hDC);
     void RenderProductionQueue(HDC hDC);
     void RenderCurrentProduction(HDC hDC);
+    //Unit
+    void SetUnitUIInfo(const UnitUIInfo& info);
+    void RenderUnitInfo(HDC hDC);
+    void RenderUnitName(HDC hDC);
+    void RenderUnitWire(HDC hDC);
+    int GetWireColumnByHealth(int iHP, int iMaxHP);
+    //MultiUnit 선택
+    void SetMultiUnitUIInfo(const MultiUnitUIInfo& info);
+    void RenderMultiUnitWires(HDC hDC);
+    int GetWireHealthState(int hp, int maxHP);
+    //체력바
+    void RenderHealthBar(HDC hDC);
     //Minimap
     void InitializeMinimap();
     void RenderMinimap(HDC hDC);
     void RenderMinimapUnit(HDC hDC);
     void RenderMinimapFrame(HDC hDC);
     void HandleMinimapClick(POINT mousePos);
+    //미니맵 안개
+    void UpdateMinimapFog();
     //Wire 이미지
     void RenderBuildingWire(HDC hDC);
+    //Resource
+    void RenderResource(HDC hDC);
 private:
     ProgressbarInfo m_tProgressInfo;
     BuildingUIInfo m_tBuildingUIInfo;
+
+    UnitUIInfo m_tUnitUIInfo;
+    MultiUnitUIInfo m_tMultiUnitUIInfo;
 
     RECT m_srcPanel;    // 원본 이미지에서의 영역
     RECT m_dstPanel;    // 화면에 그릴 영역
@@ -89,6 +139,7 @@ private:
     HBITMAP m_oldPanel; // 이전 비트맵 저장용
 
     HFONT m_hFont;      // 폰트
+    HFONT m_hResourceFont; //자원용 폰트
 private:
     //미니맵 관련 정보
     RECT m_srcMinimap;
@@ -97,6 +148,14 @@ private:
     HDC m_dcMinimap;
     HBITMAP m_bmpMinimap;
     HBITMAP m_oldMinimap;
+    //미니맵 안개용
+    HDC m_dcMinimapFog;
+    HBITMAP m_bmpMinimapFog;
+    HBITMAP m_oldMinimapFog;
+    float m_fMinimapFogDelay;
+    static constexpr float MINIMAP_FOG_DELAY = 0.8f;
+    BYTE* m_pMinimapFogBits = nullptr;//DBISection 비트 포인터
+    BYTE m_byMinimapExploredAlpha = 200;
     //카메라 프레임용
     HDC m_dcFrame;
     HBITMAP m_bmpFrame;

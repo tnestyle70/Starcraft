@@ -1,5 +1,4 @@
 #pragma once
-
 #include "CScene.h"
 
 class CEdit : public CScene

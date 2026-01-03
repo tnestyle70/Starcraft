@@ -39,6 +39,7 @@ void CInputMgr::Initialize()
 	//논리키와 실제키 매핑
 	m_iVKCode[LEFT_MOUSE] = VK_LBUTTON;
 	m_iVKCode[RIGHT_MOUSE] = VK_RBUTTON;
+	m_iVKCode[A_KEY] = 'A';
 	m_iVKCode[S_KEY] = 'S';
 	m_iVKCode[B_KEY] = 'B';
 	m_iVKCode[G_KEY] = 'G';
@@ -78,6 +79,14 @@ Vec2 CInputMgr::GetWorldMouse()
 
 	return vDir;
 }
+
+Vec2 CInputMgr::GetScreenMouse()
+{
+	Vec2 pos = { (float)m_ptMouse.x, (float)m_ptMouse.y };
+
+	return pos;
+}
+
 //누르고 있는 동안
 bool CInputMgr::KeyPress(eKey eKey) const
 {

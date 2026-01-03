@@ -1,23 +1,17 @@
 #pragma once
+#include "CMyImage.h"
 
-#include "Define.h"
-
-class CMyBmp
+class CMyBmp : public CMyImage
 {
 public:
 	CMyBmp();
-	~CMyBmp();
-
+	virtual ~CMyBmp();
 public:
-	HDC		Get_MemDC() { return m_hMemDC; }
-	HBITMAP Get_Bitmap() { return m_hBitmap; }
-public:
-	void	Load_Bmp(const TCHAR* pFilePath);
-	void	Release();
+	void	Load_Image(const TCHAR* pFilePath) override;
+	void	Release() override;
 
-private:
-	HDC		m_hMemDC;
-
-	HBITMAP	m_hBitmap;
-	HBITMAP	m_hOldmap;
+//private:
+//	HDC		m_hMemDC;
+//	HBITMAP	m_hBitmap;
+//	HBITMAP	m_hOldmap;
 };

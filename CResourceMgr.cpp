@@ -13,10 +13,10 @@ CResourceMgr::~CResourceMgr()
 
 void CResourceMgr::Reset()
 {
-	m_eState.mineral = 10000000;
-	m_eState.gas = 100000000;
+	m_eState.mineral = 5000;
+	m_eState.gas = 5000;
 	m_eState.supplyUsed = 0;
-	m_eState.supplyCap = 1000;
+	m_eState.supplyCap = 100;
 }
 //CheckSupply는 건물인지 유닛인지 판단
 bool CResourceMgr::CanProduce(ResourceCost& cost, bool bCheckUnit)

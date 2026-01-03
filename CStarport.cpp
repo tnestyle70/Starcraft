@@ -77,24 +77,6 @@ void CStarport::Render(HDC hDC)
 	int iDrawX = (int)(m_tInfo.fX - m_tInfo.fCX / 2.f - iScrollX);
 	int iDrawY = (int)(m_tInfo.fY - m_tInfo.fCY / 2.f - iScrollY);
 
-	//선택 원(예: m_bSelected가 true일 때) 추후에 bmp로 교체
-	if (m_bSelected)
-	{
-		HBRUSH oldB = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
-		HPEN pen = CreatePen(PS_SOLID, 2, RGB(0, 255, 0));
-		HPEN oldP = (HPEN)SelectObject(hDC, pen);
-
-		int cx = iDrawX + (int)(m_tInfo.fCX * 0.5f);
-		int cy = iDrawY + (int)(m_tInfo.fCY * 0.8f);   // 발밑 느낌으로 살짝 아래
-		int r = (int)(max(m_tInfo.fCX, m_tInfo.fCY) * 0.55f);
-
-		Ellipse(hDC, cx - r, cy - r / 2, cx + r, cy + r / 2);
-
-		SelectObject(hDC, oldP);
-		SelectObject(hDC, oldB);
-		DeleteObject(pen);
-	}
-
 	HDC hMemDC = CBmpMgr::Get_Instance()->Find_Image(m_pFrameKey);
 
 	int iScrX = m_tFrame.iStart * (int)m_tInfo.fCX;

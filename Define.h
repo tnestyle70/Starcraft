@@ -17,15 +17,46 @@ constexpr float SCROLL_SPEED = 900.f;
 
 extern HWND g_hWnd;
 
-enum OBJID {OBJ_UI, OBJ_UNIT, OBJ_BUILDING ,OBJ_END};
+enum OBJID 
+{
+	OBJ_UI, 
+	OBJ_UNIT, 
+	OBJ_BUILDING,
+	OBJ_ENEMY, 
+	OBJ_RESOURCE,
+	OBJ_PROJECTILE, 
+	OBJ_END
+};
 
 enum RENDERID{RENDER_BG, RENDER_WORLD, RENDER_UI, RENDER_UI_TOP, RENDER_END};
 
 enum class eBuildingType
 {
-	COMMAND_CENTER, BARRACKS, FACTORY, STARPORT, SUPPLY_DEPOT
+	NONE,COMMAND_CENTER, BARRACKS, FACTORY
+	,REFINERY, STARPORT, SUPPLY_DEPOT
 };
 
+enum class eUnitType
+{
+	NONE,
+	SCV,
+	MARINE, 
+	MEDIC, 
+	VULTURE, 
+	TANK,
+	SIEGE_TANK,
+	GOLIATH,
+	BATTLECRUISER
+};
+
+enum class eCursorType
+{
+	DEFAULT = 0, //기본 커서
+	HOVER_ALLY,
+	HOVER_RESOURCE, 
+	HOVER_ENEMY,
+	MOVE, 
+};
 
 namespace AtlasKey
 {
@@ -56,8 +87,13 @@ void Safe_Delete(T& p)
 {
 	if (p)
 	{
+		OutputDebugString(L"Deleting object\n");
 		delete p;
 		p = nullptr;
+	}
+	else
+	{
+		OutputDebugString(L"Warning: Already deleted!\n");
 	}
 }
 

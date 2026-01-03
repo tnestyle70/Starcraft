@@ -17,13 +17,15 @@ void CMedic::Initialize()
 {
     m_tInfo.fCX = 64.f; //메딕 한 칸 크기
     m_tInfo.fCY = 64.f;
-
+    m_iMaxHP = 150;
+    m_iHP = m_iMaxHP;
     m_fSpeed = 200.f;
 
     m_pFrameKey = L"Medic";
 
     m_eRender = RENDER_WORLD;
     m_eState = eUnitState::IDLE;
+    m_eType = eUnitType::MEDIC;
     m_tFrame.iFrame = 0;
     m_tFrame.iStart = 0;
     m_tFrame.iEnd = 6;
@@ -86,29 +88,13 @@ void CMedic::Late_Update()
 
 void CMedic::Render(HDC hDC)
 {
+    //전장의 안개 
+    CUnit::Render(hDC);
     int iScrollX = (int)CScrollMgr::Get_Instance()->Get_ScrollX();
     int iScrollY = (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
     int iDrawX = (int)(m_tInfo.fX - m_tInfo.fCX / 2.f - iScrollX);
     int iDrawY = (int)(m_tInfo.fY - m_tInfo.fCY / 2.f - iScrollY);
-
-    //선택 원(예: m_bSelected가 true일 때) 추후에 bmp로 교체
-    if (m_bSelected)
-    {
-        HBRUSH oldB = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
-        HPEN pen = CreatePen(PS_SOLID, 2, RGB(0, 255, 0));
-        HPEN oldP = (HPEN)SelectObject(hDC, pen);
-
-        int cx = iDrawX + (int)(m_tInfo.fCX * 0.5f);
-        int cy = iDrawY + (int)(m_tInfo.fCY * 0.8f);   // 발밑 느낌으로 살짝 아래
-        int r = (int)(max(m_tInfo.fCX, m_tInfo.fCY) * 0.55f);
-
-        Ellipse(hDC, cx - r, cy - r / 2, cx + r, cy + r / 2);
-
-        SelectObject(hDC, oldP);
-        SelectObject(hDC, oldB);
-        DeleteObject(pen);
-    }
 
     HDC hMemDC = CBmpMgr::Get_Instance()->Find_Image(m_pFrameKey);
 

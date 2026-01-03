@@ -2,6 +2,7 @@
 #include "CObj.h"
 
 CObj::CObj() : m_pFrameKey(L""), m_iDrawID(0), m_eRender(RENDER_END), m_bSelected(false)
+	,m_bSelectable(true), m_bDead(false)
 {
 	ZeroMemory(&m_tInfo, sizeof(INFO));
 	ZeroMemory(&m_tRect, sizeof(RECT));
@@ -22,5 +23,4 @@ void CObj::Update_Rect()
 
 void CObj::Move_Frame()
 {
-
 }

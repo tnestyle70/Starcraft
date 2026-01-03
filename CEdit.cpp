@@ -4,6 +4,7 @@
 #include "CTileMgr.h"
 #include "CScrollMgr.h"
 #include "CInputMgr.h"
+#include "CCursorMgr.h"
 
 CEdit::CEdit()
 {
@@ -20,6 +21,8 @@ void CEdit::Initialize()
 
 	CBmpMgr::Get_Instance()->Insert_Bmp(L"../Image/MyFolder/Tile/Tile.bmp", L"Tile");
 
+	CCursorMgr::Get_Instance()->Initialize();
+
 	CTileMgr::Get_Instance()->Initialize();
 	CTileMgr::Get_Instance()->Load_Tile();
 }
@@ -29,6 +32,9 @@ int CEdit::Update()
 	CScrollMgr::Get_Instance()->Update();
 
 	CTileMgr::Get_Instance()->Update();
+
+	// 커서 
+	CCursorMgr::Get_Instance()->Update();
 
 	return 0;
 }
@@ -58,6 +64,8 @@ void CEdit::Render(HDC hDC)
 		SRCCOPY);	// 복사 방식
 
 	CTileMgr::Get_Instance()->RenderGrid(hDC, fScrX, fScrY);
+	// 커서 
+	CCursorMgr::Get_Instance()->Render(hDC);
 }
 
 void CEdit::Release()
@@ -88,6 +96,29 @@ void CEdit::Key_Input()
 		ptMouse.y += (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
 		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 0, 1);
+	}
+
+	if (CInputMgr::Get_Instance()->KeyPressVK('M'))
+	{
+		POINT ptMouse{};
+		GetCursorPos(&ptMouse);
+		ScreenToClient(g_hWnd, &ptMouse);
+
+		ptMouse.x += (int)CScrollMgr::Get_Instance()->Get_ScrollX();
+		ptMouse.y += (int)CScrollMgr::Get_Instance()->Get_ScrollY();
+
+		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 2, 1);
+	}
+	if (CInputMgr::Get_Instance()->KeyPressVK('G'))
+	{
+		POINT ptMouse{};
+		GetCursorPos(&ptMouse);
+		ScreenToClient(g_hWnd, &ptMouse);
+
+		ptMouse.x += (int)CScrollMgr::Get_Instance()->Get_ScrollX();
+		ptMouse.y += (int)CScrollMgr::Get_Instance()->Get_ScrollY();
+
+		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 3, 1);
 	}
 	if (GetAsyncKeyState('T'))
 	{

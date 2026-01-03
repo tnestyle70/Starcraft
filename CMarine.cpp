@@ -17,13 +17,22 @@ void CMarine::Initialize()
 {
     m_tInfo.fCX = 50.f; //마린 한 칸 크기
     m_tInfo.fCY = 50.f;
-
+    m_iMaxHP = 100; 
+    m_iHP = m_iMaxHP;
     m_fSpeed = 200.f;
+    //공격 관련 변수
+    m_iAttackDamage = 6;
+    m_fAttackRange = 120.f;
+    m_fAttackSpeed = 1.0f;
+    //공격 애니메이션 프레임 
+    iAttackFrameStart = 11;
+    iAttackFrameEnd = 14;
 
     m_pFrameKey = L"Marine";
 
     m_eRender = RENDER_WORLD;
     m_eState = eUnitState::IDLE;
+    m_eType = eUnitType::MARINE;
     m_tFrame.iFrame = 0;
     m_tFrame.iStart = 0;
     m_tFrame.iEnd = 7;
@@ -58,6 +67,27 @@ int CMarine::Update()
         }
         break;
     case eUnitState::ATTACK:
+        //방향에 따른 행 설정
+        m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
+        //애니메이션 진행
+        if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+        {
+            //첫 진입시 프레임 설정
+            if (m_tFrame.iStart < iAttackFrameStart ||
+                m_tFrame.iStart > iAttackFrameEnd)
+            {
+                m_tFrame.iStart = iAttackFrameStart;
+            }
+            else
+            {
+                m_tFrame.iStart++;
+                if (m_tFrame.iStart > iAttackFrameEnd)
+                {
+                    m_tFrame.iStart = iAttackFrameStart;  // 반복
+                }
+            }
+            m_tFrame.dwTime = now;
+        }
         break;
     case eUnitState::DIE:
         break;
@@ -86,29 +116,14 @@ void CMarine::Late_Update()
 
 void CMarine::Render(HDC hDC)
 {
+    //전장의 안개 
+    CUnit::Render(hDC);
+
     int iScrollX = (int)CScrollMgr::Get_Instance()->Get_ScrollX();
     int iScrollY = (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
     int iDrawX = (int)(m_tInfo.fX - m_tInfo.fCX / 2.f - iScrollX);
     int iDrawY = (int)(m_tInfo.fY - m_tInfo.fCY / 2.f - iScrollY);
-
-    //선택 원(예: m_bSelected가 true일 때) 추후에 bmp로 교체
-    if (m_bSelected)
-    {
-        HBRUSH oldB = (HBRUSH)SelectObject(hDC, GetStockObject(NULL_BRUSH));
-        HPEN pen = CreatePen(PS_SOLID, 2, RGB(0, 255, 0));
-        HPEN oldP = (HPEN)SelectObject(hDC, pen);
-
-        int cx = iDrawX + (int)(m_tInfo.fCX * 0.5f);
-        int cy = iDrawY + (int)(m_tInfo.fCY * 0.8f);   // 발밑 느낌으로 살짝 아래
-        int r = (int)(max(m_tInfo.fCX, m_tInfo.fCY) * 0.55f);
-
-        Ellipse(hDC, cx - r, cy - r / 2, cx + r, cy + r / 2);
-
-        SelectObject(hDC, oldP);
-        SelectObject(hDC, oldB);
-        DeleteObject(pen);
-    }
 
     HDC hMemDC = CBmpMgr::Get_Instance()->Find_Image(m_pFrameKey);
 

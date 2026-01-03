@@ -22,13 +22,15 @@ public:
 	void		Save_Tile();
 	void		Load_Tile();
 	void RenderGrid(HDC hDC, float fScrX, float fScrY);
+	void RenderBuildingOverlay(HDC hDC, int topRow, int topCol,
+		int width, int height, int requiredValue = -1);
 public:
 	void ClearOccupy() { m_vecOccupy.assign(TILEX * TILEY, 0); }
 	bool IsOccupy(int row, int col);
 	void SetOccupy(int row, int col, bool occupy);
 	bool InRange(int& row, int& col) const;
-	bool IsBuildableTile(int row, int col);
-	bool CanConstruct(int row, int col, int width, int height);
+	bool IsBuildableTile(int row, int col, int requiredValue = -1);
+	bool CanConstruct(int row, int col, int width, int height, int requiredValue = -1);
 	//ÁÂÇ¥ º¯È¯
 	bool WorldToCell(const Vec2& world, int& outRow, int& outCol) const;
 	Vec2 CellToWorldCenter(int row, int col) const; 

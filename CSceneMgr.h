@@ -1,12 +1,14 @@
 #pragma once
 #include "CMenu.h"
+#include "CMenuRace.h"
 #include "CStage.h"
 #include "CEdit.h"
 
 class CSceneMgr
 {
 public:
-	enum SCENEID {SC_LOGO, SC_MENU, SC_EDIT, SC_STAGE, SC_END};
+	enum SCENEID {SC_LOGO, SC_MENU, SC_MENU_RACE
+		,SC_EDIT, SC_STAGE, SC_END};
 private:
 	CSceneMgr();
 	CSceneMgr(const CSceneMgr& rhs) = delete;
