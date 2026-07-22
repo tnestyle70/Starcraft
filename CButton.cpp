@@ -4,8 +4,9 @@
 #include "CSceneMgr.h"
 #include "CInputMgr.h"
 #include "CObjMgr.h"
+#include "CSoundMgr.h"
 
-CButton::CButton() : 
+CButton::CButton() :
 	m_bHover(false)
 	,m_eButtonType(eButtonType::BMP)
 	,m_pNormalKey(nullptr)
@@ -39,15 +40,14 @@ void CButton::Late_Update()
 
 	if (m_bHover)
 	{
-		m_iDrawID = 1;
+		m_iDrawID = 0;
 
 		if (CInputMgr::Get_Instance()->KeyPress(LEFT_MOUSE))
 		{
 			if (!lstrcmp(L"Start", m_pFrameKey) ||
 				!lstrcmp(L"Btn_Single_Normal", m_pNormalKey))
 			{
-				CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_STAGE);
-				//CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_STAGE);
+				CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_MENU_RACE);
 			}
 			else if (!lstrcmp(L"Edit", m_pFrameKey) ||
 				!lstrcmp(L"Btn_Editor_Normal", m_pNormalKey))
@@ -59,6 +59,22 @@ void CButton::Late_Update()
 			{
 				DestroyWindow(g_hWnd);
 			}
+			else if (!lstrcmp(L"Exit", m_pFrameKey) ||
+				!lstrcmp(L"Btn_Cancle_Normal", m_pNormalKey))
+			{
+				CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_UI, 0.4f);
+				CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_MENU);
+			}
+			//else if (!lstrcmp(L"MENU_BTN", m_pFrameKey))
+			//{
+			//	CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_UI, 0.4f);
+			//	CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_MENU);
+			//}
+			else if (!lstrcmp(L"WIN_TEXT", m_pFrameKey))
+			{
+				CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_UI, 0.4f);
+				CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_MENU);
+			}
 		}
 	}
 	else
@@ -69,58 +85,28 @@ void CButton::Late_Update()
 
 void CButton::Render(HDC hDC)
 {
-	if (m_eButtonType == eButtonType::PNG)
+	CMyPng* pPng = CBmpMgr::Get_Instance()->Find_Png(m_pNormalKey);
+	if (pPng)
 	{
-		//PNG 렌더링
-		const TCHAR* pCurrentKey = m_bHover ? m_pHoverKey : m_pNormalKey;
-
-		CMyPng* pPng = CBmpMgr::Get_Instance()->Find_Png(pCurrentKey);
-		if (pPng)
-		{
-			int renderX = m_tRect.left;
-			int renderY = m_tRect.top;
-			pPng->Render_Alpha(hDC, renderX, renderY);
-		}
+		int renderX = m_tRect.left;
+		int renderY = m_tRect.top;
+		pPng->Render_Alpha(hDC, renderX, renderY);
 	}
-	else
+	HDC	hBmpDC = CBmpMgr::Get_Instance()->Find_Image(m_pFrameKey);
+	if (hBmpDC)
 	{
-		HDC	hMemDC = CBmpMgr::Get_Instance()->Find_Image(m_pFrameKey);
-
-		BitBlt(hDC,
+		GdiTransparentBlt(hDC,
 			m_tRect.left,
 			m_tRect.top,
 			(int)m_tInfo.fCX,
 			(int)m_tInfo.fCY,
-			hMemDC,
+			hBmpDC,
 			(int)m_tInfo.fCX * m_iDrawID,
 			0,
-			SRCCOPY);
+			(int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
+			(int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
+			RGB(0, 0, 0));
 	}
-	//HDC	hMemDC = CBmpMgr::Get_Instance()->Find_Image(m_pFrameKey);
-
-	//BitBlt(hDC,
-	//	m_tRect.left,
-	//	m_tRect.top,
-	//	(int)m_tInfo.fCX,
-	//	(int)m_tInfo.fCY,
-	//	hMemDC,
-	//	(int)m_tInfo.fCX * m_iDrawID,
-	//	0,
-	//	SRCCOPY);
-	
-	/*
-	GdiTransparentBlt(hDC,
-		m_tRect.left,
-		m_tRect.top,
-		(int)m_tInfo.fCX,
-		(int)m_tInfo.fCY,
-		hMemDC,
-		(int)m_tInfo.fCX * m_iDrawID,
-		0,
-		(int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
-		(int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
-		RGB(255, 255, 255));
-		*/
 }
 
 void CButton::Release()
@@ -146,6 +132,16 @@ void CButton::Set_BmpFrameKey(const TCHAR* pFrameKey)
 {
 	m_eButtonType = eButtonType::BMP;
 	m_pFrameKey = pFrameKey;
+
+	//BMP 크기로 버튼 크기 설정
+	HBITMAP hBmp = CBmpMgr::Get_Instance()->Find_Bitmap(m_pFrameKey);
+	if (hBmp)
+	{
+		BITMAP bm;
+		GetObject(hBmp, sizeof(BITMAP), &bm);
+		m_tInfo.fCX = (float)bm.bmWidth;
+		m_tInfo.fCY = (float)bm.bmHeight;
+	}
 }
 
 //void CButton::SetAtlas(const wchar_t* atlasKey, const AtlasRect& normal, const AtlasRect& hover)

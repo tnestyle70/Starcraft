@@ -15,9 +15,10 @@ void CResourceMgr::Reset()
 {
 	m_eState.mineral = 5000;
 	m_eState.gas = 5000;
-	m_eState.supplyUsed = 0;
+	m_eState.supplyUsed = 5;
 	m_eState.supplyCap = 100;
 }
+
 //CheckSupply는 건물인지 유닛인지 판단
 bool CResourceMgr::CanProduce(ResourceCost& cost, bool bCheckUnit)
 {
@@ -39,10 +40,13 @@ bool CResourceMgr::TrySpend(ResourceCost& cost, bool bCheckUnit)
 
 	m_eState.mineral -= cost.mineral;
 	m_eState.gas -= cost.gas;
-	if (bCheckUnit && cost.supply > 0)
-		m_eState.supplyUsed += cost.supply;
-	//MakeDirty()
+
 	return true;
+}
+
+void CResourceMgr::AddSupply(int supply)
+{
+	m_eState.supplyUsed += supply;
 }
 
 void CResourceMgr::AddMineral(int amount)

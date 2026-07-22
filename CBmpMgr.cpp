@@ -73,6 +73,31 @@ CMyPng* CBmpMgr::Find_Png(const TCHAR* pImgKey)
     return nullptr;
 }
 
+void CBmpMgr::Insert_Bmp_Anim(const TCHAR* pFilePath, const TCHAR* pImgKey)
+{
+    if (!pFilePath || !pImgKey)
+        return;
+    wstring key = pImgKey;
+    auto it = m_mapBitAnim.find(key);
+    if (it != m_mapBitAnim.end()) //이미 존재하면 return
+        return;
+
+    CMyBmp* pBmp = new CMyBmp;
+    pBmp->Load_Image(pFilePath);
+    m_mapBitAnim.insert({ key, pBmp });
+}
+
+HDC CBmpMgr::Find_Bmp_Anim(const TCHAR* pImgKey)
+{
+    if (!pImgKey)
+        return nullptr;
+    auto it = m_mapBitAnim.find(wstring(pImgKey));
+    if (it == m_mapBitAnim.end()) //존재하지 않으면 return
+        return nullptr;
+
+    return it->second->Get_MemDC();  // HDC 바로 반환
+}
+
 void CBmpMgr::Insert_Png_Anim(const TCHAR* pFilePath, const TCHAR* pImgKey)
 {
     if (!pFilePath || !pImgKey)
@@ -152,7 +177,7 @@ void CBmpMgr::Render_Alpha_Simple(const TCHAR* pImageKey, HDC hDC,
     BLENDFUNCTION bf;
     bf.BlendOp = AC_SRC_OVER;
     bf.BlendFlags = 0;
-    bf.SourceConstantAlpha = 180;
+    bf.SourceConstantAlpha = 255;
     bf.AlphaFormat = 0;
 
     // 원본 크기 → 목표 크기로 스케일링

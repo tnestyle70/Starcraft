@@ -8,6 +8,10 @@
 #include "CTimeMgr.h"
 #include "CGBullet.h"
 #include "CObjMgr.h"
+#include "CSoundMgr.h"
+#include "CEffect.h"
+#include "CAbstractFactory.h"
+#include "CGMissile.h"
 
 CGoliath::CGoliath()
 {
@@ -24,29 +28,34 @@ void CGoliath::Initialize()
     m_tInfo.fCY = 76.f;
     m_iMaxHP = 125;
     m_iHP = m_iMaxHP;
-    m_fSpeed = 200.f;
+    m_fSpeed = 100.f;
     //공격 변수 초기화
-    m_iAttackDamage = 20;
-    m_fAttackRange = 7.f * TILECX;
-    m_fAttackSpeed = 1.f;
+    m_iAttackDamage = 10;
+    m_fAttackRange = 140.f;
+
+    m_fAttackInterval = 0.7f; //진짜 공격 속도!
+    m_fAttackTimer = m_fAttackInterval;
 
     m_pFrameKey = L"Goliath_Body";
     m_pHeadKey = L"Goliath_Head";
+
+    m_eOriginalRace = eRaceType::RACE_TERRAN;
+    m_eCurrentRace = eRaceType::RACE_TERRAN;
 
     m_eRender = RENDER_WORLD;
     m_eState = eUnitState::IDLE;
     m_eType = eUnitType::GOLIATH;
     m_tFrame.iFrame = 0;
     m_tFrame.iStart = 0;
-    m_tFrame.iEnd = 15;
+    m_tFrame.iEnd = 9;
     m_tFrame.iCol = 0;
     m_tFrame.dwTime = 0;
     m_tFrame.dwSpeed = 100;
+
     //포탑 초기화
     m_vHeadDir = { 0.f, -1.f }; //위쪽 방향
     m_iHeadFrame = 0;
-    m_bFiring = false;
-    m_iFireFrame = 0;
+    m_iFireFrame = 10;
 }
 
 int CGoliath::Update()
@@ -54,9 +63,18 @@ int CGoliath::Update()
     int iResult = CUnit::Update();
 
     if (iResult == DEAD)
-        return DEAD;
+        m_eState = eUnitState::DIE;
+
+    //적일 경우 AI 업데이트, 아니면 조작하면서 게임 플레이 가능하도록 만들기
+    if (m_eTeamType == eTeamType::ENEMY)
+    {
+        //AI업데이트
+        UpdateAI();
+    }
 
     UpdateBody();
+    if (m_eState == eUnitState::DIE)
+        return DEAD;
     UpdateHead();
 
     __super::Update_Rect();
@@ -68,18 +86,23 @@ void CGoliath::Late_Update()
 {
     //선택이 되었을 경우 마우스 방향의 애니메이션 재생
     if (!m_bSelected) return;
-    //이동 중이면 마우스 방향 애니메이션 재생 멈추기
-    if (m_eState != eUnitState::IDLE) return;
+    //마우스 방향 안 보기!
+    if (m_eState == eUnitState::MOVE) return;
+    if (m_eState == eUnitState::ATTACK) return;
+    if (m_eState == eUnitState::IDLE) return;
 
     Vec2 vWorldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
     Vec2 vDir{ vWorldMouse.fX - m_tInfo.fX, vWorldMouse.fY - m_tInfo.fY };
 
     int iDir16 = DirTo16WayIndex(vDir);
     m_tFrame.iFrame = iDir16;
+    m_iHeadFrame = iDir16;
 }
 
 void CGoliath::UpdateBody()
 {
+    DWORD now = GetTickCount();
+
     //몸체는 이동 방향 따라가기
     switch (m_eState)
     {
@@ -88,12 +111,22 @@ void CGoliath::UpdateBody()
         break;
     case eUnitState::MOVE:
         m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
+
+        if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+        {
+            m_tFrame.iStart++;
+            if (m_tFrame.iStart > m_tFrame.iEnd)
+                m_tFrame.iStart = 0;
+            m_tFrame.dwTime = now;
+        }
         break;
     case eUnitState::ATTACK:
         //공격 중에도 몸체는 이동 방향 유지
         break;
     case eUnitState::DIE:
-        break;
+        UpdateDead();
+        m_eState = eUnitState::DIE;
+        return;
     default:
         break;
     }
@@ -102,57 +135,65 @@ void CGoliath::UpdateBody()
 void CGoliath::UpdateHead()
 {
     DWORD now = GetTickCount();
+    float dt = CTimeMgr::Get_Instance()->GetDT();
 
-    if (m_bSelected && m_eState == eUnitState::IDLE)
+    switch (m_eState)
     {
-        Vec2 worldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
-        m_vHeadDir.fX = worldMouse.fX - m_tInfo.fX;
-        m_vHeadDir.fY = worldMouse.fY - m_tInfo.fY;
-        //정규화
-        float len = sqrtf(m_vHeadDir.fX * m_vHeadDir.fX + m_vHeadDir.fY * m_vHeadDir.fY);
-        if (len > 0.f)
+    case eUnitState::IDLE:
+        m_iFireFrame = 0; //항상 발사 프레임 0으로 초기화
+        m_iHeadFrame = 0;
+        if (m_pTarget)
         {
-            m_vHeadDir.fX /= len;
-            m_vHeadDir.fY /= len;
+            //타겟이 존재하면 머리 타겟 방향 바라보도록 설정 
+            m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
+
+            m_fAttackTimer += dt;
+            if (m_fAttackTimer >= m_fAttackInterval)
+            {
+                m_eState = eUnitState::ATTACK;
+                m_fAttackTimer = 0.f;
+                m_bAttack = true;
+                m_dwFireStartTime = now; //공격 상태로 이동한 시간 체크
+            }
         }
-        m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
-    }
-    else if (m_eState == eUnitState::MOVE)
-    {
+        break;
+    case eUnitState::MOVE:
+        m_iFireFrame = 0; //항상 발사 프레임 0으로 초기화
         m_vHeadDir = m_vDir;
         m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
-    }
-    else if (m_eState == eUnitState::ATTACK) //타겟 방향으로 머리 회전
-    {
-        if (m_OrderQ.front().pTarget)
+        //MOVE 상태에서도 발사 프레임 초기화!!
+        //m_bFiring = false;
+        break;
+    case eUnitState::ATTACK:
+        if (m_bAttack)
         {
-            Vec2 targetPos = m_OrderQ.front().pTarget->Get_Pos();
-            m_vHeadDir.fX = targetPos.fX - m_tInfo.fX;
-            m_vHeadDir.fY = targetPos.fY - m_tInfo.fY;
-            //정규화
-            float len = sqrtf(m_vHeadDir.fX * m_vHeadDir.fX + m_vHeadDir.fY * m_vHeadDir.fY);
-            if (len > 0.f)
-            {
-                m_vHeadDir.fX /= len;
-                m_vHeadDir.fY /= len;
-            }
-            m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
-        }
-        DWORD attackCoolTime = (DWORD)(1000.f / m_fAttackSpeed);
-        DWORD timeSinceLastAttack = now - m_dwLastAttack;
-
-        // 공격 직후에 발사 애니메이션 시작
-        if (timeSinceLastAttack < 100)  // 공격 후 100ms 동안만 발사 애니메이션 표시
-        {
-            m_bFiring = true;
-            // col 10으로 이동 (발사 프레임)
             m_iFireFrame = 10;
+            //머리는 타겟 방향 바라보도록 설정 
+            m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
+            //애니메이션 카운트 진행
+            if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+            {
+                m_iFireFrameTimer++;
+                if (m_iFireFrameTimer == 1)
+                {
+                    JudgeLayer(); //공중, 지상 판단
+                    //FireBullet();
+                }
+                if (m_iFireFrameTimer >= m_iFireFrameDuration)
+                {
+                    m_iFireFrame = 0;
+                    m_bAttack = false;
+                    m_eState = eUnitState::IDLE;
+                    m_iFireFrameTimer = 0;
+                }
+                m_tFrame.dwTime = now;
+            }
         }
-        else
-        {
-            m_bFiring = false;
-            m_iFireFrame = 0;  // col 0 = 일반 상태
-        }
+        break;
+    case eUnitState::DIE:
+        return;
+    default:
+        break;
     }
 }
 
@@ -193,7 +234,8 @@ void CGoliath::RenderHead(HDC hDC)
 
     HDC hHeadDC = CBmpMgr::Get_Instance()->Find_Image(m_pHeadKey);
 
-    int iSrcX = m_bFiring ? (m_iFireFrame * (int)m_tInfo.fCX) : 0;  // 발사중이면 애니메이션
+    //발사 중이면 발사 프레임으로 설정
+    int iSrcX = m_bAttack ? (m_iFireFrame * (int)m_tInfo.fCX) : 0; 
     int iSrcY = m_iHeadFrame * (int)m_tInfo.fCY;
 
     GdiTransparentBlt(hDC,
@@ -222,57 +264,59 @@ void CGoliath::Release()
 {
 }
 
-bool CGoliath::UpdateAttack(Order& order)
+bool CGoliath::UpdateRAttack(Order& order)
 {
+    //공격 중이 아닐 때만 타겟 설정
+    if (!m_bAttack && order.pTarget)
+    {
+        m_pTarget = order.pTarget;
+    }
+
+    float fDT = CTimeMgr::Get_Instance()->GetDT();
+
     //타겟이 죽었거나 사라진 경우
     if (!order.pTarget || order.pTarget->IsDead())
     {
-        m_eState = eUnitState::IDLE;
-        return true;
+        if (m_bAttackMove)
+        {
+            order.eType = eOrderType::ATTACK_MOVE;
+            order.pTarget = nullptr;
+            return false;
+        }
+        else
+        {
+            m_eState = eUnitState::IDLE;
+            return false; //오더 완료
+        }
     }
 
     Vec2 targetPos = order.pTarget->Get_Pos();
-    Vec2 myPos = Get_Pos();
+    Vec2 myPos{ m_tInfo.fX, m_tInfo.fY };
     //타겟까지의 거리
     Vec2 diff = { targetPos.fX - myPos.fX, targetPos.fY - myPos.fY };
     float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
-    // 공격 사거리 체크
+    //공격 사거리 체크
     if (dist <= m_fAttackRange)
     {
-        m_eState = eUnitState::ATTACK;
-
-        // 타겟 방향 보기
-        /*
+        //Move -> Idle로 상태를 변환해서 공격 타이머가 돌 수 있도록 설정한다.
+        if (m_eState == eUnitState::MOVE)
+        {
+            m_eState = eUnitState::IDLE;
+        }
+        //타겟 방향 보기
         if (dist > 0.1f)
         {
+            //탱크는 머리 방향도 업데이트!
             m_vDir = { diff.fX / dist, diff.fY / dist };
-            m_tFrame.iFrame = DirTo16WayIndex(m_vDir);  // 16방향 회전
-        }
-        */
-        // 공격 쿨타임 체크
-        DWORD now = GetTickCount();
-        DWORD attackCoolTime = (DWORD)(1000.f / m_fAttackSpeed);
-        if (now - m_dwLastAttack >= attackCoolTime)
-        {
-            // 히트스캔 - 즉시 데미지
-            order.pTarget->TakeDamage(m_iAttackDamage);
-
-            // 시각 효과용 투사체 발사
-            Fire_Bullet(order.pTarget);
-
-            m_dwLastAttack = now;
+            m_vHeadDir = { diff.fX / dist, diff.fY / dist };
         }
         return false;
     }
     else
     {
-        // 타겟이 사거리 내에 존재하지 않을 경우 이동
-        m_eState = eUnitState::MOVE;
+        //타겟이 사거리 내에 존재하지 않을 경우 이동
         Vec2 dir = { diff.fX / dist, diff.fY / dist };
         m_vDir = dir;
-
-        m_tFrame.iFrame = DirTo16WayIndex(m_vDir);  // 이동 방향으로 회전
-
         float fDT = CTimeMgr::Get_Instance()->GetDT();
         m_tInfo.fX += dir.fX * fDT * m_fSpeed;
         m_tInfo.fY += dir.fY * fDT * m_fSpeed;
@@ -280,28 +324,113 @@ bool CGoliath::UpdateAttack(Order& order)
     }
 }
 
-void CGoliath::Fire_Bullet(CObj* pTarget)
+void CGoliath::UpdateDead()
 {
-    if (!pTarget)
-        return;
-    //미사일은 머리에서 발사됨
-
-    for (int i = 0; i < 2; ++i)
+    if (m_eTeamType == eTeamType::ALLY)
     {
-        CGBullet* pBullet = new CGBullet;
-        pBullet->Initialize();
-        //발사 위치 : 골리앗 중심 + 머리 방향으로의 오프셋
-        float offsetDist = 1.f;  // 머리에서 약간 앞쪽에서 발사
-        float startX = (m_tInfo.fX - i * 50) + m_vHeadDir.fX * offsetDist;
-        float startY = (m_tInfo.fY - i * 50) + m_vHeadDir.fY * offsetDist;
+        CResourceMgr::Get_Instance()->SubtractSupply(2);
+    }
+    //이펙트와 사운드 재생
+    CSoundMgr::Get_Instance()->PlayEffect(L"Goliath/TGoDth00.wav", 1.f);
 
-        pBullet->Set_Pos(startX, startY);
-        pBullet->Set_Target(pTarget);
+    //타겟 이펙트 생성
+    CObj* pEffect = CAbstractFactory<CEffect>::Create(
+        m_tInfo.fX, m_tInfo.fY);
+    pEffect->Initialize();
+    CEffect* pEffectObj = dynamic_cast<CEffect*>(pEffect);
+    if (pEffectObj)
+    {
+        pEffectObj->Set_Effect(L"MARINE_DEATH_EFFECT",
+            7, 100, 50, eEffectType::COL_BASE, RGB(255, 255, 0));
+    }
+    CObjMgr::Get_Instance()->Add_Object(OBJ_PROJECTILE, pEffect);
+}
+
+void CGoliath::JudgeLayer()
+{
+    if (!m_pTarget)
+        return;
+    eUnitLayer layer = m_pTarget->GetLayer();
+    switch (layer)
+    {
+    case eUnitLayer::GROUND:
+        FireBullet();
+        break;
+    case eUnitLayer::AIR:
+        FireMissile();
+        break;
+    default:
+        break;
+    }
+}
+
+void CGoliath::FireBullet()
+{
+    if (!m_pTarget) //안전장치
+        return;
+
+    Vec2 targetPos = m_pTarget->Get_Pos();
+    Vec2 myPos{ m_tInfo.fX, m_tInfo.fY };
+    float fDT = CTimeMgr::Get_Instance()->GetDT();
+    //타겟까지의 거리
+    Vec2 diff = { targetPos.fX - myPos.fX, targetPos.fY - myPos.fY };
+    float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
+    //공격 사거리 체크
+    if (dist <= m_fAttackRange)
+    {
+        //타겟 방향 보기
+        if (dist > 0.1f)
+        {
+            m_vDir = { diff.fX / dist, diff.fY / dist };
+        }
+        //히트스캔
+        m_pTarget->TakeDamage(m_iAttackDamage);
+        //사운드 재생
+        CSoundMgr::Get_Instance()->PlayEffect(L"Goliath/TGoFir00.wav", 0.6f);
+        //이펙트 생성
+        m_fAttackSpeed = 2.5f;
+        return;
+    }
+}
+
+void CGoliath::FireMissile()
+{
+    if (!m_pTarget) //안전장치
+        return;
+
+    //미사일 발사
+    Vec2 targetPos = m_pTarget->Get_Pos();
+    Vec2 myPos{ m_tInfo.fX, m_tInfo.fY };
+    float fDT = CTimeMgr::Get_Instance()->GetDT();
+    //타겟까지의 거리
+    Vec2 diff = { targetPos.fX - myPos.fX, targetPos.fY - myPos.fY };
+    float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
+    //공격 사거리 체크
+    if (dist <= m_fAttackRange)
+    {
+        //타겟 방향 보기
+        if (dist > 0.1f)
+        {
+            m_vDir = { diff.fX / dist, diff.fY / dist };
+        }
+        //공격 사운드 재생
+        CSoundMgr::Get_Instance()->PlayEffect(L"Goliath/hkmissle.wav", 0.5f);
+
+        //현재 방향 가져오기 (16방향)
+        int iCurrentDir = m_tFrame.iFrame;
+
+        // 투사체 생성
+        CGMissile* pBullet = new CGMissile;
+        pBullet->Initialize();
+        pBullet->Set_Pos(m_tInfo.fX, m_tInfo.fY);
+        pBullet->Set_Target(m_pTarget);
         pBullet->Set_Owner(this);
+        pBullet->Set_Homing(true); //타겟 따라가도록 설계
+        pBullet->Set_Dir(m_vHeadDir);
 
         // 방향 설정 (타겟 방향)
-        Vec2 vMyPos = { startX, startY };
-        Vec2 vTargetPos = { pTarget->Get_Info().fX, pTarget->Get_Info().fY };
+        Vec2 vMyPos = { m_tInfo.fX, m_tInfo.fY };
+        Vec2 vTargetPos = { m_pTarget->Get_Info().fX, m_pTarget->Get_Info().fY };
         Vec2 vDir = { vTargetPos.fX - vMyPos.fX, vTargetPos.fY - vMyPos.fY };
 
         float fLength = sqrtf(vDir.fX * vDir.fX + vDir.fY * vDir.fY);
@@ -313,13 +442,88 @@ void CGoliath::Fire_Bullet(CObj* pTarget)
 
         pBullet->Set_Dir(vDir);
 
-        // 투사체 방향은 머리 방향 사용
-        pBullet->Set_Direction16(m_iHeadFrame);
+        // 투사체도 16방향 인덱스 설정
+        pBullet->Set_Direction16(iCurrentDir);
 
         // ObjMgr에 추가
         CObjMgr::Get_Instance()->Add_Object(OBJID::OBJ_PROJECTILE, pBullet);
+
+        return;
     }
 }
 
+void CGoliath::UpdateAI()
+{
+    if (m_eTeamType == eTeamType::ALLY)
+        return;
+    //주변 적 찾기
+    CObj* pEnemy = FindNearestEnemyAI(m_fAttackRange);
+    //주변에 적이 존재할 경우, 오더 다 멈추고 공격 Order 추가
+    if (pEnemy)
+    {
+        if (!m_OrderQ.empty())
+        {
+            m_OrderQ.pop_front();
+        }
+        Order attack;
+        attack.eType = eOrderType::ATTACK;
+        attack.pTarget = pEnemy;
+        attack.dst = { pEnemy->Get_Info().fX, pEnemy->Get_Info().fY };
 
+        m_OrderQ.push_back(attack);
+    }
+    else
+    {
+        //Order stop;
+        //stop.eType = eOrderType::STOP;
+        //m_OrderQ.push_back(stop);
+        //Order move;
+        //move.eType = eOrderType::MOVE;
+        //move.dst = { 0,0 };  // ← 문제 2: 매 프레임 (0,0) 명령 추가!
+        //m_OrderQ.push_back(move);  // ← 큐가 무한정 쌓임!
+    }
+}
+
+CObj* CGoliath::FindNearestEnemyAI(float searchRadius)
+{
+    float fMinDistance = FLT_MAX;
+    CObj* pNearestEnemy = nullptr;
+
+    // 탐지 범위 (사거리 + 추가 탐지 범위)
+    float fDetectionRange = m_fAttackRange + 300.f; //300 감지 범위
+
+    // 모든 유닛 검사
+    auto& unitList = CObjMgr::Get_Instance()->Get_ObjList(OBJ_UNIT);
+    for (auto& pObj : unitList)
+    {
+        // 자기 자신 제외
+        if (pObj == this)
+            continue;
+
+        // 죽은 유닛 제외
+        if (pObj->Is_Dead())
+            continue;
+
+        //벙커에 있는 유닛 제외
+        if (!pObj->IsSelectable())
+            continue;
+
+        // 거리 계산
+        float fDX = pObj->Get_Info().fX - m_tInfo.fX;
+        float fDY = pObj->Get_Info().fY - m_tInfo.fY;
+        float fDistance = sqrtf(fDX * fDX + fDY * fDY);
+
+        // 탐지 범위 밖이면 제외
+        if (fDistance > fDetectionRange)
+            continue;
+
+        // 가장 가까운 적 갱신
+        if (fDistance < fMinDistance)
+        {
+            fMinDistance = fDistance;
+            pNearestEnemy = pObj;
+        }
+    }
+    return pNearestEnemy;
+}
 

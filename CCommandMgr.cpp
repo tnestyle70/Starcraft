@@ -7,6 +7,11 @@
 #include "CTileMgr.h"
 #include "CInputMgr.h"
 #include "CAbstractFactory.h"
+#include "CSoundMgr.h"
+#include "CTimeMgr.h"
+#include "CCursorMgr.h"
+#include "CMedic.h"
+#include "CSCV.h"
 
 CCommandMgr* CCommandMgr::m_pInstance = nullptr;
 
@@ -58,6 +63,53 @@ bool CCommandMgr::IsPlacing()
 
 void CCommandMgr::Update()
 {
+    //우클릭 명령 업데이트
+    if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE))
+    {
+        //커서 상태 변경
+        CCursorMgr::Get_Instance()->SetClickEffect();
+        //월드 마우스 좌표 가지고 오기
+        Vec2 worldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
+        CObj* pClickedEnemy = CObjMgr::Get_Instance()->PickEnemyAt(worldMouse);
+        CObj* pClickedUnit = CObjMgr::Get_Instance()->PickUnitAt(worldMouse);
+        if (pClickedEnemy)
+        {
+            //우클릭 공격 구현!
+            CCommandMgr::Get_Instance()->IssueAttack(pClickedEnemy);
+        }
+        else if (pClickedUnit)
+        {
+            CCommandMgr::Get_Instance()->IssueHeal(pClickedUnit);
+        }
+        else
+        {
+            CCommandMgr::Get_Instance()->IssueMove(worldMouse); //기본 이동
+        }
+    }
+    //A키 + Left Mouse 클릭으로 A땅 공격 구현
+    if (CInputMgr::Get_Instance()->KeyDown(A_KEY))
+    {
+        m_bAttackMove = true;
+    }
+    if (m_bAttackMove && CInputMgr::Get_Instance()->KeyDown(LEFT_MOUSE))
+    {
+        Vec2 worldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
+        CObj* pClickedObj = CObjMgr::Get_Instance()->PickObjAt(worldMouse);
+            IssueAttackMove(worldMouse); //AttackMove에 경로만 넣어주기
+        m_bAttackMove = false;
+    }
+    //카메라 화면 저장
+    SaveCamSlot();
+    //부대 지정
+    HandleControlGroup();
+
+    //사운드 타이머 업데이트
+    float dt = CTimeMgr::Get_Instance()->GetDT();
+    m_fSoundTimer += dt;
+    if (m_fSoundTimer >= m_fSoundInterval)
+    {
+        m_bCanPlaySound = true;
+    }
     //배치 모드가 아닐 경우 return 
     if (m_eMode != eCommandMode::PLAEC_BUILDING)
         return;
@@ -68,6 +120,7 @@ void CCommandMgr::Update()
         m_pBuilder = nullptr;
         return;
     }
+
     //마우스 월드 좌표
     Vec2 mouseWorld = GetMouseWorld();
 
@@ -101,10 +154,9 @@ void CCommandMgr::Update()
     {
         if (can && m_pBuilder)
         {           
-
             CBuilding* pBuilding = m_pGhost;
             Vec2 buildPos = pBuilding->Get_Pos();
-            m_pGhost = nullptr;
+            m_pGhost = nullptr; //pBuilding으로 소유권 이전 시키기
             m_eMode = eCommandMode::NONE;
 
             // SCV에게 건설 오더 추가
@@ -139,7 +191,26 @@ void CCommandMgr::Update()
             m_pBuilder = nullptr;
             */
         }
-        return;
+        else
+        {
+            //Can't Build 사운드 재생
+            eRaceType type = m_pGhost->GetOriginalRace();
+            if (type == eRaceType::RACE_TERRAN)
+            {
+                CSoundMgr::Get_Instance()->PlayEffect(L"SCV/SCVCantBuild.wav", 1.f);
+                return;
+            }
+            else if (type == eRaceType::RACE_PROTOSS)
+            {
+                CSoundMgr::Get_Instance()->PlayEffect(L"Advisor/BuildErr.wav", 1.f);
+                return;
+            }
+            else
+            {
+                CSoundMgr::Get_Instance()->PlayEffect(L"Advisor/BuildErr.wav", 1.f);
+                return;
+            }
+        }
     }
     if (CInputMgr::Get_Instance()->KeyDown(RIGHT_MOUSE) ||
         CInputMgr::Get_Instance()->KeyDownVK(VK_ESCAPE))
@@ -155,6 +226,54 @@ void CCommandMgr::Render(HDC hDC)
         m_pGhost->Render(hDC);
 }
 
+void CCommandMgr::SaveCamSlot()
+{
+    //Shift + num으로 카메라 슬롯에 저장
+    bool shift = CInputMgr::Get_Instance()->KeyPressVK(VK_LSHIFT);
+
+    if (CInputMgr::Get_Instance()->KeyDownVK('1'))
+    {
+        if (shift)
+            CScrollMgr::Get_Instance()->SaveCamSlot(1);
+        else
+            CScrollMgr::Get_Instance()->UpdateCamSlot(1);
+    }
+    if (CInputMgr::Get_Instance()->KeyDownVK('2'))
+    {
+        if (shift)
+            CScrollMgr::Get_Instance()->SaveCamSlot(2);
+        else
+            CScrollMgr::Get_Instance()->UpdateCamSlot(2);
+    }
+    if (CInputMgr::Get_Instance()->KeyDownVK('3'))
+    {
+        if (shift)
+            CScrollMgr::Get_Instance()->SaveCamSlot(3);
+        else
+            CScrollMgr::Get_Instance()->UpdateCamSlot(3);
+    }
+}
+
+void CCommandMgr::HandleControlGroup()
+{
+    bool ctrl = CInputMgr::Get_Instance()->KeyPressVK(VK_CONTROL);
+    bool shift = CInputMgr::Get_Instance()->KeyPressVK(VK_SHIFT);
+
+    for (int i = 0; i <= 9; ++i)
+    {
+        char key = (i == 0) ? '0' : ('1' + i - 1);
+
+        if (CInputMgr::Get_Instance()->KeyDownVK(key))
+        {
+            if (ctrl)
+                CSelectionMgr::Get_Instance()->SaveControlGroup(i);
+            else
+                CSelectionMgr::Get_Instance()->LoadControlGroup(i, shift);
+            break;
+        }
+    }
+}
+
 void CCommandMgr::IssueMove(Vec2& worldGoal)
 {
     auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
@@ -162,33 +281,75 @@ void CCommandMgr::IssueMove(Vec2& worldGoal)
         return;
     int unitCount = selected.size();
 
+    for (auto& pObj : selected)
+    {
+        eTeamType type = pObj->GetTeamType();
+        if (type == eTeamType::ENEMY)
+            return;
+    }
+
     if (unitCount == 1)
     {
         //단일 유닛 : 직진
         CUnit* pUnit = dynamic_cast<CUnit*>(selected[0]);
-        if (!pUnit) return;
 
-        Vec2 start = pUnit->Get_Pos();
-        //AStart를 통해 계산한 위치를 반환 받아서 CUnit 쪽에 넘겨주기 
-        vector<Vec2> path = CNavMgr::Get_Instance()->RequestPathWorld(start, worldGoal);
-
-        Order order;
-        order.eType = eOrderType::MOVE;
-        order.dst = worldGoal;
-        order.path = move(path);
-        order.iPathIndex = 0;
-        if (order.path.empty())
+        //이동 사운드 재생
+        PlayMoveSound(pUnit);
+        if (pUnit)
         {
-            order.path.push_back(worldGoal);
+            Vec2 start = pUnit->Get_Pos();
+            //AStart를 통해 계산한 위치를 반환 받아서 CUnit 쪽에 넘겨주기 
+            vector<Vec2> path = CNavMgr::Get_Instance()->RequestPathWorld(start, worldGoal);
+
+            Order order;
+            order.eType = eOrderType::MOVE;
+            order.dst = worldGoal;
+            order.path = move(path);
             order.iPathIndex = 0;
+            if (order.path.empty())
+            {
+                order.path.push_back(worldGoal);
+                order.iPathIndex = 0;
+            }
+            //우클릭 이동일 경우 기존 오더 비우기
+            pUnit->SetAttackMove(false); //AttackMove모드 해제 
+            pUnit->ClearOrder();
+            pUnit->PushOrder(order);
+
+            return;
         }
-        //우클릭 이동일 경우 기존 오더 비우기
-        pUnit->ClearOrder();
-        pUnit->PushOrder(order);
+        else //건물도 order 넣어서 이동 가능하게 하기
+        {
+            CBuilding* pBuilding = dynamic_cast<CBuilding*>(selected[0]);
+            if (!pBuilding)
+                return;
+            Vec2 start = pBuilding->Get_Pos();
+            //AStart를 통해 계산한 위치를 반환 받아서 CUnit 쪽에 넘겨주기 
+            vector<Vec2> path = CNavMgr::Get_Instance()->RequestPathWorld(start, worldGoal);
+
+            Order order;
+            order.eType = eOrderType::MOVE;
+            order.dst = worldGoal;
+            order.path = move(path);
+            order.iPathIndex = 0;
+            if (order.path.empty())
+            {
+                order.path.push_back(worldGoal);
+                order.iPathIndex = 0;
+            }
+            //우클릭 이동일 경우 기존 오더 비우기
+            pBuilding->ClearOrder();
+            pBuilding->PushOrder(order);
+            return;
+        }
     }
     //격자형 배치
     else
     {
+        //첫번째 유닛 이동 사운드 재생
+        CUnit* pUnit = dynamic_cast<CUnit*>(selected[0]);
+        PlayMoveSound(pUnit);
+
         int cols = (int)ceil(sqrt(unitCount));  // 한 줄에 몇 개
         float spacing = 25.f;  // 유닛 간 간격
 
@@ -214,6 +375,7 @@ void CCommandMgr::IssueMove(Vec2& worldGoal)
             order.dst = formationGoal;
             order.path.clear();
 
+            unit->SetAttackMove(false);
             unit->ClearOrder();
             unit->PushOrder(order);
 
@@ -256,11 +418,21 @@ void CCommandMgr::IssueMove(Vec2& worldGoal)
     */
 }
 
-void CCommandMgr::IssueAttack(CObj* pTarget)
+void CCommandMgr::IssueAttack(CObj* pTarget) //우클릭 공격
 {
     auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
     if (selected.empty() || !pTarget)
         return;
+
+    for (auto& pObj : selected)
+    {
+        if (!pObj->IsSelectable())
+            return;
+        eTeamType type = pObj->GetTeamType();
+        if (type == eTeamType::ENEMY)
+            return;
+    }
+
     for (auto* pObj : selected)
     {
         CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
@@ -273,18 +445,29 @@ void CCommandMgr::IssueAttack(CObj* pTarget)
         order.path.clear();
         order.iPathIndex = 0;
 
+        pUnit->SetAttackMove(false);
         pUnit->ClearOrder();
         pUnit->PushOrder(order);
     }
 }
 
-void CCommandMgr::IssueAttackMove(Vec2& worldGoal)
+void CCommandMgr::IssueAttackMove(Vec2& worldGoal) //A땅 공격
 {
     auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+
     if (selected.empty())
         return;
 
-    for (auto* obj : selected)
+    for (auto& pObj : selected)
+    {
+        if (!pObj->IsSelectable())
+            return;
+        eTeamType type = pObj->GetTeamType();
+        if (type == eTeamType::ENEMY)
+            return;
+    }
+
+    for (auto* obj : selected) //선택된 유닛에 대한 A땅 공격 구현
     {
         CUnit* pUnit = dynamic_cast<CUnit*>(obj);
         if (!pUnit) continue;
@@ -295,8 +478,82 @@ void CCommandMgr::IssueAttackMove(Vec2& worldGoal)
         order.pTarget = nullptr;
         order.path.clear();
         order.iPathIndex = 0;
-
+        //오더 비우고 A땅 이동 오더 실행!
+        pUnit->SetAttackMove(true); //A땅 공격 true
         pUnit->ClearOrder();
         pUnit->PushOrder(order);
     }
+}
+
+void CCommandMgr::IssueHeal(CObj* pTarget)
+{
+    auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+    if (selected.empty() || !pTarget)
+        return;
+    for (auto* pObj : selected)
+    {
+        CMedic* pMedic = dynamic_cast<CMedic*>(pObj);
+        if (!pMedic) continue;
+
+        Order order;
+        order.eType = eOrderType::ATTACK;
+        order.pTarget = pTarget;
+        order.dst = pTarget->Get_Pos();
+        order.path.clear();
+        order.iPathIndex = 0;
+
+        pMedic->SetAttackMove(false); //A땅 공격 true
+        pMedic->ClearOrder();
+        pMedic->PushOrder(order);
+    }
+}   
+
+void CCommandMgr::PlayMoveSound(CUnit* pUnit)
+{
+    if (!m_bCanPlaySound)
+        return;
+
+    if (!pUnit || pUnit->IsDead())
+        return;
+
+    eUnitType type = pUnit->Get_UnitType();
+
+    switch (type)
+    {
+    case eUnitType::SCV:
+        CSoundMgr::Get_Instance()->PlayEffect(L"SCV/SCVMove2.wav", 0.4f);
+        break;
+    case eUnitType::MARINE:
+        CSoundMgr::Get_Instance()->PlayEffect(L"Marine/MarineMove1.wav", 0.4f);
+        break;
+    case eUnitType::MEDIC:
+        CSoundMgr::Get_Instance()->PlayEffect(L"Medic/MedicMove1.wav", 0.4f);
+        break;
+    case eUnitType::FIREBAT:
+        CSoundMgr::Get_Instance()->PlayEffect(L"FireBat/FireBatMove2.wav", 0.4f);
+        break;
+    case eUnitType::GHOST:
+        CSoundMgr::Get_Instance()->PlayEffect(L"Ghost/GhostMove1.wav", 0.4f);
+        break;
+    case eUnitType::VULTURE:
+        CSoundMgr::Get_Instance()->PlayEffect(L"Vulture/VultureMove3.wav", 0.4f);
+        break;
+    case eUnitType::TANK:
+        CSoundMgr::Get_Instance()->PlayEffect(L"Tank/TankMove1.wav", 0.4f);
+        break;
+    case eUnitType::GOLIATH:
+        CSoundMgr::Get_Instance()->PlayEffect(L"Goliath/TGoYes02.wav", 0.4f);
+        break;
+    case eUnitType::BATTLECRUISER:
+        CSoundMgr::Get_Instance()->PlayEffect(L"BattleCrusor/BattleCrusorMove2.wav", 0.4f);
+        break;
+        //프로토스
+    case eUnitType::PROBE:
+        CSoundMgr::Get_Instance()->PlayEffect(L"Probe/ppryes00.wav", 0.4f);
+        break;
+    default:
+        break;
+    }
+    m_bCanPlaySound = false;
+    m_fSoundTimer = 0.f;
 }

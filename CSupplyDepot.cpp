@@ -23,14 +23,19 @@ void CSupplyDepot::Initialize()
 {
 	CBuilding::Initialize();
 	m_tInfo.fCX = 96.f;
-	m_tInfo.fCY = 96.f;
+	m_tInfo.fCY = 128.f;
 	lstrcpy(m_szGreenKey, L"SUPPLYDEPOT_GREEN");
 	lstrcpy(m_szRedKey, L"SUPPLYDEPOT_RED");
-	m_pFrameKey = L"SupplyDepot";
+	m_pFrameKey = L"SUPPLYDEPOT_ANIM";
 	m_eRender = RENDER_WORLD;
 	m_tFrame.iStart = 0;
 	m_tFrame.iFrame = 0;
-	m_tFrame.iEnd = 0;
+	m_tFrame.iEnd = 7;
+	m_tFrame.dwTime = 0;
+	m_tFrame.dwSpeed = 100;
+
+	m_eOriginalRace = eRaceType::RACE_TERRAN;
+	m_eCurrentRace = eRaceType::RACE_TERRAN;
 }
 
 void CSupplyDepot::SetBuildingData()
@@ -41,7 +46,7 @@ void CSupplyDepot::SetBuildingData()
 	m_tCost.gas = 0;
 	m_tCost.supply = 0;
 	m_iMaxHP = 500;
-	m_fConstructDuration = 10.f;
+	m_fConstructDuration = 2.f;
 	//타일 단위 크기
 	m_iHeight = 3;
 	m_iWidth = 3;
@@ -54,6 +59,7 @@ int CSupplyDepot::Update()
 	if (m_eState == eBuildingState::CONSTRUCT)
 	{
 		UpdateProduction();
+		UpdateAnimation();
 	}
 	UpdateHotKeys();
 
@@ -66,6 +72,11 @@ void CSupplyDepot::Render(HDC hDC)
 {
 	//고스트 모드일 경우 고스트 렌더가 되도록 설정
 	if (m_bGhost)
+	{
+		CBuilding::Render(hDC);
+		return;
+	}
+	if (m_bConstructing) //건설 중일 경우 BuildAnim Render!
 	{
 		CBuilding::Render(hDC);
 		return;
@@ -114,11 +125,11 @@ void CSupplyDepot::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 	CBuilding::CommandCardSlot(outSlot);
 
 	//0번 슬롯 SCV 생산
-	outSlot[0].commandID = eCommandID::SCV;
-	outSlot[0].iconKey = TEXT("ICON_SCV");
-	outSlot[0].hotkey = 'S';
-	outSlot[0].clickable = true;
-	outSlot[0].visible = true;
+	//outSlot[0].commandID = eCommandID::SCV;
+	//outSlot[0].iconKey = TEXT("ICON_SCV");
+	//outSlot[0].hotkey = 'S';
+	//outSlot[0].clickable = true;
+	//outSlot[0].visible = true;
 	//8번 : Cancle(Queue 취소)
 	outSlot[8].commandID = eCommandID::CANCLE;
 	outSlot[8].iconKey = TEXT("ICON_CANCLE");
@@ -189,6 +200,19 @@ void CSupplyDepot::UpdateHotKeys()
 			CommandContext context{};
 			this->ExecuteCommand(slots[i].commandID, context);
 		}
+	}
+}
+
+void CSupplyDepot::UpdateAnimation()
+{
+	DWORD now = GetTickCount();
+	// 생산 중: 애니메이션 진행 (2 ~ iEnd 반복)
+	if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+	{
+		m_tFrame.iFrame++;
+		if (m_tFrame.iFrame >= m_tFrame.iEnd)
+			m_tFrame.iFrame = 1;  // 1번 프레임으로 루프
+		m_tFrame.dwTime = now;
 	}
 }
 

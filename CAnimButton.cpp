@@ -6,6 +6,9 @@
 #include "CInputMgr.h"
 #include "CTimeMgr.h"
 #include "CAnimMgr.h"
+#include "CSoundMgr.h"
+#include "CMenuRace.h"
+#include "CGameDataMgr.h"
 
 CAnimButton::CAnimButton()
 {
@@ -20,7 +23,7 @@ void CAnimButton::Initialize()
 {
     m_eRender = RENDER_UI;
     m_tInfo.fCX = 200.f;
-    m_tInfo.fCY = 200.f;
+    m_tInfo.fCY = 300.f;
 }
 
 int CAnimButton::Update()
@@ -59,6 +62,48 @@ void CAnimButton::Late_Update()
             if (m_iCurrentFrame > m_iFrameCount)
             {
                 m_iCurrentFrame = 0;
+            }
+        }
+        //호버링 상태에서 LEFT_MOUSE 눌렀을 경우 Stage로 이동
+        if (CInputMgr::Get_Instance()->KeyPress(LEFT_MOUSE))
+        {
+            if (!lstrcmp(L"Start", m_pButtonType))
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_BUTTON, 0.4f);
+                m_pMenuRace->SetStart(true);
+            }
+            else if (!lstrcmp(L"Terran", m_pButtonType))
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_BUTTON, 0.4f);
+                CGameDataMgr::Get_Instance()->Set_PlayerRace(eRaceType::RACE_TERRAN);
+                m_pMenuRace->SetStart(true);
+            }
+            else if (!lstrcmp(L"Protoss", m_pButtonType))
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_BUTTON, 0.4f);
+                CGameDataMgr::Get_Instance()->Set_PlayerRace(eRaceType::RACE_PROTOSS);
+                m_pMenuRace->SetStart(true);
+            }
+            else if (!lstrcmp(L"Zerg", m_pButtonType))
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_BUTTON, 0.4f);
+                CGameDataMgr::Get_Instance()->Set_PlayerRace(eRaceType::RACE_ZERG);
+                m_pMenuRace->SetStart(true);
+            }
+            else if (!lstrcmp(L"Menu_Race", m_pButtonType))
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_BUTTON, 0.4f);
+                CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_MENU_RACE);
+            }
+            else if (!lstrcmp(L"Edit", m_pButtonType))
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_BUTTON, 0.4f);
+                CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_EDIT);
+            }
+            else if (!lstrcmp(L"Exit", m_pButtonType))
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Mouse/MouseDown.wav", SOUND_BUTTON, 0.4f);
+                DestroyWindow(g_hWnd);
             }
         }
     }

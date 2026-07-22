@@ -2,6 +2,9 @@
 #include "Define.h"
 #include "CObj.h"
 #include "CommandSlot.h"
+#include <unordered_map>
+
+class CButton;
 
 struct ProgressbarInfo
 {
@@ -16,8 +19,11 @@ struct BuildingUIInfo
 {
     int iHP;
     int iMaxHP;
+    int iShield;
+    int iMaxShield;
     const TCHAR* pBuildingName;
     eBuildingType eType;
+    eRaceType eRaceType;
     //생산정보
     bool IsProducing;
     //현재 생산 중인 유닛 정보
@@ -27,7 +33,8 @@ struct BuildingUIInfo
     struct QueueItem
     {
         eCommandID command;
-        int iIconKey;
+        int iIconKey; //테란용 아이콘 키 인덱스
+        const TCHAR* wsIconName; //프로토스용 PNG 파일명
     };
     vector<QueueItem> queue; //생산 대기 유닛
     bool IsVisible;
@@ -49,8 +56,13 @@ struct UnitUIInfo
 {
     int iHP;
     int iMaxHP;
+    int iMP;
+    int iMaxMP;
+    int iShield;
+    int iMaxShield;
     const TCHAR* pUnitName;
     eUnitType eType;
+    eRaceType eRaceType;
     bool IsVisible;
     UnitUIInfo()
         : pUnitName(nullptr)
@@ -58,11 +70,16 @@ struct UnitUIInfo
         , IsVisible(false)
         , iHP(0)
         , iMaxHP(0)
+        , iMP(0)
+        , iMaxMP(0)
+        , iShield(0)
+        , iMaxShield(0)
     {}
 };
 
 struct MultiUnitWireInfo
 {
+    eRaceType eRaceType;
     eUnitType eType;
     int iHP;
     int iMaxHP;
@@ -73,11 +90,32 @@ struct MultiUnitWireInfo
 
 struct MultiUnitUIInfo
 {
+    bool IsLoadUnit;
     bool IsVisible;
     int iUnitCount;
     MultiUnitWireInfo units[16];
-    MultiUnitUIInfo() : IsVisible(false),
+    MultiUnitUIInfo() : IsVisible(false), IsLoadUnit(false),
         iUnitCount(0) {}
+};
+
+struct MultiBuildingWireInfo
+{
+    eBuildingType eType;
+    int iHP;
+    int iMaxHP;
+    CObj* pBuilding;
+    MultiBuildingWireInfo() : eType(eBuildingType::NONE),
+        iHP(0), iMaxHP(0), pBuilding(nullptr) {}
+};
+
+struct MultiBuildingUIInfo
+{
+    bool IsVisible;
+    int iBuildingCount;
+    MultiBuildingWireInfo buildings[16];
+    MultiBuildingUIInfo() : IsVisible(false),
+        iBuildingCount(0) {
+    }
 };
 
 class CMainUI
@@ -85,33 +123,42 @@ class CMainUI
 private:
     CMainUI();
     ~CMainUI();
-
 public:
     void Initialize();
+    int Update();
     void Render(HDC hDC);
     void Release();
-
 public:
     void RenderFrame(HDC hDC);
     HBITMAP CreateAlphaBitmap(HDC hdc, HDC hSrcDC, int width, int height, COLORREF transparentColor);
     //Building 
     void SetBuildingUIInfo(const BuildingUIInfo& info);
     void RenderBuildingInfo(HDC hDC);
+    void RenderBuildingPortrait(HDC hDC);
     void RenderBuildingName(HDC hDC);
     void RenderProductionQueue(HDC hDC);
     void RenderCurrentProduction(HDC hDC);
+    //Wire 이미지
+    void RenderBuildingWire(HDC hDC);
+    //MultiBuilding 선택
+    void SetMultiBuildingUIInfo(const MultiBuildingUIInfo& info);
+    void RenderMultiBuildingWires(HDC hDC);
     //Unit
     void SetUnitUIInfo(const UnitUIInfo& info);
     void RenderUnitInfo(HDC hDC);
+    void RenderUnitPortrait(HDC hDC);
     void RenderUnitName(HDC hDC);
     void RenderUnitWire(HDC hDC);
+    void RenderUnitStats(HDC hDC);
     int GetWireColumnByHealth(int iHP, int iMaxHP);
     //MultiUnit 선택
     void SetMultiUnitUIInfo(const MultiUnitUIInfo& info);
     void RenderMultiUnitWires(HDC hDC);
     int GetWireHealthState(int hp, int maxHP);
-    //체력바
+    //체력바, MP바, 쉴드바
+    void RenderShieldBar(HDC hDC);
     void RenderHealthBar(HDC hDC);
+    void RenderMPBar(HDC hDC);
     //Minimap
     void InitializeMinimap();
     void RenderMinimap(HDC hDC);
@@ -120,16 +167,21 @@ public:
     void HandleMinimapClick(POINT mousePos);
     //미니맵 안개
     void UpdateMinimapFog();
-    //Wire 이미지
-    void RenderBuildingWire(HDC hDC);
     //Resource
     void RenderResource(HDC hDC);
+public:
+    void ShowWinText(bool show) { m_bEndGame = show; }
+private:
+    bool m_bEndGame = false;
+    CButton* m_pWinTextButton;
+    list<CButton*> m_ButtonList;
 private:
     ProgressbarInfo m_tProgressInfo;
-    BuildingUIInfo m_tBuildingUIInfo;
+    BuildingUIInfo m_tBuildingUIInfo; //빌딩 쪽 UI
+    MultiBuildingUIInfo m_tMultiBuildingUIInfo; //멀티 빌딩 쪽 UI
 
-    UnitUIInfo m_tUnitUIInfo;
-    MultiUnitUIInfo m_tMultiUnitUIInfo;
+    UnitUIInfo m_tUnitUIInfo;  //유닛 UI
+    MultiUnitUIInfo m_tMultiUnitUIInfo; //멀티 유닛 UI
 
     RECT m_srcPanel;    // 원본 이미지에서의 영역
     RECT m_dstPanel;    // 화면에 그릴 영역
@@ -140,7 +192,13 @@ private:
 
     HFONT m_hFont;      // 폰트
     HFONT m_hResourceFont; //자원용 폰트
+public:
+    bool IsInUIArea(POINT pt);
+    bool IsInCommandSlot(POINT pt);
 private:
+    //MainUI 관련 정보
+    RECT m_rcCommandArea;
+    RECT m_rcMainUIArea;
     //미니맵 관련 정보
     RECT m_srcMinimap;
     RECT m_dstMinimap;

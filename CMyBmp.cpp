@@ -41,3 +41,25 @@ void CMyBmp::Release()
 	m_hBitmap = nullptr;
 	m_hOldBitmap = nullptr;
 }
+
+int CMyBmp::Get_Width() const
+{
+	if (!m_hBitmap)
+	{
+		return 0;
+	}
+	BITMAP bm;
+	GetObject(m_hBitmap, sizeof(BITMAP), &bm);
+	return bm.bmWidth;
+}
+
+int CMyBmp::Get_Height() const
+{
+	if (!m_hBitmap)
+	{
+		return 0;
+	}
+	BITMAP bm;
+	GetObject(m_hBitmap, sizeof(BITMAP), &bm);
+	return bm.bmHeight;
+}

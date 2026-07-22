@@ -16,6 +16,10 @@
 #include "CNavMgr.h"
 #include "CCommandMgr.h"
 #include "CMineral.h"
+#include "CEffect.h"
+#include "CAbstractFactory.h"
+#include "CTimeMgr.h"
+#include "CSoundMgr.h"
 
 CSCV::CSCV() 
 {
@@ -32,9 +36,14 @@ void CSCV::Initialize()
     m_tInfo.fCY = 72.f;
     m_iMaxHP = 50;
     m_iHP = m_iMaxHP;
-    m_fSpeed = 150.f;
+    m_fSpeed = 100.f;
 
     m_pFrameKey = L"SCV";
+
+    m_fAttackRange = 20.f;
+
+    m_eOriginalRace = eRaceType::RACE_TERRAN;
+    m_eCurrentRace = eRaceType::RACE_TERRAN;
 
     m_eRender = RENDER_WORLD;
     m_eCommandCardState = eCommandCardState::MAIN;
@@ -55,7 +64,14 @@ int CSCV::Update()
     int iResult = CUnit::Update();
 
     if (iResult == DEAD)
-        return DEAD;
+        m_eState = eUnitState::DIE;
+
+    //적일 경우 AI 업데이트, 아니면 조작하면서 게임 플레이 가능하도록 만들기
+    if (m_eTeamType == eTeamType::ENEMY)
+    {
+        //AI업데이트
+        //UpdateAI();
+    }
 
     //CONSTRUCTING 상태면 애니메이션만 처리하고 끝
     if (m_eState == eUnitState::CONSTRUCTING)
@@ -74,6 +90,19 @@ int CSCV::Update()
         m_tFrame.iStart = 0;
         break;
     case eUnitState::MOVE:
+        m_tFrame.iCol = 0;
+        m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
+
+        if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+        {
+            m_tFrame.iStart++;
+            if (m_tFrame.iStart > m_tFrame.iEnd)
+                m_tFrame.iStart = 0;
+            m_tFrame.dwTime = now;
+        }
+        break;
+    case eUnitState::CONSTRUCTING:
+        m_tFrame.iCol = 2;
         m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
 
         if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
@@ -85,7 +114,7 @@ int CSCV::Update()
         }
         break;
     case eUnitState::GATHER:
-        //땜질 effect 추가하기
+        m_tFrame.iCol = 2;
         m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
 
         if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
@@ -111,7 +140,8 @@ int CSCV::Update()
     case eUnitState::ATTACK:
         break;
     case eUnitState::DIE:
-        break;
+        UpdateDead();
+        return DEAD;
     default:
         break;
     }
@@ -123,10 +153,32 @@ int CSCV::Update()
 
 void CSCV::Late_Update()
 {
+    //이전에 선택되지 않았고, 이번 프레임에 선택되었다면 eCommandCardState = Main으로 전환!
+    m_bCurSelected = false;
+    auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+    for (auto* obj : selected)
+    {
+        if (obj == this)
+        {
+            m_bCurSelected = true;
+            break;
+        }
+    }
+    if (!m_bPrevSelected && m_bCurSelected)
+    {
+        m_eCommandCardState = eCommandCardState::MAIN;
+    }
+    m_bPrevSelected = m_bCurSelected;
+
     //선택이 되었을 경우 마우스 방향의 애니메이션 재생
     if (!m_bSelected) return;
-    //이동 중이면 마우스 방향 애니메이션 재생 멈추기
-    if (m_eState != eUnitState::IDLE) return;
+    //마우스 방향 안 보기!
+    if (m_eState == eUnitState::MOVE) return;
+    if (m_eState == eUnitState::ATTACK) return;
+    if (m_eState == eUnitState::IDLE) return;
+    if (m_eState == eUnitState::GATHER) return;
+    if (m_eState == eUnitState::RETURN_RESOURCE) return;
+    if (m_eState == eUnitState::CONSTRUCTING) return;
 
     Vec2 vWorldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
     Vec2 vDir{ vWorldMouse.fX - m_tInfo.fX, vWorldMouse.fY - m_tInfo.fY };
@@ -137,6 +189,9 @@ void CSCV::Late_Update()
 
 void CSCV::Render(HDC hDC)
 {
+    if (!m_bVisible) //가스 채집시 렌더링 X
+        return;
+    //////////////////
     //전장의 안개 
     CUnit::Render(hDC);
 
@@ -162,6 +217,22 @@ void CSCV::Render(HDC hDC)
         (int)m_tInfo.fCX,		// 복사할 이미지의 가로 사이즈
         (int)m_tInfo.fCY,		// 복사할 이미지의 세로 사이즈
         RGB(0, 255, 0));
+
+    //자원 렌더링
+    TCHAR szKey[128];
+    if (m_bCarryingResource)
+    {
+        if (m_eResourceType == eResourceType::MINERAL)
+            wsprintf(szKey, L"MINERAL");
+        if (m_eResourceType == eResourceType::GAS)
+            wsprintf(szKey, L"GAS");
+        CMyPng* pPng = CBmpMgr::Get_Instance()->Find_Png(szKey);
+        if (!pPng) return;
+        int width = pPng->Get_Width();
+        int height = pPng->Get_Height();
+        pPng->Render_Alpha(hDC, iDrawX + 20.f, iDrawY + 20.f,
+            width, height, false);
+    }
 }
 
 void CSCV::Release()
@@ -226,11 +297,29 @@ bool CSCV::ExecuteCommand(eCommandID command, CommandContext& context)
     case eCommandID::BARRACKS:
         CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::BARRACKS, this);
         break;
+    case eCommandID::ENGINEERING_BAY:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::ENGINEERING_BAY, this);
+        break;
+    case eCommandID::TURRET:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::TURRET, this);
+        break;
+    case eCommandID::ACADEMY:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::ACADEMY, this);
+        break;
+    case eCommandID::BUNKER:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::BUNKER, this);
+        break;
     case eCommandID::FACTORY:
         CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::FACTORY, this);
         break;
     case eCommandID::STARPORT:
         CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::STARPORT, this);
+        break;
+    case eCommandID::SCIENCE_FACILITY:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::SCIENCE_FACILITY, this);
+        break;
+    case eCommandID::ARMORY:
+        CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::ARMORY, this);
         break;
     case eCommandID::SUPPLY_DEPOT:
         CCommandMgr::Get_Instance()->BeginPlaceBuilding(eBuildingType::SUPPLY_DEPOT, this);
@@ -251,6 +340,9 @@ void CSCV::CommandCardSlot(vector<CommandSlot>& outSlot)
     //건설 모드 체크 CommandMgr로 변경
     if (CCommandMgr::Get_Instance()->IsPlacing())
         return;
+    
+    bool bBarrackBuilt = CObjMgr::Get_Instance()->IsBarrackBuilt();
+    bool bFactoryBuilt = CObjMgr::Get_Instance()->IsFactoryBuilt();
 
     switch (m_eCommandCardState)
     {
@@ -285,27 +377,55 @@ void CSCV::CommandCardSlot(vector<CommandSlot>& outSlot)
         //0번 : CommandCenter 생성
         outSlot[0].commandID = eCommandID::COMMAND_CENTER;
         outSlot[0].iconKey = TEXT("ICON_COMMAND_CENTER");
-        outSlot[0].hotkey = 'B';
+        outSlot[0].hotkey = 'W';
         outSlot[0].clickable = true;
         outSlot[0].visible = true;
         //1번 : SupplyDepot 생성
         outSlot[1].commandID = eCommandID::SUPPLY_DEPOT;
         outSlot[1].iconKey = TEXT("ICON_SUPPLY_DEPOT");
-        outSlot[1].hotkey = 'H';
+        outSlot[1].hotkey = 'E';
         outSlot[1].clickable = true;
         outSlot[1].visible = true;
         //2번 : Refinary 생성
         outSlot[2].commandID = eCommandID::REFINERY;
         outSlot[2].iconKey = TEXT("ICON_REFINARY");
-        outSlot[2].hotkey = 'T';
+        outSlot[2].hotkey = 'R';
         outSlot[2].clickable = true;
         outSlot[2].visible = true;
         //3번 : Barracks 생성
         outSlot[3].commandID = eCommandID::BARRACKS;
         outSlot[3].iconKey = TEXT("ICON_BARRACKS");
-        outSlot[3].hotkey = 'G';
+        outSlot[3].hotkey = 'S';
         outSlot[3].clickable = true;
         outSlot[3].visible = true;
+        //4번 : Engineering_Bay 생성
+        outSlot[4].commandID = eCommandID::ENGINEERING_BAY;
+        outSlot[4].iconKey = TEXT("ICON_ENGINEERING_BAY");
+        outSlot[4].hotkey = 'D';
+        outSlot[4].clickable = true;
+        outSlot[4].visible = true;
+        outSlot[4].lock = !bBarrackBuilt;
+        //5번 : Turret 생성
+        outSlot[5].commandID = eCommandID::TURRET;
+        outSlot[5].iconKey = TEXT("ICON_TURRET");
+        outSlot[5].hotkey = 'F';
+        outSlot[5].clickable = true;
+        outSlot[5].visible = true;
+        outSlot[5].lock = !bBarrackBuilt;
+        //6번 : Academy 생성
+        outSlot[6].commandID = eCommandID::ACADEMY;
+        outSlot[6].iconKey = TEXT("ICON_ACADEMY");
+        outSlot[6].hotkey = 'X';
+        outSlot[6].clickable = true;
+        outSlot[6].visible = true;
+        outSlot[6].lock = !bBarrackBuilt;
+        //7번 : Bunker 생성
+        outSlot[7].commandID = eCommandID::BUNKER;
+        outSlot[7].iconKey = TEXT("ICON_BUNKER");
+        outSlot[7].hotkey = 'C';
+        outSlot[7].clickable = true;
+        outSlot[7].visible = true;
+        outSlot[7].lock = !bBarrackBuilt;
         //9번 : Cancle -> Main으로 복귀
         outSlot[8].commandID = eCommandID::CANCLE;
         outSlot[8].iconKey = TEXT("ICON_CANCLE");
@@ -326,18 +446,34 @@ void CSCV::CommandCardSlot(vector<CommandSlot>& outSlot)
             outSlot[i].clickable = false;
             outSlot[i].visible = false;
         }
-        //6번 : Factory 생성
+        //0번 : Factory 생성
         outSlot[0].commandID = eCommandID::FACTORY;
         outSlot[0].iconKey = TEXT("ICON_FACTORY");
-        outSlot[0].hotkey = 'Y';
+        outSlot[0].hotkey = 'W';
         outSlot[0].clickable = true;
         outSlot[0].visible = true;
-        //9번 : Starport 생성
+        outSlot[0].lock = !bBarrackBuilt;
+        //1번 : Starport 생성
         outSlot[1].commandID = eCommandID::STARPORT;
         outSlot[1].iconKey = TEXT("ICON_STARPORT");
-        outSlot[1].hotkey = 'N';
+        outSlot[1].hotkey = 'E';
         outSlot[1].clickable = true;
         outSlot[1].visible = true;
+        outSlot[1].lock = !bFactoryBuilt;
+        //2번 : ScienceFacility 생성
+        outSlot[2].commandID = eCommandID::SCIENCE_FACILITY;
+        outSlot[2].iconKey = TEXT("ICON_SCIENCE_FACILITY");
+        outSlot[2].hotkey = 'R';
+        outSlot[2].clickable = true;
+        outSlot[2].visible = true;
+        outSlot[2].lock = !bFactoryBuilt;
+        //3번 : Armory 생성
+        outSlot[3].commandID = eCommandID::ARMORY;
+        outSlot[3].iconKey = TEXT("ARMORY");
+        outSlot[3].hotkey = 'S';
+        outSlot[3].clickable = true;
+        outSlot[3].visible = true;
+        outSlot[3].lock = !bFactoryBuilt;
         //9번 : Cancle -> Main으로 복귀
         outSlot[8].commandID = eCommandID::CANCLE;
         outSlot[8].iconKey = TEXT("ICON_CANCLE");
@@ -350,6 +486,77 @@ void CSCV::CommandCardSlot(vector<CommandSlot>& outSlot)
     }
 }
 
+bool CSCV::UpdateConstructing(Order& order)
+{
+    //타겟 건물 저장
+    CBuilding* pBuilding = order.pBuilding;
+    if (!pBuilding)
+    {
+        m_eState = eUnitState::IDLE;
+        return true;
+    }
+    //건물 완료됐으면 종료
+    if (pBuilding->IsComplete())
+    {
+        m_eState = eUnitState::IDLE;
+        return true;
+    }
+    
+    Vec2 buildingPos = pBuilding->Get_Pos();
+    Vec2 myPos = Get_Pos();
+    Vec2 diff = { buildingPos.fX - myPos.fX, buildingPos.fY - myPos.fY };
+    float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
+    
+    //건물 건설 범위 설정
+    const float CONSTRUCTION_RANGE = 80.f;
+
+    float dt = CTimeMgr::Get_Instance()->GetDT();
+
+    if (dist <= CONSTRUCTION_RANGE - 10.f) //건물과 너무 가까우면 뒤로 이동
+    {
+        if (dist > 0)
+        {
+            m_vDir = { -diff.fX / dist, -diff.fY / dist };
+            m_tInfo.fX += m_vDir.fX * dt * m_fSpeed;
+            m_tInfo.fY += m_vDir.fY * dt * m_fSpeed;
+        }
+        return false;
+    }
+
+    //빌딩 방향 보기
+    if (dist > 0.1f)
+    {
+        m_vDir = { diff.fX / dist, diff.fY / dist };
+    }
+
+    //빌딩 이펙트 생성
+    if (m_fEffectCoolTime > 0.f)
+    {
+        m_fEffectCoolTime -= CTimeMgr::Get_Instance()->GetDT();
+        if (m_fEffectCoolTime < 0.f)
+        {
+            m_fEffectCoolTime = 0.f;
+        }
+    }
+
+    if (m_fEffectCoolTime <= 0.f)
+    {
+        m_fEffectCoolTime = EFFECT_INTERVAL;
+        CObj* pEffect = CAbstractFactory<CEffect>::Create(
+            m_tInfo.fX, m_tInfo.fY);
+        pEffect->Initialize();
+        CEffect* pEffectObj = dynamic_cast<CEffect*>(pEffect);
+        if (pEffectObj)
+        {
+            pEffectObj->Set_Effect(L"SCV_EFFECT", 10, 48, 48,
+                eEffectType::ROW_BASE, RGB(255, 0, 255), 0.02f);
+        }
+        CObjMgr::Get_Instance()->Add_Object(OBJ_PROJECTILE, pEffect);
+    }
+
+    return false;
+}
+
 bool CSCV::UpdateGather(Order& order)
 {
     //타겟 자원이 없거나 사라진 경우 예외 처리
@@ -360,7 +567,7 @@ bool CSCV::UpdateGather(Order& order)
         return true;
     }
 
-    //타겟 미네랄 저장
+    //타겟 자원 저장
     if (!m_pTargetResource)
         m_pTargetResource = order.pTarget;
 
@@ -369,7 +576,7 @@ bool CSCV::UpdateGather(Order& order)
     Vec2 diff = { resourcePos.fX - myPos.fX, resourcePos.fY - myPos.fY };
     float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
     
-    if (dist <= 50.f)
+    if (dist <= 40.f)
     {
         m_eState = eUnitState::GATHER;
         //자원 방향 보기
@@ -377,6 +584,38 @@ bool CSCV::UpdateGather(Order& order)
         {
             m_vDir = { diff.fX / dist, diff.fY / dist };
         }
+        //사운드 재생
+        //CSoundMgr::Get_Instance()->PlayEffect(L"SCV/SCVGather1.wav", 0.5f);
+        //미네랄일 경우에만 이펙트 생성
+        if (m_eResourceType == eResourceType::MINERAL)
+        {
+            //타겟 이펙트 생성
+            if (m_fEffectCoolTime > 0.f)
+            {
+                m_fEffectCoolTime -= CTimeMgr::Get_Instance()->GetDT();
+                if (m_fEffectCoolTime < 0.f)
+                    m_fEffectCoolTime = 0.f;
+            }
+            if (m_fEffectCoolTime <= 0.f)
+            {
+                m_fEffectCoolTime = EFFECT_INTERVAL;
+                CObj* pEffect = CAbstractFactory<CEffect>::Create(
+                    m_tInfo.fX, m_tInfo.fY);
+                pEffect->Initialize();
+                CEffect* pEffectObj = dynamic_cast<CEffect*>(pEffect);
+                if (pEffectObj)
+                {
+                    pEffectObj->Set_Effect(L"SCV_EFFECT", 10, 48, 48,
+                        eEffectType::ROW_BASE, RGB(255, 0, 255), 0.02f);
+                }
+                CObjMgr::Get_Instance()->Add_Object(OBJ_PROJECTILE, pEffect);
+            }
+        }
+        else
+        {
+            m_bVisible = false;
+        }
+   
         //채집 시작 시간
         if (m_dwGatherStartTime == 0)
         {
@@ -441,10 +680,17 @@ bool CSCV::UpdateReturn(Order& order)
         m_pTargetResource = nullptr;
         return true;
     }
+
+    //자원 채집 시작 플래그
+    m_bCarryingResource = true;
+
     Vec2 ccPos = order.pTarget->Get_Pos();
     Vec2 myPos = Get_Pos();
     Vec2 diff = { ccPos.fX - myPos.fX, ccPos.fY - myPos.fY };
     float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
+
+    if (m_eResourceType == eResourceType::GAS)
+        m_bVisible = true;
     
     if (dist <= 70.f) 
     {
@@ -464,6 +710,8 @@ bool CSCV::UpdateReturn(Order& order)
                 m_OrderQ.push_front(gather);
                 m_bActiveOrder = false;
                 m_eState = eUnitState::MOVE;
+                //자원 채집 완료
+                m_bCarryingResource = false;
                 return false;
             }
         }
@@ -483,6 +731,8 @@ bool CSCV::UpdateReturn(Order& order)
                 m_OrderQ.push_front(gather);
                 m_bActiveOrder = false;
                 m_eState = eUnitState::MOVE;
+                //자원 채집 완료
+                m_bCarryingResource = false;
                 return false;
             }
         }
@@ -511,5 +761,104 @@ bool CSCV::UpdateReturn(Order& order)
     return UpdateMove(order);
 }
 
+void CSCV::UpdateDead()
+{
+    if (m_eTeamType == eTeamType::ALLY)
+    {
+        CResourceMgr::Get_Instance()->SubtractSupply(1);
+    }
+    //이펙트와 사운드 재생
+    CSoundMgr::Get_Instance()->PlayEffect(L"SCV/SCVDeath.wav", 1.f);
 
+    //타겟 이펙트 생성
+    CObj* pEffect = CAbstractFactory<CEffect>::Create(
+        m_tInfo.fX, m_tInfo.fY);
+    pEffect->Initialize();
+    CEffect* pEffectObj = dynamic_cast<CEffect*>(pEffect);
+    if (pEffectObj)
+    {
+        pEffectObj->Set_Effect(L"MARINE_DEATH_EFFECT",
+            7, 100, 50, eEffectType::COL_BASE, RGB(255, 255, 0));
+    }
+    CObjMgr::Get_Instance()->Add_Object(OBJ_PROJECTILE, pEffect);
+}
+
+void CSCV::UpdateAI()
+{
+    if (m_eTeamType == eTeamType::ALLY)
+        return;
+    //주변 적 찾기
+    CObj* pEnemy = FindNearestEnemyAI(m_fAttackRange);
+    //주변에 적이 존재할 경우, 오더 다 멈추고 공격 Order 추가
+    if (pEnemy)
+    {
+        if (!m_OrderQ.empty())
+        {
+            m_OrderQ.pop_front();
+        }
+        Order attack;
+        attack.eType = eOrderType::ATTACK;
+        attack.pTarget = pEnemy;
+        attack.dst = { pEnemy->Get_Info().fX, pEnemy->Get_Info().fY };
+
+        m_OrderQ.push_back(attack);
+    }
+    else
+    {
+        //Order stop;
+        //stop.eType = eOrderType::STOP;
+        //m_OrderQ.push_back(stop);
+        //Order move;
+        //move.eType = eOrderType::MOVE;
+        //move.dst = { 0,0 };  // ← 문제 2: 매 프레임 (0,0) 명령 추가!
+        //m_OrderQ.push_back(move);  // ← 큐가 무한정 쌓임!
+    }
+}
+
+CObj* CSCV::FindNearestEnemyAI(float searchRadius)
+{
+    float fMinDistance = FLT_MAX;
+    CObj* pNearestEnemy = nullptr;
+
+    // 탐지 범위 (사거리 + 추가 탐지 범위)
+    float fDetectionRange = m_fAttackRange + 300.f; //300 감지 범위
+
+    // 모든 유닛 검사
+    auto& unitList = CObjMgr::Get_Instance()->Get_ObjList(OBJ_UNIT);
+    for (auto& pObj : unitList)
+    {
+        // 자기 자신 제외
+        if (pObj == this)
+            continue;
+
+        // 죽은 유닛 제외
+        if (pObj->Is_Dead())
+            continue;
+
+        //벙커에 있는 유닛 제외
+        if (!pObj->IsSelectable())
+            continue;
+
+        //공중 유닛 제외
+        if (pObj->GetLayer() == eUnitLayer::AIR)
+            continue;
+
+        // 거리 계산
+        float fDX = pObj->Get_Info().fX - m_tInfo.fX;
+        float fDY = pObj->Get_Info().fY - m_tInfo.fY;
+        float fDistance = sqrtf(fDX * fDX + fDY * fDY);
+
+        // 탐지 범위 밖이면 제외
+        if (fDistance > fDetectionRange)
+            continue;
+
+        // 가장 가까운 적 갱신
+        if (fDistance < fMinDistance)
+        {
+            fMinDistance = fDistance;
+            pNearestEnemy = pObj;
+        }
+    }
+    return pNearestEnemy;
+}
 

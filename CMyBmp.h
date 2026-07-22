@@ -9,9 +9,7 @@ public:
 public:
 	void	Load_Image(const TCHAR* pFilePath) override;
 	void	Release() override;
-
-//private:
-//	HDC		m_hMemDC;
-//	HBITMAP	m_hBitmap;
-//	HBITMAP	m_hOldmap;
+public:
+	int Get_Width() const;
+	int Get_Height() const;
 };

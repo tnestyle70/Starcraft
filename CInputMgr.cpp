@@ -43,6 +43,7 @@ void CInputMgr::Initialize()
 	m_iVKCode[S_KEY] = 'S';
 	m_iVKCode[B_KEY] = 'B';
 	m_iVKCode[G_KEY] = 'G';
+	m_iVKCode[P_KEY] = 'P';
 	m_iVKCode[ESCAPE] = VK_ESCAPE;
 	m_iVKCode[ESCAPE0] = '0';
 }

@@ -10,6 +10,10 @@
 #include "CResourceMgr.h"
 #include "CFogMgr.h"
 #include "CTimeMgr.h"
+#include "CButton.h"
+#include "CAbstractFactory.h"
+#include "CPortraitMgr.h"
+#include "CGameDataMgr.h"
 
 CMainUI* CMainUI::m_pInstance = nullptr;
 
@@ -26,7 +30,7 @@ CMainUI::~CMainUI()
 {
 }
 
-// 알파 비트맵 생성 함수
+// 알파 비트맵 생성 함수 - 추후에 최적화
 HBITMAP CMainUI::CreateAlphaBitmap(HDC hdc, HDC hSrcDC, int width, int height, COLORREF transparentColor)
 {
     BITMAPINFO bmi = {};
@@ -80,6 +84,8 @@ void CMainUI::Initialize()
     m_dstPanel.top = WINCY - panelH;
     m_dstPanel.right = panelW;
     m_dstPanel.bottom = WINCY;
+
+    m_rcMainUIArea = m_dstPanel;
 
     HDC hUIDC = CBmpMgr::Get_Instance()->Find_Image(L"MainUI");
     if (!hUIDC) return;
@@ -141,6 +147,42 @@ void CMainUI::Initialize()
 
     ReleaseDC(g_hWnd, hDC);
     m_fMinimapFogDelay = 0.f;
+
+    //Menu 버튼
+    CObj* pMenuButton = CAbstractFactory<CButton>::Create(556.f,500.f);
+    pMenuButton->Initialize();
+    CButton* ppMenuButton = dynamic_cast<CButton*>(pMenuButton);
+    if (ppMenuButton)
+    {
+        ppMenuButton->Set_BmpFrameKey(L"MENU_BTN");
+    }
+    //CObjMgr말고 m_ButtonList로 CMainUI에서 직접 버튼 관리
+    m_ButtonList.push_back(ppMenuButton);
+
+    //WinText 버튼 생성
+    CObj* pWinTextButton = CAbstractFactory<CButton>::Create(400.f, 250.f);
+    pWinTextButton->Initialize();
+    CButton* ppWinText = dynamic_cast<CButton*>(pWinTextButton);
+    if (ppWinText)
+    {
+        ppWinText->Set_BmpFrameKey(L"WIN_TEXT");
+    }
+    m_pWinTextButton = ppWinText;
+}
+
+int CMainUI::Update()
+{
+    for (auto& pButton : m_ButtonList)
+    {
+        pButton->Update();
+        pButton->Late_Update();
+    }
+    if (m_bEndGame)
+    {
+        m_pWinTextButton->Update();
+        m_pWinTextButton->Late_Update();
+    }
+    return NOEVENT;
 }
 
 void CMainUI::Render(HDC hDC)
@@ -151,9 +193,20 @@ void CMainUI::Render(HDC hDC)
     RenderBuildingWire(hDC);
     RenderUnitInfo(hDC); //단일 유닛
     RenderMultiUnitWires(hDC); //여러 유닛
-    RenderHealthBar(hDC);
-    RenderMinimap(hDC);
-    RenderResource(hDC);
+    RenderShieldBar(hDC); //쉴드바
+    RenderHealthBar(hDC); //체력바
+    RenderMPBar(hDC); //MP바
+    RenderMinimap(hDC); //미니맵
+    RenderResource(hDC); //리소스
+    //버튼 렌더링
+    for (auto& pButton : m_ButtonList)
+    {
+        pButton->Render(hDC);
+    }
+    if (m_bEndGame)
+    {
+        m_pWinTextButton->Render(hDC);
+    }
 }
 
 void CMainUI::RenderFrame(HDC hDC)
@@ -187,11 +240,51 @@ void CMainUI::RenderBuildingInfo(HDC hDC)
     if (!m_tBuildingUIInfo.IsVisible)
         return;
     RenderBuildingName(hDC);
+    RenderBuildingPortrait(hDC);
     if (m_tBuildingUIInfo.IsProducing)
     {
         RenderCurrentProduction(hDC);
         RenderProductionQueue(hDC);
     }   
+}
+
+void CMainUI::RenderBuildingPortrait(HDC hDC)
+{
+    if (!m_tBuildingUIInfo.IsVisible)
+        return;
+
+    eBuildingType type = m_tBuildingUIInfo.eType;
+
+    eRaceType raceType = m_tBuildingUIInfo.eRaceType;
+
+    if (raceType == eRaceType::RACE_PROTOSS)
+    {
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, eUnitType::NONE, eRaceType::RACE_PROTOSS);
+        return;
+    }
+
+    switch (type)
+    {
+    case eBuildingType::HIVE:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, eUnitType::NONE, eRaceType::RACE_ZERG);
+        return;
+    case eBuildingType::HYDRALISK_DEN:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, eUnitType::NONE, eRaceType::RACE_ZERG);
+        return;
+    case eBuildingType::SPIRE:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, eUnitType::NONE, eRaceType::RACE_ZERG);
+        return;
+    case eBuildingType::SPAWNING_POOL:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, eUnitType::NONE, eRaceType::RACE_ZERG);
+        return;
+    case eBuildingType::ULTRALISK_DEN:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, eUnitType::NONE, eRaceType::RACE_ZERG);
+        return;
+    default:
+        break;
+    }
+
+    CPortraitMgr::Get_Instance()->RenderPortraitBMP(hDC, eUnitType::NONE);
 }
 
 void CMainUI::RenderBuildingName(HDC hDC)
@@ -219,10 +312,11 @@ void CMainUI::RenderBuildingName(HDC hDC)
     DrawText(hDC, m_tBuildingUIInfo.pBuildingName, -1, &nameRect,
         DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
+    bool bHasShield = (m_tBuildingUIInfo.iMaxShield > 0);
+
     // 2. HP 정보 표시 Wire 이미지 아래에
     wchar_t hpText[64];
     swprintf_s(hpText, L"%d / %d", m_tBuildingUIInfo.iHP, m_tBuildingUIInfo.iMaxHP);
-
     SetTextColor(hDC, RGB(0, 255, 0));  // 초록색
 
     RECT hpRect;
@@ -232,6 +326,22 @@ void CMainUI::RenderBuildingName(HDC hDC)
     hpRect.bottom = hpY + 40;
     DrawText(hDC, hpText, -1, &hpRect,
         DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+    if (bHasShield)
+    {
+        // 3. Shield 정보 표시 HP 정보 위에 표시
+        wchar_t shieldText[64];
+        swprintf_s(shieldText, L"%d / %d", m_tBuildingUIInfo.iShield, m_tBuildingUIInfo.iMaxShield);
+        SetTextColor(hDC, RGB(50, 206, 235));  // 파란색
+
+        RECT shieldRect;
+        shieldRect.left = hpX - 100;
+        shieldRect.top = hpY - 10;  //HP 정보 바로 위에 표시
+        shieldRect.right = hpX + 100;
+        shieldRect.bottom = hpY + 40;
+        DrawText(hDC, shieldText, -1, &shieldRect,
+            DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    }
 
     SelectObject(hDC, hOldFont);
     SelectObject(hDC, hOldFont);
@@ -309,9 +419,9 @@ void CMainUI::RenderProductionQueue(HDC hDC)
     const int NUMBER_SIZE = 48;
     const int NUMBER_GAP = 2;
     HDC hETCDC = CBmpMgr::Get_Instance()->Find_Image(L"ETC");
-    HDC hIconDC = CBmpMgr::Get_Instance()->Find_Image(L"ICON_BUTTON_UI");
     if (!hETCDC)
         return;
+
     //5개의 빈 블롯 그리기
     for (int i = 0; i < MAX_SLOTS; ++i)
     {
@@ -341,40 +451,74 @@ void CMainUI::RenderProductionQueue(HDC hDC)
             NUMBER_SIZE, NUMBER_SIZE, //월본 이미지에서 복사할 크기
             RGB(0, 255, 255));
     }
-    if (hIconDC && !m_tBuildingUIInfo.queue.empty())
+    
+    //종족별 아이콘 렌더링
+    eRaceType type = m_tBuildingUIInfo.eRaceType;
+
+    if (type == eRaceType::RACE_TERRAN)
     {
-        //대기열 아이콘 그리기
-        for (size_t i = 0; i < m_tBuildingUIInfo.queue.size(); ++i)
+        HDC hIconDC = CBmpMgr::Get_Instance()->Find_Image(L"ICON_BUTTON_UI");
+        if (hIconDC && !m_tBuildingUIInfo.queue.empty())
         {
-            int x, y;
-            //숫자
-            if (i == 0)
+            //대기열 아이콘 그리기
+            for (size_t i = 0; i < m_tBuildingUIInfo.queue.size(); ++i)
             {
-                x = queueX;
-                y = queueY;
+                int x, y;
+                //숫자
+                if (i == 0)
+                {
+                    x = queueX;
+                    y = queueY;
+                }
+                else
+                {
+                    x = queueX + (i - 1) * NUMBER_SIZE;
+                    y = queueY + 48;
+                }
+                //int x = queueX + (i * (ICON_SIZE + ICON_GAP));
+                //int y = queueY;
+                //아이콘 렌더링
+                int iconIndex = m_tBuildingUIInfo.queue[i].iIconKey;
+                if (iconIndex < 0)
+                    continue;
+
+                int srcX = 0;
+                int srcY = iconIndex * ICON_SIZE;
+
+                //작게 축소해서 그리기
+                GdiTransparentBlt(hDC, x, y,
+                    ICON_SIZE, ICON_SIZE,
+                    hIconDC,
+                    0, srcY,
+                    ICON_SIZE, ICON_SIZE,
+                    RGB(0, 255, 0));
             }
-            else
+        }
+    }
+    else if (type == eRaceType::RACE_PROTOSS)
+    {
+        if (!m_tBuildingUIInfo.queue.empty())
+        {
+            //대기열 아이콘 그리기
+            for (size_t i = 0; i < m_tBuildingUIInfo.queue.size(); ++i)
             {
-                x = queueX + (i - 1) * NUMBER_SIZE;
-                y = queueY + 48;
+                int x, y;
+                //숫자
+                if (i == 0)
+                {
+                    x = queueX;
+                    y = queueY;
+                }
+                else
+                {
+                    x = queueX + (i - 1) * NUMBER_SIZE;
+                    y = queueY + 48;
+                }
+                CMyPng* pPng = CBmpMgr::Get_Instance()->Find_Png(m_tBuildingUIInfo.queue[i].wsIconName);
+                if (!pPng)
+                    continue;
+                pPng->Render_Alpha(hDC, x, y, ICON_SIZE, ICON_SIZE, false, false);
             }
-            //int x = queueX + (i * (ICON_SIZE + ICON_GAP));
-            //int y = queueY;
-            //아이콘 렌더링
-            int iconIndex = m_tBuildingUIInfo.queue[i].iIconKey;
-            if (iconIndex < 0)
-                continue;
-
-            int srcX = 0;
-            int srcY = iconIndex * ICON_SIZE;
-
-            //작게 축소해서 그리기
-            GdiTransparentBlt(hDC, x, y,
-                ICON_SIZE, ICON_SIZE,
-                hIconDC,
-                0, srcY,
-                ICON_SIZE, ICON_SIZE,
-                RGB(0, 255, 0));
         }
     }
 }
@@ -391,13 +535,35 @@ void CMainUI::RenderBuildingWire(HDC hDC)
     const int WIRE_COLS = 6;
     //건물 타입에 따른 이미지 인덱스
     int buildingRow = -1;
+
+    TCHAR szKey[256];
+    CMyPng* pPng = nullptr;
+
     switch (m_tBuildingUIInfo.eType)
     {
     case eBuildingType::COMMAND_CENTER:
         buildingRow = 15;
         break;
+    case eBuildingType::SUPPLY_DEPOT:
+        buildingRow = 16;
+        break;
+    case eBuildingType::REFINERY:
+        buildingRow = 17;
+        break;
     case eBuildingType::BARRACKS:
         buildingRow = 18;
+        break;
+    case eBuildingType::ENGINEERING_BAY:
+        buildingRow = 19;
+        break;
+    case eBuildingType::TURRET:
+        buildingRow = 20;
+        break;
+    case eBuildingType::ACADEMY:
+        buildingRow = 21;
+        break;
+    case eBuildingType::BUNKER:
+        buildingRow = 22;
         break;
     case eBuildingType::FACTORY:
         buildingRow = 23;
@@ -405,9 +571,292 @@ void CMainUI::RenderBuildingWire(HDC hDC)
     case eBuildingType::STARPORT:
         buildingRow = 24;
         break;
-    case eBuildingType::SUPPLY_DEPOT:
-        buildingRow = 16;
+    case eBuildingType::SCIENCE_FACILITY:
+        buildingRow = 25;
         break;
+    case eBuildingType::ARMORY:
+        buildingRow = 26;
+        break;
+    case eBuildingType::COMBAT_STATION:
+        buildingRow = 27;
+        break;
+    case eBuildingType::NUCLEAR_SILO:
+        buildingRow = 28;
+        break;
+    case eBuildingType::SCIENCE_SECRET:
+        buildingRow = 29;
+        break;
+    case eBuildingType::SCIENCE_PHYSICS:
+        buildingRow = 30;
+        break;
+    case eBuildingType::STARPORT_ADDON:
+        buildingRow = 31;
+        break;
+    case eBuildingType::FACTORY_ADDON:
+        buildingRow = 32;
+        break;
+        //저그 빌딩 와이어
+    case eBuildingType::HATCHERY:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Hatchery_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                210, WINCY - 130 + 30,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::LAIR:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Lair_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                210, WINCY - 130 + 30,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::HIVE:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Hive_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                210, WINCY - 130 + 30,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::HYDRALISK_DEN:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"HydraliskDen_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                210, WINCY - 130 + 30,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::SPIRE:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Spire_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                210, WINCY - 130 + 30,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::SPAWNING_POOL:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"SpawningPool_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                210, WINCY - 130 + 30,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::ULTRALISK_DEN:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"UltraliskDen_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                210, WINCY - 130 + 30,
+                iWidth, iHeight, false);
+        }
+        return;
+        //프로토스
+    case eBuildingType::NEXUS:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Nexus_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::PYLON:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Pylon_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::GATEWAY:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Gateway_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::CYBERNETICS_CORE:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Core_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::SHIELD_BATTERY:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"ShieldBattery_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::ROBOTICS_FACILITY:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Robotics_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::STARGATE:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Stargate_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::CITADEL_OF_ADUN:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Adun_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::ROBOTICS_SUPPORT_BAY:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"RoboticsSupportBay_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::FLEET_BEACON:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"FleetBeacon_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::TEMPLAR_ARCHIVES:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"TemplarArchive_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::OBSERVATORY:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Observatory_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eBuildingType::ARBITER_TRIBUNAL:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"ArbitorTribunal_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false);
+        }
+        return;
     default:
         return;  // 알 수 없는 타입은 렌더링하지 않음
     }
@@ -433,6 +882,109 @@ void CMainUI::RenderBuildingWire(HDC hDC)
         RGB(0, 0, 0));
 }
 
+void CMainUI::SetMultiBuildingUIInfo(const MultiBuildingUIInfo& info)
+{
+    m_tMultiBuildingUIInfo = info;
+}
+
+void CMainUI::RenderMultiBuildingWires(HDC hDC)
+{
+    /*
+    //8 * 2 그리드로 멀티 유닛 와이어프레임 렌더링
+    if (!m_tMultiUnitUIInfo.IsVisible)
+        return;
+    HDC hFrameDC = CBmpMgr::Get_Instance()->Find_Image(L"TRAIN_FRAME");
+    if (!hFrameDC)
+        return;
+    HDC hWireDC = CBmpMgr::Get_Instance()->Find_Image(L"SMALL_WIRE");
+    if (!hWireDC)
+        return;
+    //프레임 사이즈 
+    const int FRAME_SIZE = 42;
+    const int FRAME_COLS = 6;
+
+    //와이어 사이즈 
+    const int WIRE_SIZE = 32;
+    const int WIRE_COLS = 6;
+
+    const int WIRE_OFFSET = (FRAME_SIZE - WIRE_SIZE) * 0.5; //중앙 정렬 오프셋
+
+    //UI 위치
+    const int BASE_X = 220;  // 시작 X 좌표
+    const int BASE_Y = 495;  // 시작 Y 좌표
+    const int GAP_X = 2;     // 와이어 간 가로 간격
+    const int GAP_Y = 10;     // 와이어 간 세로 간격
+    const int COLS = 6;      // 한 줄에 8개
+    const int ROWS = 2;      // 2줄
+
+    // 각 유닛 타입별 BigWire.bmp 내 시작 행 인덱스
+    // 예시 (실제 비트맵 구조에 맞게 조정 필요)
+    const int UNIT_TYPE_ROW_MAP[11] = {
+        -1, // NONE
+        0,   // SCV (0, 1, 2행)
+        1,   // MARINE (3, 4, 5행)
+        2,   // MEDIC (6, 7, 8행)
+        3,   //GHOST
+        4,   //FIREBAT
+        5,   // VULTURE (9, 10, 11행)
+        6,  // TANK (12, 13, 14행)
+        7,  //SIEGETANK
+        8,  //GOLIATH
+        11  //BATTLECRUISER
+    };
+
+    //최대 16개 유닛 카운트
+    int displayCount = min(12, m_tMultiUnitUIInfo.iUnitCount);
+    for (int i = 0; i < displayCount; ++i)
+    {
+        const MultiUnitWireInfo& info = m_tMultiUnitUIInfo.units[i];
+        //그리드 위치 계산
+        int col = i % COLS;
+        int row = i / COLS;
+        //프레임 그려질 위치
+        int frameDestX = BASE_X + col * (FRAME_SIZE + GAP_X);
+        int frameDestY = BASE_Y + row * (FRAME_SIZE + GAP_X);
+
+        //유닛 타입에 따른 기본 행 인덱스(bmp wire에 맞춰서 수정)
+        int typeIndex = static_cast<int>(info.eType);
+        if (typeIndex < 0 || typeIndex >= 11)
+            typeIndex = 0;
+        int baseRow = UNIT_TYPE_ROW_MAP[typeIndex];
+        //체력 상태에 따른 행 오프셋
+        int healthOffset = GetWireHealthState(info.iHP, info.iMaxHP);
+        int wireRow = baseRow + healthOffset;
+        //각 유닛은 6열 중 특정 열 사용
+        int wireCol = 0;
+
+        //프레임
+        GdiTransparentBlt(hDC,
+            frameDestX, frameDestY,
+            FRAME_SIZE, FRAME_SIZE,  // 42x42로 그림!
+            hFrameDC,
+            0, 0,  // 프레임 비트맵은 보통 단일 이미지
+            FRAME_SIZE, FRAME_SIZE,
+            RGB(255, 0, 255));
+
+        //외이어 그려질 위치
+        int wireDestX = frameDestX + WIRE_OFFSET;
+        int wireDestY = frameDestY + WIRE_OFFSET;
+        //와이어
+        int wireSrcX = wireCol * WIRE_SIZE;
+        int wireSrcY = wireRow * WIRE_SIZE;
+
+        //와이어
+        GdiTransparentBlt(hDC,
+            wireDestX, wireDestY,
+            WIRE_SIZE, WIRE_SIZE,
+            hWireDC,
+            wireSrcX, wireSrcY,
+            WIRE_SIZE, WIRE_SIZE,
+            RGB(0, 0, 0));
+    }
+    */
+}
+
+
 void CMainUI::SetUnitUIInfo(const UnitUIInfo& info)
 {
     m_tUnitUIInfo = info;
@@ -443,7 +995,78 @@ void CMainUI::RenderUnitInfo(HDC hDC)
     if (!m_tUnitUIInfo.IsVisible)
         return;
     RenderUnitName(hDC);
+    RenderUnitStats(hDC);
     RenderUnitWire(hDC);
+    RenderUnitPortrait(hDC);
+}
+
+void CMainUI::RenderUnitPortrait(HDC hDC)
+{
+    if (!m_tUnitUIInfo.IsVisible)
+        return;
+
+    eUnitType type = m_tUnitUIInfo.eType;
+
+    eRaceType raceType = m_tUnitUIInfo.eRaceType;
+
+    if (raceType == eRaceType::RACE_PROTOSS)
+    {
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, eUnitType::NONE, eRaceType::RACE_PROTOSS);
+        return;
+    }
+
+    switch (type)
+    {
+    case eUnitType::NONE:
+        break;
+    case eUnitType::SCV:
+        break;
+    case eUnitType::MARINE:
+        break;
+    case eUnitType::MEDIC:
+        break;
+    case eUnitType::FIREBAT:
+        CPortraitMgr::Get_Instance()->RenderPortraitBMPRow(hDC, m_tUnitUIInfo.eType);
+        return;
+    case eUnitType::GHOST:
+        break;
+    case eUnitType::VULTURE:
+        CPortraitMgr::Get_Instance()->RenderPortraitBMPRow(hDC, m_tUnitUIInfo.eType);
+        return;
+    case eUnitType::TANK:
+        break;
+    case eUnitType::SIEGE_TANK:
+        break;
+    case eUnitType::GOLIATH:
+        CPortraitMgr::Get_Instance()->RenderPortraitBMPRow(hDC, m_tUnitUIInfo.eType);
+        return;
+    case eUnitType::BATTLECRUISER:
+        break;
+    case eUnitType::DRONE:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, m_tUnitUIInfo.eType, eRaceType::RACE_ZERG);
+        return;
+    case eUnitType::ZERGLING:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, m_tUnitUIInfo.eType, eRaceType::RACE_ZERG);
+        return;
+    case eUnitType::HYDRALISK:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, m_tUnitUIInfo.eType, eRaceType::RACE_ZERG);
+        return;
+    case eUnitType::ULTRALISK:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, m_tUnitUIInfo.eType, eRaceType::RACE_ZERG);
+        return;
+    case eUnitType::MUTALISK:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, m_tUnitUIInfo.eType, eRaceType::RACE_ZERG);
+        return;
+    case eUnitType::OVERLOAD:
+        CPortraitMgr::Get_Instance()->RenderPortraitPNG(hDC, m_tUnitUIInfo.eType, eRaceType::RACE_ZERG);
+        return;
+    case eUnitType::ZEALOT:
+        break;
+    default:
+        break;
+    }
+
+    CPortraitMgr::Get_Instance()->RenderPortraitBMP(hDC, m_tUnitUIInfo.eType);
 }
 
 void CMainUI::RenderUnitName(HDC hDC)
@@ -459,6 +1082,7 @@ void CMainUI::RenderUnitName(HDC hDC)
     int hpX = 250;
     int hpY = 550;
 
+    //유닛 이름 표시
     SetBkMode(hDC, TRANSPARENT);
     SetTextColor(hDC, RGB(255, 255, 255));
     HFONT hOldFont = (HFONT)SelectObject(hDC, m_hFont);
@@ -470,10 +1094,12 @@ void CMainUI::RenderUnitName(HDC hDC)
     DrawText(hDC, m_tUnitUIInfo.pUnitName, -1, &nameRect,
         DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
+    bool bHasMP = (m_tUnitUIInfo.iMaxMP > 0);
+    bool bHasShield = (m_tUnitUIInfo.iMaxShield > 0);
+
     // 2. HP 정보 표시 Wire 이미지 아래에
     wchar_t hpText[64];
     swprintf_s(hpText, L"%d / %d", m_tUnitUIInfo.iHP, m_tUnitUIInfo.iMaxHP);
-
     SetTextColor(hDC, RGB(0, 255, 0));  // 초록색
 
     RECT hpRect;
@@ -484,8 +1110,129 @@ void CMainUI::RenderUnitName(HDC hDC)
     DrawText(hDC, hpText, -1, &hpRect,
         DT_CENTER | DT_VCENTER | DT_SINGLELINE);
 
+    //3. MP 정보 표시
+    if(bHasMP)
+    {
+        wchar_t mpText[64];
+        swprintf_s(mpText, L"%d / %d", m_tUnitUIInfo.iMP, m_tUnitUIInfo.iMaxMP);
+        SetTextColor(hDC, RGB(135, 206, 235));  // 파란색
+
+        RECT mpRect;
+        mpRect.left = hpX + 30;
+        mpRect.top = hpY + 20;  //HealthBar 위에 표시
+        mpRect.right = hpX + 100;
+        mpRect.bottom = hpY + 40;
+        DrawText(hDC, mpText, -1, &mpRect,
+            DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    }
+
+    //4. Shield 정보 표시
+    if (bHasShield)
+    {
+        wchar_t shieldText[64];
+        swprintf_s(shieldText, L"%d / %d", m_tUnitUIInfo.iShield, m_tUnitUIInfo.iMaxShield);
+        SetTextColor(hDC, RGB(50, 206, 235));  // 파란색
+
+        RECT shieldRect;
+        shieldRect.left = hpX - 100;
+        shieldRect.top = hpY - 10;  //HealthBar 위에 표시
+        shieldRect.right = hpX + 100;
+        shieldRect.bottom = hpY + 40;
+        DrawText(hDC, shieldText, -1, &shieldRect,
+            DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    }
+
     SelectObject(hDC, hOldFont);
     SelectObject(hDC, hOldFont);
+}
+
+void CMainUI::RenderUnitStats(HDC hDC) //유닛의 방어구, 공격 상태 아이콘 렌더링
+{
+    if (!m_tUnitUIInfo.IsVisible)
+        return;
+    // 아이콘 위치
+    const int ICON_SIZE = 77;
+    const int ICON_START_X = 360;
+    const int ICON_START_Y = 540;  // 와이어프레임 + 이름 아래
+    const int ICON_SPACING = 10;
+    const int TEXT_OFFSET_X = ICON_SIZE * 0.5 - 3;
+
+    if (m_tUnitUIInfo.eRaceType == eRaceType::RACE_PROTOSS ||
+        m_tUnitUIInfo.eRaceType == eRaceType::RACE_ZERG)
+        return;
+
+    //Armor 아이콘 렌더링
+    HDC hArmorDC = CBmpMgr::Get_Instance()->Find_Image(L"ARMOR_ICON");
+    if (!hArmorDC)
+        return;
+    GdiTransparentBlt(hDC,
+        ICON_START_X, ICON_START_Y + 1,
+        ICON_SIZE * 0.7, ICON_SIZE * 0.7,
+        hArmorDC,
+        0, 0,
+        ICON_SIZE, ICON_SIZE,
+        RGB(0, 0, 0));
+    // Armor 수치 텍스트
+    WCHAR szArmor[16];
+    swprintf_s(szArmor, L"%d", CObjMgr::Get_Instance()->GetArmorUpgrade());
+    SetTextColor(hDC, RGB(255, 255, 255));
+    SetBkMode(hDC, TRANSPARENT);
+    TextOut(hDC, ICON_START_X + TEXT_OFFSET_X, 
+        ICON_START_Y + TEXT_OFFSET_X + 1
+        ,szArmor, lstrlen(szArmor));
+
+    //Attack Icon
+    HDC hAttackDC = nullptr;
+    switch (m_tUnitUIInfo.eType)
+    {
+    case eUnitType::SCV:
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"SCV_ATTACK_ICON");
+        break;
+    case eUnitType::MARINE:
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"MARINE_ATTACK_ICON");
+        break;
+    case eUnitType::GHOST:  
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"GHOST_ATTACK_ICON");
+        break;
+    case eUnitType::FIREBAT:
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"FIREBAT_ATTACK_ICON");
+        break;
+    case eUnitType::VULTURE:
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"VULTURE_ATTACK_ICON");
+        break;
+    case eUnitType::TANK:
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"TANK_ATTACK_ICON");
+        break;
+    case eUnitType::SIEGE_TANK:
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"SIEGE_ATTACK_ICON");
+        break;
+    case eUnitType::GOLIATH:
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"VULTURE_ATTACK_ICON");
+        break;
+    case eUnitType::BATTLECRUISER:
+        hAttackDC = CBmpMgr::Get_Instance()->Find_Image(L"BATTLECRUISER_ATTACK_ICON");
+        break;
+    default:
+        return;  // 알 수 없는 타입은 렌더링하지 않음
+    }
+    // 2. Attack 아이콘 + 수치
+    if (hAttackDC)
+    {
+        GdiTransparentBlt(hDC,
+            ICON_START_X + 60, ICON_START_Y,
+            ICON_SIZE * 0.7, ICON_SIZE * 0.7,
+            hAttackDC,
+            0, 0,
+            ICON_SIZE, ICON_SIZE,
+            RGB(0, 0, 0));
+    }
+    //Attack수치
+    WCHAR szAttack[16];
+    swprintf_s(szAttack, L"%d", CObjMgr::Get_Instance()->GetAttackUpgrade());
+    TextOut(hDC, 
+        ICON_START_X + TEXT_OFFSET_X + 60, 
+        ICON_START_Y + TEXT_OFFSET_X + 1
+        ,szArmor, lstrlen(szArmor));
 }
 
 void CMainUI::RenderUnitWire(HDC hDC)
@@ -500,6 +1247,10 @@ void CMainUI::RenderUnitWire(HDC hDC)
     const int WIRE_COLS = 6;
     //건물 타입에 따른 이미지 인덱스
     int unitRow = -1;
+
+    TCHAR szKey[256];
+    CMyPng* pPng = nullptr;
+
     switch (m_tUnitUIInfo.eType)
     {
     case eUnitType::SCV:
@@ -510,6 +1261,12 @@ void CMainUI::RenderUnitWire(HDC hDC)
         break;
     case eUnitType::MEDIC:
         unitRow = 2;
+        break;
+    case eUnitType::GHOST:
+        unitRow = 3;
+        break;
+    case eUnitType::FIREBAT:
+        unitRow = 4;
         break;
     case eUnitType::VULTURE:
         unitRow = 5;
@@ -526,6 +1283,242 @@ void CMainUI::RenderUnitWire(HDC hDC)
     case eUnitType::BATTLECRUISER:
         unitRow = 11;
         break;
+    case eUnitType::LAVA:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Lava_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                224, WINCY - 130 + 40,
+                iWidth * 0.7, iHeight * 0.7, false);
+        }
+        return;
+    case eUnitType::DRONE:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Drone_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                224, WINCY - 130 + 35,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eUnitType::ZERGLING:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Zergling_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                224, WINCY - 130 + 35,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eUnitType::HYDRALISK:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Hydralisk_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                224, WINCY - 130 + 35,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eUnitType::ULTRALISK:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Ultralisk_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                224, WINCY - 130 + 35,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eUnitType::MUTALISK:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Mutalisk_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                224, WINCY - 130 + 35,
+                iWidth, iHeight, false);
+        }
+        return;
+    case eUnitType::OVERLOAD:
+        //바로 PNG 렌더링
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Overload_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                224, WINCY - 130 + 35,
+                iWidth, iHeight, false);
+        }
+        return;
+        //프로토스
+    case eUnitType::PROBE:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Probe_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::ZEALOT:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Zealot_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::DRAGON:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Dragoon_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::HIGH_TEMPLAR:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"HighTemplar_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::DARK_TEMPLAR:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"DarkTemplar_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::SHUTTLE:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Shuttle_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::DARK_ARCHON:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"DarkArchon_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::CARRIER:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Carrier_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::CORSAIR:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Corsair_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::ARBITER:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Arbiter_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::REAVOR:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Reaver_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
+    case eUnitType::SCOUT:
+        pPng = CBmpMgr::Get_Instance()->Find_Png(L"Scout_BigWire");
+        if (pPng)
+        {
+            int iWidth = pPng->Get_Width();
+            int iHeight = pPng->Get_Height();
+
+            pPng->Render_Alpha(hDC,
+                220, WINCY - 130 + 20,
+                iWidth, iHeight, false, false);
+        }
+        return;
     default:
         return;  // 알 수 없는 타입은 렌더링하지 않음
     }
@@ -609,12 +1602,11 @@ void CMainUI::RenderMultiUnitWires(HDC hDC)
     //8 * 2 그리드로 멀티 유닛 와이어프레임 렌더링
     if (!m_tMultiUnitUIInfo.IsVisible)
         return;
+
     HDC hFrameDC = CBmpMgr::Get_Instance()->Find_Image(L"TRAIN_FRAME");
     if (!hFrameDC)
         return;
-    HDC hWireDC = CBmpMgr::Get_Instance()->Find_Image(L"SMALL_WIRE");
-    if (!hWireDC)
-        return;
+
     //프레임 사이즈 
     const int FRAME_SIZE = 42;
     const int FRAME_COLS = 6;
@@ -625,26 +1617,73 @@ void CMainUI::RenderMultiUnitWires(HDC hDC)
 
     const int WIRE_OFFSET = (FRAME_SIZE - WIRE_SIZE) * 0.5; //중앙 정렬 오프셋
 
-    //UI 위치
-    const int BASE_X = 220;  // 시작 X 좌표
-    const int BASE_Y = 495;  // 시작 Y 좌표
+    //UI 위치 - 셔틀, 벙커 여부에 따른 시작 위치 조정
+
+    int BASE_X, BASE_Y;
+    if (m_tMultiUnitUIInfo.IsLoadUnit)
+    {
+        BASE_X = 320;
+        BASE_Y = 525;
+    }
+    else
+    {
+        BASE_X = 220;
+        BASE_Y = 495;
+    }
+    //const int BASE_X = 220;  // 시작 X 좌표
+    //const int BASE_Y = 495;  // 시작 Y 좌표
     const int GAP_X = 2;     // 와이어 간 가로 간격
     const int GAP_Y = 10;     // 와이어 간 세로 간격
     const int COLS = 6;      // 한 줄에 8개
     const int ROWS = 2;      // 2줄
 
+    //테란
+    HDC hWireDC = CBmpMgr::Get_Instance()->Find_Image(L"SMALL_WIRE");
+    if (!hWireDC)
+        return;
     // 각 유닛 타입별 BigWire.bmp 내 시작 행 인덱스
     // 예시 (실제 비트맵 구조에 맞게 조정 필요)
-    const int UNIT_TYPE_ROW_MAP[9] = {
+    const int UNIT_TYPE_ROW_MAP[11] = {
         -1, // NONE
         0,   // SCV (0, 1, 2행)
         1,   // MARINE (3, 4, 5행)
         2,   // MEDIC (6, 7, 8행)
+        3,   //GHOST
+        4,   //FIREBAT
         5,   // VULTURE (9, 10, 11행)
         6,  // TANK (12, 13, 14행)
-        7,
-        8,
-        11 //BATTLECRUISER
+        7,  //SIEGETANK
+        8,  //GOLIATH
+        11  //BATTLECRUISER
+    };
+
+   
+    unordered_map<eUnitType, const TCHAR*> unitPngMap =
+    {
+        //프로토스
+        {eUnitType::PROBE, L"Probe_SmallWire"},
+        {eUnitType::ZEALOT, L"Zealot_SmallWire"},
+        {eUnitType::SHUTTLE, L"Shuttle_SmallWire"},
+        {eUnitType::ARCHON, L"Archon_SmallWire"},
+        {eUnitType::DARK_ARCHON, L"DarkArchon_SmallWire"},
+        {eUnitType::DARK_TEMPLAR, L"DarkTemplar_SmallWire"},
+        {eUnitType::DRAGON, L"Dragoon_SmallWire"},
+        {eUnitType::ARBITER, L"Arbiter_SmallWire"},
+        {eUnitType::CARRIER, L"Carrier_SmallWire"},
+        //{eUnitType::INTERCEPTOR, L"Interceptor_SmallWire"},
+        {eUnitType::CORSAIR, L"Corsair_SmallWire"},
+        {eUnitType::HIGH_TEMPLAR, L"HighTemplar_SmallWire"},
+        {eUnitType::REAVOR, L"Reaver_SmallWire"},
+        {eUnitType::SCOUT, L"Scout_SmallWire"},
+        {eUnitType::OBSERVER, L"Observer_SmallWire"},
+        //저그
+        {eUnitType::DRONE, L"Drone_SmallWire"},
+        {eUnitType::LAVA, L"Lava_SmallWire"},
+        {eUnitType::ZERGLING, L"Zergling_SmallWire"},
+        {eUnitType::OVERLOAD, L"Overload_SmallWire"},
+        {eUnitType::HYDRALISK, L"Hydralisk_SmallWire"},
+        {eUnitType::MUTALISK, L"Mutalisk_SmallWire"},
+        {eUnitType::ULTRALISK, L"Ultralisk_SmallWire"}
     };
 
     //최대 16개 유닛 카운트
@@ -661,7 +1700,7 @@ void CMainUI::RenderMultiUnitWires(HDC hDC)
 
         //유닛 타입에 따른 기본 행 인덱스(bmp wire에 맞춰서 수정)
         int typeIndex = static_cast<int>(info.eType);
-        if (typeIndex < 0 || typeIndex >= 9)
+        if (typeIndex < 0 || typeIndex >= 11)
             typeIndex = 0;
         int baseRow = UNIT_TYPE_ROW_MAP[typeIndex];
         //체력 상태에 따른 행 오프셋
@@ -686,15 +1725,41 @@ void CMainUI::RenderMultiUnitWires(HDC hDC)
         int wireSrcX = wireCol * WIRE_SIZE;
         int wireSrcY = wireRow * WIRE_SIZE;
 
-        //와이어
-        GdiTransparentBlt(hDC,
-            wireDestX, wireDestY,
-            WIRE_SIZE, WIRE_SIZE,
-            hWireDC,
-            wireSrcX, wireSrcY,
-            WIRE_SIZE, WIRE_SIZE,
-            RGB(0, 0, 0));
+        eRaceType type = m_tMultiUnitUIInfo.units[i].eRaceType;
+
+        if (type == eRaceType::RACE_TERRAN)
+        {
+            //와이어
+            GdiTransparentBlt(hDC,
+                wireDestX, wireDestY,
+                WIRE_SIZE, WIRE_SIZE,
+                hWireDC,
+                wireSrcX, wireSrcY,
+                WIRE_SIZE, WIRE_SIZE,
+                RGB(0, 0, 0));
+        }
+        else if (type == eRaceType::RACE_PROTOSS || type == eRaceType::RACE_ZERG)
+        {
+            auto it = unitPngMap.find(m_tMultiUnitUIInfo.units[i].eType);
+            if (it == unitPngMap.end())
+                continue;
+            CMyPng* pPng = CBmpMgr::Get_Instance()->Find_Png(it->second);
+            if (pPng)
+            {
+                int iWidth = pPng->Get_Width();
+                int iHeight = pPng->Get_Height();
+
+                pPng->Render_Alpha(hDC,
+                    wireDestX, wireDestY,
+                    iWidth, iHeight, false, false);
+            }
+        }
     }
+}
+
+void CMainUI::RenderShieldBar(HDC hDC)
+{
+
 }
 
 void CMainUI::RenderHealthBar(HDC hDC)
@@ -705,6 +1770,7 @@ void CMainUI::RenderHealthBar(HDC hDC)
         return;
 
     int iHP, iMaxHP;
+    int iShield, iMaxShield;
     
     for (CObj* pObj : selected)
     {
@@ -721,6 +1787,8 @@ void CMainUI::RenderHealthBar(HDC hDC)
         {
             iHP = pUnit->Get_HP();
             iMaxHP = pUnit->Get_MaxHP();
+            iShield = pUnit->Get_Shield();
+            iMaxShield = pUnit->Get_MaxShield();
         }
         else if (pBuilding)
         {
@@ -729,6 +1797,8 @@ void CMainUI::RenderHealthBar(HDC hDC)
                 continue;
             iHP = pBuilding->Get_HP();
             iMaxHP = pBuilding->Get_MaxHP();
+            iShield = pBuilding->Get_Shield();
+            iMaxShield = pBuilding->Get_MaxShield();
         }
         else 
             continue;
@@ -741,6 +1811,7 @@ void CMainUI::RenderHealthBar(HDC hDC)
             continue;
 
         int maxTile;
+
         if (iMaxHP >= 1200)
         {
             maxTile = 40;
@@ -766,13 +1837,14 @@ void CMainUI::RenderHealthBar(HDC hDC)
         int scrollX = CScrollMgr::Get_Instance()->Get_ScrollX();
         int scrollY = CScrollMgr::Get_Instance()->Get_ScrollY();
         //월드 좌표 -> 스크린 좌표 변환
-        int srceenX = (int)(worldPos.fX - scrollX);
-        int srceenY = (int)(worldPos.fY - scrollY);
+        int screenX = (int)(worldPos.fX - scrollX);
+        int screenY = (int)(worldPos.fY - scrollY);
         //체력바의 전체 길이 계산
         int barWidth = maxTile * RECT_WIDTH;
+
         //체력바 중앙을 유닛의 중앙에 맞춤
-        const int HP_BAR_X = srceenX - (barWidth * 0.5);
-        const int HP_BAR_Y = srceenY + (int)(objInfo.fCY * 0.5f) + 3; //3픽셀 아래
+        const int HP_BAR_X = screenX - (barWidth * 0.5);
+        const int HP_BAR_Y = screenY + (int)(objInfo.fCY * 0.5f) + 3; //3픽셀 아래
 
         //현재 HP 비율 계산
         float fHPRatio = (float)iHP / (float)iMaxHP;
@@ -803,7 +1875,7 @@ void CMainUI::RenderHealthBar(HDC hDC)
         }
         else if (fHPRatio <= 0.6f)
         {
-            pHPImageKey = L"MP_RECT";  // 노란색 (60% 이하)
+            pHPImageKey = L"HP_RECT";  // 노란색 (60% 이하)
         }
         //HP 타일 렌더링
         HDC hHPDC = CBmpMgr::Get_Instance()->Find_Image(pHPImageKey);
@@ -818,6 +1890,160 @@ void CMainUI::RenderHealthBar(HDC hDC)
                     0, 0, SRCCOPY);
             }
         }
+
+        //Shield 바 렌더링
+        if (iMaxShield == 0)
+            continue;
+        
+        //Shield바 체력바 위쪽에 맞추기
+        const int SHIELD_BAR_X = HP_BAR_X;
+        const int SHIELD_BAR_Y = HP_BAR_Y - 6; //6픽셀 위로 배치
+
+        //현재 Shield 비율 계산
+        float fShieldRatio = (float)iShield / (float)iMaxShield;
+
+        if (fShieldRatio < 0.f) fShieldRatio = 0.f;
+        if (fShieldRatio > 1.f) fShieldRatio = 1.f;
+
+        int fillShieldRect = (int)(maxTile * fShieldRatio);
+        //빈 shield바
+        if (hEmptyRectDC)
+        {
+            for (int i = 0; i < maxTile; ++i)
+            {
+                int iRectX = SHIELD_BAR_X + (i * RECT_WIDTH); // 수정
+                BitBlt(hDC, iRectX, SHIELD_BAR_Y,
+                    RECT_WIDTH, RECT_HEIGHT,
+                    hEmptyRectDC, 0, 0, SRCCOPY);
+            }
+        }
+        //Shield 타일 렌더링
+        CMyPng* pShieldRect = CBmpMgr::Get_Instance()->Find_Png(L"Shield_Rect");
+        if (pShieldRect)
+        {
+            for (int i = 0; i < fillShieldRect; ++i)
+            {
+                int iRectX = SHIELD_BAR_X + (i * RECT_WIDTH);
+                int iWidth = pShieldRect->Get_Width();
+                int iHeight = pShieldRect->Get_Height();
+                pShieldRect->Render_Alpha(hDC, iRectX, SHIELD_BAR_Y,
+                    iWidth, iHeight, false, false);
+            }
+        }
+    }
+}
+
+void CMainUI::RenderMPBar(HDC hDC)
+{
+    auto& selected = CSelectionMgr::Get_Instance()->GetSelected();
+    //선택되지 않은 경우 체력바 표시 X
+    if (selected.empty())
+        return;
+
+    int iMP, iMaxMP;
+
+    for (CObj* pObj : selected)
+    {
+        if (!pObj || pObj->IsDead() || !pObj->IsSelectable())
+            return;
+        //유닛 판단
+        CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
+
+        if (!pUnit)
+            continue;
+
+        if (pUnit)
+        {
+            iMP = pUnit->Get_MP();
+            iMaxMP = pUnit->Get_MaxMP();
+        }
+        else
+            continue;
+
+        //체력바 정보
+        const int RECT_WIDTH = 4;
+        const int RECT_HEIGHT = 5;
+
+        if (iMaxMP <= 0 || iMP < 0)
+            continue;
+
+        int maxTile;
+        if (iMaxMP >= 500)
+        {
+            maxTile = 20;
+        }
+        else if (iMaxMP < 500 && iMaxMP >= 300)
+        {
+            maxTile = 20;
+        }
+        else
+        {
+            maxTile = 10;
+        }
+        //월드 좌표 가져오기
+        Vec2 worldPos = pObj->Get_Pos();
+        INFO objInfo = pObj->Get_Info();
+        //스크롤 정보
+        int scrollX = CScrollMgr::Get_Instance()->Get_ScrollX();
+        int scrollY = CScrollMgr::Get_Instance()->Get_ScrollY();
+        //월드 좌표 -> 스크린 좌표 변환
+        int srceenX = (int)(worldPos.fX - scrollX);
+        int srceenY = (int)(worldPos.fY - scrollY);
+        //체력바의 전체 길이 계산
+        int barWidth = maxTile * RECT_WIDTH;
+        //체력바 중앙을 유닛의 중앙에 맞춤
+        const int MP_BAR_X = srceenX - (barWidth * 0.5);
+        const int MP_BAR_Y = srceenY + (int)(objInfo.fCY * 0.5f) + 8; //6픽셀 아래
+
+        //현재 HP 비율 계산
+        float fMPRatio = (float)iMP / (float)iMaxMP;
+        if (fMPRatio < 0.f) fMPRatio = 0.f;
+        if (fMPRatio > 1.f) fMPRatio = 1.f;
+
+        int fillRect = (int)(maxTile * fMPRatio);
+
+        //흰 체력바 렌더링
+        HDC hEmptyRectDC = CBmpMgr::Get_Instance()->Find_Image(L"UI_RECT");
+        if (hEmptyRectDC)
+        {
+            for (int i = 0; i < maxTile; ++i)
+            {
+                int iRectX = MP_BAR_X + (i * RECT_WIDTH);
+
+                BitBlt(hDC, iRectX, MP_BAR_Y,
+                    RECT_WIDTH, RECT_HEIGHT,
+                    hEmptyRectDC,
+                    0, 0, SRCCOPY);
+            }
+        }
+        const TCHAR* pMPImageKey = L"MP_RECT";
+        //MP 타일 렌더링
+        HDC hMPDC = CBmpMgr::Get_Instance()->Find_Image(pMPImageKey);
+        if (hMPDC)
+        {
+            for (int i = 0; i < fillRect; ++i)
+            {
+                int iRectX = MP_BAR_X + (i * RECT_WIDTH);
+
+                //CBmpMgr::Get_Instance()->Render_Alpha_Simple(
+                //    pMPImageKey, hDC ,iRectX, MP_BAR_Y,
+                //    RECT_WIDTH, RECT_HEIGHT);
+
+                //BitBlt(hDC, iRectX, MP_BAR_Y,
+                //    RECT_WIDTH, RECT_HEIGHT,
+                //    hMPDC,
+                //    0, 0, SRCCOPY);
+
+                TransparentBlt(hDC,
+                    iRectX, MP_BAR_Y,           // 목적지 위치
+                    RECT_WIDTH, RECT_HEIGHT,    // 크기
+                    hMPDC,                      // 소스 DC
+                    0, 0,                       // 소스 시작 위치
+                    RECT_WIDTH, RECT_HEIGHT,    // 소스 크기
+                    RGB(0, 0, 0));          // 투명 처리할 색상 (마젠타)
+            }
+        }
+        
     }
 }
 
@@ -1065,57 +2291,6 @@ void CMainUI::UpdateMinimapFog()
             dst[py * w + px] = (DWORD(a) << 24); // 0xAA000000
         }
     }
-
-    /*
-
-    if (!m_dcMinimapFog) return;
-    //미니맵 안개 업데이트 딜레이 
-    float dt = CTimeMgr::Get_Instance()->GetDT();
-    m_fMinimapFogDelay -= dt;
-    if (m_fMinimapFogDelay <= 0)
-        m_fMinimapFogDelay = MINIMAP_FOG_DELAY;
-    else
-        return;
-
-    //전체를 검은색으로 초기화
-    int minimapWidth = m_dstMinimap.right - m_dstMinimap.left; //160
-    int minimapHeight = m_dstMinimap.bottom - m_dstMinimap.top; //160
-    RECT rc = { 0, 0, minimapWidth, minimapHeight };
-    HBRUSH hClearBrush = CreateSolidBrush(RGB(0, 0, 0));
-    FillRect(m_dcMinimapFog, &rc, hClearBrush);
-    DeleteObject(hClearBrush);
-    //미니맵의 각 픽셀에 대한 안개 상태 결정
-    for (int py = 0; py < minimapHeight; ++py)
-    {
-        for (int px = 0; px < minimapWidth; ++px)
-        {
-            //미니맵 픽셀 -> 월드 좌표
-            float worldX = px * m_fMinimapScale;
-            float worldY = py * m_fMinimapScale;
-            //월드 좌표 -> 타일 인덱스
-            int row = (int)(worldY / TILECY);
-            int col = (int)(worldX / TILECX);
-            //범위 체크 
-            if (row < 0 || row >= TILEY || col < 0 || col >= TILEX)
-                continue;
-            //안개 상태 가지고 오기
-            eFogState state = CFogMgr::Get_Instance()->GetFogState(row, col);
-            //색상 결정
-            COLORREF fogColor;
-            if (state == eFogState::UNKNOWN)
-                fogColor = RGB(0, 0, 0); //검은색
-            else if (state == eFogState::EXPLORED)
-                fogColor = RGB(50, 50, 50); //회색
-            else if (state == eFogState::VISIBLE) //투명
-                fogColor = RGB(255, 0, 255);
-            //픽셀 찍기
-            SetPixel(m_dcMinimapFog, px, py, fogColor);
-        }
-    }
-
-
-
-    */
 }
 
 void CMainUI::RenderResource(HDC hDC)
@@ -1161,8 +2336,20 @@ void CMainUI::RenderResource(HDC hDC)
     SelectObject(hDC, hOldFont);
 }
 
+bool CMainUI::IsInUIArea(POINT pt)
+{
+    return PtInRect(&m_dstMinimap, pt);
+}
+
+bool CMainUI::IsInCommandSlot(POINT pt)
+{
+    return false;
+}
+
 void CMainUI::Release()
 {
+    Safe_Delete(m_pWinTextButton);
+
     if (m_hFont)
     {
         DeleteObject(m_hFont);

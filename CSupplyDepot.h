@@ -24,6 +24,7 @@ protected:
 	void SetBuildingData() override;
 	void Destroy() override;
 private:
+	void UpdateAnimation() override;
 	void UpdateProduction();
 	void ConstructComplete(eCommandID command);
 };

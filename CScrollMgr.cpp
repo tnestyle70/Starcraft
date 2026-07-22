@@ -92,3 +92,24 @@ void CScrollMgr::ClampToWorld()
     if (m_fScrollX > maxX) m_fScrollX = maxX;
     if (m_fScrollY > maxY) m_fScrollY = maxY;
 }
+
+void CScrollMgr::SaveCamSlot(int index)
+{
+    if (index < 0 || index >= 10)
+        return;
+    m_CamSlot[index].bValid = true;
+    m_CamSlot[index].fX = m_fScrollX;
+    m_CamSlot[index].fY = m_fScrollY;
+}
+
+void CScrollMgr::UpdateCamSlot(int index)
+{
+    if (index < 0 || index >= 10)
+        return;
+    if (!m_CamSlot[index].bValid) //저장되지 않은 슬롯은 return
+        return;
+    m_fScrollX = m_CamSlot[index].fX;
+    m_fScrollY = m_CamSlot[index].fY;
+    ClampToWorld();
+    return;
+}

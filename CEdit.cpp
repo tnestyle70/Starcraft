@@ -120,6 +120,17 @@ void CEdit::Key_Input()
 
 		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 3, 1);
 	}
+	if (CInputMgr::Get_Instance()->KeyPressVK('C'))
+	{
+		POINT ptMouse{};
+		GetCursorPos(&ptMouse);
+		ScreenToClient(g_hWnd, &ptMouse);
+
+		ptMouse.x += (int)CScrollMgr::Get_Instance()->Get_ScrollX();
+		ptMouse.y += (int)CScrollMgr::Get_Instance()->Get_ScrollY();
+
+		CTileMgr::Get_Instance()->Picking_Tile(ptMouse, 15, 1);
+	}
 	if (GetAsyncKeyState('T'))
 	{
 		CTileMgr::Get_Instance()->Save_Tile();

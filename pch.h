@@ -10,6 +10,18 @@
 #pragma comment(lib, "gdiplus.lib")
 using namespace Gdiplus;
 
+//Video 
+#include <Vfw.h>
+#pragma comment(lib, "vfw32.lib")
+
+// FMOD (사운드)
+#include "fmod.h"
+#include "fmod.hpp"
+#pragma comment(lib, "fmodex_vc.lib")
+
+#include <io.h>
+#include <iostream>
+
 #include <list>
 #include <map>
 #include <vector>
@@ -30,36 +42,3 @@ using namespace Gdiplus;
 using namespace std;
 
 #endif //PCH_H
-
-
-
-/*
-#include "framework.h"
-
-#include <list>
-#include <map>
-#include <vector>
-#include <algorithm>
-#include <Windows.h>
-#include <wingdi.h>  // ← AlphaBlend를 위해 필요
-#pragma comment(lib, "msimg32.lib")  // ← AlphaBlend 라이브러리
-
-
-#ifdef _DEBUG
-
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-
-#ifndef DBG_NEW 
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) 
-#define new DBG_NEW 
-
-#endif
-#endif
-
-using namespace std;
-
-
-#endif //PCH_H
-*/

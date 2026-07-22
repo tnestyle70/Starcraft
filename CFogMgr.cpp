@@ -39,8 +39,6 @@ void CFogMgr::Initialize()
 	m_hBlackBrush = CreateSolidBrush(RGB(0, 0, 0));
 	m_hGrayBrush = CreateSolidBrush(RGB(50, 50, 50));
 	m_hNullPen = CreatePen(PS_NULL, 0, RGB(0, 0, 0));
-
-
 	//알파 소스
 	BITMAPINFO bmi{};
 	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -73,6 +71,15 @@ void CFogMgr::Update()
 		ResetVisibleToExplored();
 		//현재 아군 유닛 / 건물의 시야로 visible 업데이트
 		UpdateVision();
+		UpdateScan();
+	}
+	if (m_bUseScan) //스캔이 활성화된 시점에 타이머 돌리기!
+	{
+		m_fScannerTimer += dt;
+		if (m_fScannerTimer >= m_fScannerDuration)
+		{
+
+		}
 	}
 }
 
@@ -184,6 +191,58 @@ void CFogMgr::RevealArea(int centerRow, int centerCol, int sightRange)
 		m_bFogDirty = true;
 }
 
+void CFogMgr::UpdateScan()
+{
+	if (!m_bUseScan)
+		return;
+	//스캔 true일 경우 타이머 돌리면서 시야 업데이트
+	float dt = CTimeMgr::Get_Instance()->GetDT();
+	//타이머 체크
+	m_fScannerTimer += dt;
+	if (m_fScannerTimer >= m_fScannerDuration)
+	{
+		m_bUseScan = false;
+		m_fScannerTimer = 0.f;
+	}
+	//스캔 영역 업데이트
+	bool changed = false;
+
+	//원형 시야 거리 계산 후 적용
+	for (int r = m_iScanRow - m_iScanRange; r <= m_iScanRow + m_iScanRange; ++r)
+	{
+		for (int c = m_iScanCol - m_iScanRange; c <= m_iScanCol + m_iScanRange; ++c)
+		{
+			if (!InRange(r, c))
+				continue;
+			//유클리드 거리로 원형 시야 계산
+			int dr = r - m_iScanRow;
+			int dc = c - m_iScanCol;
+			float dist = sqrtf((float)(dr * dr + dc * dc));
+			if (dist <= m_iScanRange)
+			{
+				int index = r * TILEX + c;
+				//시야 안이므로 VISIBLE 
+				if (m_vecFogState[index] != eFogState::VISIBLE)
+				{
+					m_vecFogState[index] = eFogState::VISIBLE;
+					changed = true;
+				}
+
+			}
+		}
+	}
+	if (changed)
+		m_bFogDirty = true;
+}
+
+void CFogMgr::SetScan(int centerRow, int centerCol, int sightRange, bool scan)
+{
+	m_iScanRow = centerRow;
+	m_iScanCol = centerCol;
+	m_iScanRange = sightRange;
+	m_bUseScan = scan;
+}
+
 void CFogMgr::ResetVisibleToExplored()
 {
 	bool changed = false;
@@ -253,74 +312,6 @@ void CFogMgr::RenderFog(HDC hDC)
 	}
 
 	SelectObject(hDC, oldPen);
-
-
-	/*
-
-	//안개가 변경되지 않았으면 캐시 사용
-	if (!m_bFogDirty)
-	{
-		BitBlt(hDC, 0, 0, WINCX, WINCY, m_hFogCacheDC, 0, 0, SRCAND);
-		return;
-	}
-	// 캐시 DC를 투명하게 초기화
-	BitBlt(m_hFogCacheDC, 0, 0, WINCX, WINCY, hDC, 0, 0, SRCCOPY);
-
-	//m_bFogDirty = false; //Dirty 플래그 
-
-	float scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
-	float scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
-	//화면에 보이는 타일 범위만 랜더링
-	int startCol = (int)(scrX / TILECX);
-	int startRow = (int)(scrY / TILECY);
-	int endCol = startCol + (WINCX / TILECX) + 2;
-	int endRow = startRow + (WINCY / TILECY) + 2;
-	//펜 한번만 설정
-	HPEN hOldPen = (HPEN)SelectObject(m_hFogCacheDC, m_hNullPen);
-	HBRUSH hOldBrush = nullptr;
-	for (int r = startRow; r < endRow; ++r)
-	{
-		for (int c = startCol; c < endCol; ++c)
-		{
-			if (!InRange(r, c))
-				continue;
-			eFogState state = GetFogState(r, c);
-			//Visible은 렌더링 X
-			if (state == eFogState::VISIBLE)
-				continue;
-			//타일 월드 좌표
-			int worldX = c * TILECX;
-			int worldY = r * TILECY;
-			//스크린 좌표로 변환
-			int screenX = worldX - int(scrX);
-			int screenY = worldY - int(scrY);
-
-			//색상 결정
-			COLORREF fogColor;
-			if (state == eFogState::UNKNOWN)
-				fogColor = RGB(0, 0, 0); //완전 검은색
-			else if (state == eFogState::EXPLORED)
-				fogColor = RGB(50, 50, 50);//어두운 회색
-			else
-				continue;
-			// 브러시 생성
-			HBRUSH hBrush = CreateSolidBrush(fogColor);
-			HBRUSH hOldBrush = (HBRUSH)SelectObject(hDC, hBrush);
-
-			// 펜 없이 사각형 그리기
-			HPEN hPen = CreatePen(PS_NULL, 0, RGB(0, 0, 0));
-			HPEN hOldPen = (HPEN)SelectObject(hDC, hPen);
-
-			Rectangle(hDC, screenX, screenY, screenX + TILECX + 1, screenY + TILECY + 1);
-
-			// 정리
-			SelectObject(hDC, hOldPen);
-			SelectObject(hDC, hOldBrush);
-			DeleteObject(hPen);
-			DeleteObject(hBrush);
-		}
-	}
-	*/
 }
 
 void CFogMgr::Release()

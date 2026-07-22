@@ -19,8 +19,8 @@ void CBCYamato::Initialize()
 
     m_tInfo.fCX = 96.f;
     m_tInfo.fCY = 96.f;
-    m_fSpeed = 1200.f;        // 차징 중에는 정지
-    m_iDamage = 260;       // 야마토 캐논 데미지
+    m_fSpeed = 600.f;        // 차징 중에는 정지
+    m_iDamage = 200;       // 야마토 캐논 데미지
     m_bHoming = true;      // 타겟 추적
     m_bCharged = true;
 
@@ -51,8 +51,9 @@ int CBCYamato::Update()
         float dist = sqrtf(distX * distX + distY * distY);
 
         // 타겟 근처 도달 (64픽셀 이내)
-        if (dist < 64.f)
+        if (dist < 30.f)
         {
+            m_pTarget->TakeDamage(m_iDamage);
             Set_Dead();
             return DEAD;
         }

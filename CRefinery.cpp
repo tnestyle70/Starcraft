@@ -33,6 +33,9 @@ void CRefinery::Initialize()
 	m_tFrame.iStart = 0;
 	m_tFrame.iFrame = 0;
 	m_tFrame.iEnd = 0;
+
+	m_eOriginalRace = eRaceType::RACE_TERRAN;
+	m_eCurrentRace = eRaceType::RACE_TERRAN;
 }
 
 void CRefinery::SetBuildingData()
@@ -43,7 +46,7 @@ void CRefinery::SetBuildingData()
 	m_tCost.gas = 0;
 	m_tCost.supply = 0;
 	m_iMaxHP = 500;
-	m_fConstructDuration = 10.f;
+	m_fConstructDuration = 2.f;
 	//타일 단위 크기
 	m_iHeight = 2;
 	m_iWidth = 4;
@@ -68,6 +71,11 @@ void CRefinery::Render(HDC hDC)
 {
 	//고스트 모드일 경우 고스트 렌더가 되도록 설정
 	if (m_bGhost)
+	{
+		CBuilding::Render(hDC);
+		return;
+	}
+	if (m_bConstructing) //건설 중일 경우 BuildAnim Render!
 	{
 		CBuilding::Render(hDC);
 		return;
@@ -116,11 +124,11 @@ void CRefinery::CommandCardSlot(std::vector<CommandSlot>& outSlot)
 	CBuilding::CommandCardSlot(outSlot);
 
 	//0번 슬롯 SCV 생산
-	outSlot[0].commandID = eCommandID::SCV;
-	outSlot[0].iconKey = TEXT("ICON_SCV");
-	outSlot[0].hotkey = 'S';
-	outSlot[0].clickable = true;
-	outSlot[0].visible = true;
+	//outSlot[0].commandID = eCommandID::SCV;
+	//outSlot[0].iconKey = TEXT("ICON_SCV");
+	//outSlot[0].hotkey = 'S';
+	//outSlot[0].clickable = true;
+	//outSlot[0].visible = true;
 	//8번 : Cancle(Queue 취소)
 	outSlot[8].commandID = eCommandID::CANCLE;
 	outSlot[8].iconKey = TEXT("ICON_CANCLE");

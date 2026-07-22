@@ -18,6 +18,8 @@ public:
 	HBITMAP Find_Bitmap(const TCHAR* pImgKey);
 	CMyPng* Find_Png(const TCHAR* pImgKey);
 	//애니메이션 버튼용 전용 맵 사용
+	void Insert_Bmp_Anim(const TCHAR* pFilePath, const TCHAR* pImgKey);
+	HDC Find_Bmp_Anim(const TCHAR* pImgKey);
 	void	Insert_Png_Anim(const TCHAR* pFilePath, const TCHAR* pImgKey);
 	CMyPng* Find_Png_Anim(const TCHAR* pImgKey);
 	void	Release();
@@ -52,6 +54,7 @@ public:
 private:
 	static CBmpMgr* m_pInstance;
 	map<wstring, CMyImage*> m_mapPng;
+	map<wstring, CMyBmp*> m_mapBitAnim;
 	map<const TCHAR*, CMyImage*> m_mapBit;
 };
 

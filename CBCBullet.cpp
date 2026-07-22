@@ -19,8 +19,8 @@ void CBCBullet::Initialize()
 
     m_tInfo.fCX = 128.f;
     m_tInfo.fCY = 128.f;
-    m_fSpeed = 800.f;      // 빠른 속도
-    m_iDamage = 25;        // 기본 공격 데미지
+    m_fSpeed = 1000.f;      // 빠른 속도
+    m_iDamage = 15;        // 기본 공격 데미지
     m_bHoming = false;     // 직선으로 날아감
 
     m_pFrameKey = L"BCBullet";
@@ -47,6 +47,7 @@ int CBCBullet::Update()
         // 타겟 근처 도달 (32픽셀 이내)
         if (dist < 32.f)
         {
+            m_pTarget->TakeDamage(m_iDamage);
             Set_Dead();
             return DEAD;
         }

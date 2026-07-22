@@ -1,6 +1,8 @@
 #pragma once
 #include "CObj.h"
 
+class CMenuRace;
+
 class CAnimButton : public CObj
 {
 public:
@@ -19,7 +21,11 @@ public:
     void Set_NormalAnimation(const TCHAR* pBaseKey, int iNormalFrameCount);
     void Set_HoverAnimation(const TCHAR* pBaseKey, int iFrameCount);
     void Set_ButtonType(const TCHAR* pType) { m_pButtonType = pType; }
+    //부모 씬 설정
+    void Set_MenuScene(CMenuRace* pMenu) { m_pMenuRace = pMenu; }
 private:
+    //부모 클래스
+    CMenuRace* m_pMenuRace;
     // Normal 이미지
     const TCHAR* m_pNormalKey = nullptr;
     // Normal 애니메이션

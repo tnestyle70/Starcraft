@@ -13,8 +13,11 @@ public:
 	void Render(HDC hDC) override;
 	void Release() override;
 protected:
-	bool UpdateAttack(Order& order) override;
-	void Fire_Bullet(CObj* pTarget);
+	bool UpdateRAttack(Order& order) override;
+	void UpdateDead() override;
+	void JudgeLayer();
+	void FireBullet();
+	void FireMissile();
 private:
 	void UpdateBody();
 	void UpdateHead();
@@ -26,8 +29,13 @@ private:
 	Vec2 m_vHeadDir;
 	int m_iHeadFrame;
 	//АјАн
-	bool m_bFiring;
 	int m_iFireFrame;
-	DWORD m_dwFireStart;
+	int m_iFireFrameTimer = 0;
+	int m_iFireFrameDuration = 2;
+	DWORD m_dwFireStartTime;
+	DWORD m_dwFireDuration = 200;
+private:
+	void UpdateAI();
+	CObj* FindNearestEnemyAI(float searchRadius);
 };
 

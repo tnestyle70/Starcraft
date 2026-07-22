@@ -1,8 +1,6 @@
 #pragma once
 #include "CObj.h"
 
-//struct AtlasRect { int iX, iY, iWidth, iHeight; };
-
 class CButton :  public CObj
 {
 public:
@@ -26,11 +24,4 @@ private:
     const TCHAR* m_pHoverKey;
 
     bool m_bHover;
-//public:
-//    void SetAtlas(const wchar_t* atlasKey, const AtlasRect& normal, const AtlasRect& hover);
-//    //bool Hover() override;
-//private:
-//    const TCHAR* m_pAtlasKey;
-//    AtlasRect m_rcNormal;
-//    AtlasRect m_rcHover;
 };

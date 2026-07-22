@@ -4,6 +4,8 @@
 #include "CButton.h"
 #include "CUnit.h"
 #include "CBuilding.h"
+#include "CProjectile.h"
+#include "CSelectionMgr.h"
 
 CObjMgr* CObjMgr::m_pInstance = nullptr;
 
@@ -23,6 +25,10 @@ void CObjMgr::Delete_Obj(OBJID eID)
 		Safe_Delete(pObj);
 	}
 	m_ObjList[eID].clear();
+}
+
+void CObjMgr::Delete_All_Obj()
+{
 }
 
 void CObjMgr::Add_Object(OBJID eID, CObj* pObj)
@@ -127,15 +133,84 @@ void CObjMgr::Render(HDC hDC)
 		}
 		m_RenderList[i].clear();
 	}
+	//CleanUpDeadObject();
 }
 
 void CObjMgr::CleanUpDeadObject()
 {
 	for (CObj*& pObj : m_PendingDelete)
 	{
-		Safe_Delete<CObj*>(pObj);
+		if (pObj)
+		{
+			//모든 보조 리스에서 제거
+			RemoveFromAllLists(pObj);
+
+			//삭제 전에 모든 오더에서 해당 유닛, 건물 제거
+			RemoveTargetFromAllOrders(pObj);
+
+			CSelectionMgr::Get_Instance()->RemoveFromSelection(pObj);
+			CSelectionMgr::Get_Instance()->RemoveFromControlGroup(pObj);
+
+			Safe_Delete<CObj*>(pObj);
+		}
 	}
 	m_PendingDelete.clear();
+}
+
+void CObjMgr::RemoveFromAllLists(CObj* pObj)
+{
+	//m_vecUnitList
+	CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
+	if (pUnit)
+	{
+		m_vecUnits.erase(
+			remove(m_vecUnits.begin(), m_vecUnits.end(), pUnit), 
+			m_vecUnits.end());
+	}
+	//m_vecBuildingList
+	CBuilding* pBuilding = dynamic_cast<CBuilding*>(pObj);
+	if (pBuilding)
+	{
+		m_vecBuildings.erase(
+			remove(m_vecBuildings.begin(), m_vecBuildings.end(), pBuilding),
+			m_vecBuildings.end());
+	}
+	//m_vecEnemyList
+	m_vecEnemies.erase(
+		remove(m_vecEnemies.begin(), m_vecEnemies.end(), pObj),
+		m_vecEnemies.end());
+}
+
+void CObjMgr::RemoveTargetFromAllOrders(CObj* pTarget)
+{
+	for (size_t i = 0; i < OBJ_END; ++i)
+	{
+		for (auto& pObj : m_ObjList[i])
+		{
+			//유닛
+			CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
+			if (pUnit)
+			{
+				pUnit->RemoveOrdersWithTarget(pTarget);
+			}
+			//Projectile 투사체
+			CProjectile* pProjectile = dynamic_cast<CProjectile*>(pObj);
+			if (pProjectile)
+			{
+				//projectile의 target이 죽은 타겟일 경우에만 cleartarget 호출!!
+				if (pProjectile->Get_Target() == pTarget)
+				{
+					pProjectile->ClearTarget();
+				}
+			}
+			//건물 - 터렛, 포탑, 벙커, 성큰
+			CBuilding* pBuilding = dynamic_cast<CBuilding*>(pObj);
+			if (pBuilding)
+			{
+				pBuilding->RemoveOrdersWithTarget(pTarget);
+			}
+		}
+	}
 }
 
 void CObjMgr::Release()
@@ -193,6 +268,77 @@ CObj* CObjMgr::PickObjAt(const Vec2& vWorldPos)
 		}
 	}
 
+	// 3) 아군 없으면 적
+	if (!pBest)
+	{
+		for (CObj* pObj : m_vecEnemies)
+		{
+			if (!pObj || pObj->IsDead() || !pObj->IsSelectable())
+				continue;
+
+			RECT rc = pObj->GetWorldRect();
+			if (vWorldPos.fX < rc.left || vWorldPos.fX > rc.right ||
+				vWorldPos.fY < rc.top || vWorldPos.fY > rc.bottom)
+				continue;
+
+			const INFO& info = pObj->Get_Info();
+			float dx = vWorldPos.fX - info.fX;
+			float dy = vWorldPos.fY - info.fY;
+			float distSq = dx * dx + dy * dy;
+			if (distSq < fBestDistSq) { fBestDistSq = distSq; pBest = pObj; }
+		}
+	}
+
+	return pBest;
+}
+
+CObj* CObjMgr::PickUnitAt(const Vec2& vWorldPos)
+{
+	CObj* pBest = nullptr;
+	float fBestDist = FLT_MAX;
+	for (CObj* pObj : m_vecUnits)
+	{
+		if (!pObj || pObj->IsDead() || !pObj->IsSelectable())
+			continue;
+		RECT rc = pObj->GetWorldRect();
+		if (vWorldPos.fX < rc.left || vWorldPos.fX > rc.right ||
+			vWorldPos.fY < rc.top || vWorldPos.fY > rc.bottom)
+			continue;
+		const INFO& info = pObj->Get_Info();
+		float dx = vWorldPos.fX - info.fX;
+		float dy = vWorldPos.fY - info.fY;
+		float dist = sqrtf(dx * dx + dy * dy);
+		if (dist < fBestDist)
+		{
+			pBest = pObj;
+			fBestDist = dist;
+		}
+	}
+	return pBest;
+}
+
+CObj* CObjMgr::PickEnemyAt(const Vec2& vWorldPos)
+{
+	CObj* pBest = nullptr;
+	float fBestDist = FLT_MAX;
+	for (CObj* pObj : m_vecEnemies)
+	{
+		if (!pObj || pObj->IsDead() || !pObj->IsSelectable())
+			continue;
+		RECT rc = pObj->GetWorldRect();
+		if (vWorldPos.fX < rc.left || vWorldPos.fX > rc.right ||
+			vWorldPos.fY < rc.top || vWorldPos.fY > rc.bottom)
+			continue;
+		const INFO& info = pObj->Get_Info();
+		float dx = vWorldPos.fX - info.fX;
+		float dy = vWorldPos.fY - info.fY;
+		float dist = sqrtf(dx * dx + dy * dy);
+		if (dist < fBestDist)
+		{
+			pBest = pObj;
+			fBestDist = dist;
+		}
+	}
 	return pBest;
 }
 
@@ -261,6 +407,33 @@ bool CObjMgr::IsMouseOver(CObj* pObj, const Vec2& vMousePos)
 	RECT* rc = pObj->Get_Rect();
 	POINT pt = { (LONG)vMousePos.fX, (LONG)vMousePos.fY };
 	return PtInRect(rc, pt);
+}
+
+void CObjMgr::MoveObject(CObj* pObj, OBJID fromList, OBJID toList)
+{
+	if (!pObj)
+		return;
+	//범위 체크
+	if (fromList < 0 || fromList >= OBJID::OBJ_END ||
+		toList < 0 || toList >= OBJID::OBJ_END)
+		return;
+	//원본 리스트에서 찾기
+	auto& fromObjList = m_ObjList[fromList];
+	auto iter = find(fromObjList.begin(), fromObjList.end(), pObj);
+	if (iter == fromObjList.end())
+	{
+		return;
+	}
+	//제거 및 추가하기
+	fromObjList.erase(iter);
+	m_ObjList[toList].push_back(pObj);
+
+	//우선은 유닛만 마인드 컨트롤로 조정 가능하다고 가정, 수정 필요하면 추후에 수정
+	CUnit* pUnit = dynamic_cast<CUnit*>(pObj);
+	if (pUnit)
+	{
+		m_vecUnits.push_back(pUnit);
+	}
 }
 
 CButton CObjMgr::CreateButton(float fX, float fY, float fCX, float fCY)

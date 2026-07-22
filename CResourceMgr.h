@@ -31,6 +31,8 @@ public:
 	//비용, 검사 지불
 	bool CanProduce(ResourceCost& cost, bool bCheckUnit);
 	bool TrySpend(ResourceCost& cost, bool bCheckUnit);
+	//인구수 올리기
+	void AddSupply(int supply);
 	//자원 채취 후 획득
 	void AddMineral(int amount);
 	void AddGas(int amount);

@@ -2,7 +2,7 @@
 #include "CObj.h"
 
 CObj::CObj() : m_pFrameKey(L""), m_iDrawID(0), m_eRender(RENDER_END), m_bSelected(false)
-	,m_bSelectable(true), m_bDead(false)
+	,m_bSelectable(true), m_bDead(false), m_eTeamType(eTeamType::ALLY)
 {
 	ZeroMemory(&m_tInfo, sizeof(INFO));
 	ZeroMemory(&m_tRect, sizeof(RECT));
@@ -11,6 +11,18 @@ CObj::CObj() : m_pFrameKey(L""), m_iDrawID(0), m_eRender(RENDER_END), m_bSelecte
 
 CObj::~CObj()
 {
+}
+
+RECT CObj::GetWorldRect()
+{
+	RECT rc{};
+
+	rc.left = (LONG)(m_tInfo.fX - m_tInfo.fCX * 0.5f);
+	rc.top = (LONG)(m_tInfo.fY - m_tInfo.fCY * 0.5f);
+	rc.right = (LONG)(m_tInfo.fX + m_tInfo.fCX * 0.5f);
+	rc.bottom = (LONG)(m_tInfo.fY + m_tInfo.fCY * 0.5f);
+
+	return rc;
 }
 
 void CObj::Update_Rect()

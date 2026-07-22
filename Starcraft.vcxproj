@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -83,6 +83,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -100,6 +101,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -115,6 +117,8 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>fmodex_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -132,65 +136,142 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(ProjectDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CAbstractFactory.h" />
+    <ClInclude Include="CAcademy.h" />
     <ClInclude Include="CAnimButton.h" />
     <ClInclude Include="CAnimMgr.h" />
+    <ClInclude Include="CArbiter.h" />
+    <ClInclude Include="CArbiterTribunal.h" />
+    <ClInclude Include="CArchon.h" />
+    <ClInclude Include="CArmory.h" />
+    <ClInclude Include="CAssimilator.h" />
     <ClInclude Include="CBarracks.h" />
     <ClInclude Include="CBattleCruiser.h" />
     <ClInclude Include="CBCBullet.h" />
     <ClInclude Include="CBCYamato.h" />
+    <ClInclude Include="CBlueMarine.h" />
     <ClInclude Include="CBmpMgr.h" />
     <ClInclude Include="CBuilding.h" />
+    <ClInclude Include="CBunker.h" />
     <ClInclude Include="CButton.h" />
+    <ClInclude Include="CCameraMgr.h" />
+    <ClInclude Include="CCarrier.h" />
+    <ClInclude Include="CCitadelOfAdun.h" />
     <ClInclude Include="CCollisionMgr.h" />
+    <ClInclude Include="CCombatStation.h" />
     <ClInclude Include="CCommandCenter.h" />
     <ClInclude Include="CCommandMgr.h" />
+    <ClInclude Include="CCorsair.h" />
     <ClInclude Include="CCursorMgr.h" />
+    <ClInclude Include="CCyberneticsCore.h" />
+    <ClInclude Include="CDarkArchon.h" />
+    <ClInclude Include="CDarkArchonBullet.h" />
+    <ClInclude Include="CDarkTemplar.h" />
+    <ClInclude Include="CDragon.h" />
+    <ClInclude Include="CDragoonBall.h" />
+    <ClInclude Include="CDrone.h" />
     <ClInclude Include="CEdit.h" />
+    <ClInclude Include="CEffect.h" />
+    <ClInclude Include="CEngineeringBay.h" />
     <ClInclude Include="CFactory.h" />
+    <ClInclude Include="CFactoryAddOn.h" />
+    <ClInclude Include="CFirebat.h" />
+    <ClInclude Include="CFleetBeacon.h" />
     <ClInclude Include="CFogMgr.h" />
+    <ClInclude Include="CForge.h" />
+    <ClInclude Include="CGameDataMgr.h" />
     <ClInclude Include="CGas.h" />
+    <ClInclude Include="CGateway.h" />
     <ClInclude Include="CGBullet.h" />
     <ClInclude Include="CGdiPlusMgr.h" />
+    <ClInclude Include="CGhost.h" />
+    <ClInclude Include="CGhostBullet.h" />
+    <ClInclude Include="CGMissile.h" />
     <ClInclude Include="CGoliath.h" />
+    <ClInclude Include="CHatchery.h" />
+    <ClInclude Include="CHighTemplar.h" />
+    <ClInclude Include="CHive.h" />
+    <ClInclude Include="CHydralisk.h" />
+    <ClInclude Include="CHydraliskBullet.h" />
+    <ClInclude Include="CHydraliskDen.h" />
     <ClInclude Include="CInputMgr.h" />
+    <ClInclude Include="CIntercepBullet.h" />
+    <ClInclude Include="CInterceptor.h" />
+    <ClInclude Include="CLava.h" />
+    <ClInclude Include="CLogo.h" />
     <ClInclude Include="CMainGame.h" />
     <ClInclude Include="CMainUI.h" />
     <ClInclude Include="CMedic.h" />
     <ClInclude Include="CMenu.h" />
     <ClInclude Include="CMenuRace.h" />
     <ClInclude Include="CMineral.h" />
+    <ClInclude Include="CMutalisk.h" />
+    <ClInclude Include="CMutaliskBullet.h" />
     <ClInclude Include="CMyBmp.h" />
     <ClInclude Include="CMyImage.h" />
     <ClInclude Include="CMyPng.h" />
     <ClInclude Include="CNavMgr.h" />
+    <ClInclude Include="CNexus.h" />
+    <ClInclude Include="CNuclearSilo.h" />
     <ClInclude Include="CObj.h" />
     <ClInclude Include="CObjMgr.h" />
+    <ClInclude Include="CObservatory.h" />
+    <ClInclude Include="CObserver.h" />
     <ClInclude Include="Commandable.h" />
     <ClInclude Include="CommandSlot.h" />
+    <ClInclude Include="COverload.h" />
+    <ClInclude Include="CPhotonCannon.h" />
+    <ClInclude Include="CPortraitMgr.h" />
+    <ClInclude Include="CPreLoad.h" />
+    <ClInclude Include="CProbe.h" />
     <ClInclude Include="CProjectile.h" />
+    <ClInclude Include="CPylon.h" />
+    <ClInclude Include="CReavor.h" />
     <ClInclude Include="CRefinery.h" />
+    <ClInclude Include="CResourceLoader.h" />
     <ClInclude Include="CResourceMgr.h" />
+    <ClInclude Include="CRoboticsFacility.h" />
+    <ClInclude Include="CRoboticsSupportBay.h" />
     <ClInclude Include="CScene.h" />
     <ClInclude Include="CSceneMgr.h" />
+    <ClInclude Include="CScienceFacility.h" />
+    <ClInclude Include="CSciencePhysics.h" />
+    <ClInclude Include="CScienceSecret.h" />
+    <ClInclude Include="CScout.h" />
     <ClInclude Include="CScrollMgr.h" />
     <ClInclude Include="CSCV.h" />
     <ClInclude Include="CSelectionMgr.h" />
+    <ClInclude Include="CShieldBattery.h" />
+    <ClInclude Include="CShuttle.h" />
+    <ClInclude Include="CSoundMgr.h" />
+    <ClInclude Include="CSpawningPool.h" />
+    <ClInclude Include="CSpire.h" />
     <ClInclude Include="CStage.h" />
+    <ClInclude Include="CStargate.h" />
     <ClInclude Include="CStarport.h" />
     <ClInclude Include="CSteeringMgr.h" />
     <ClInclude Include="CSupplyDepot.h" />
     <ClInclude Include="CTank.h" />
+    <ClInclude Include="CTemplarArchives.h" />
     <ClInclude Include="CTile.h" />
     <ClInclude Include="CTileMgr.h" />
     <ClInclude Include="CTimeMgr.h" />
+    <ClInclude Include="CTurret.h" />
+    <ClInclude Include="CTurretBullet.h" />
     <ClInclude Include="CUIMgr.h" />
     <ClInclude Include="CMarine.h" />
+    <ClInclude Include="CUltralisk.h" />
+    <ClInclude Include="CUltraliskDen.h" />
+    <ClInclude Include="CUpgradeMgr.h" />
     <ClInclude Include="CVBullet.h" />
     <ClInclude Include="CVulture.h" />
+    <ClInclude Include="CVultureMine.h" />
+    <ClInclude Include="CZealot.h" />
+    <ClInclude Include="CZergling.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -199,70 +280,145 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CAcademy.cpp" />
     <ClCompile Include="CAnimButton.cpp" />
     <ClCompile Include="CAnimMgr.cpp" />
+    <ClCompile Include="CArbiter.cpp" />
+    <ClCompile Include="CArbiterTribunal.cpp" />
+    <ClCompile Include="CArchon.cpp" />
+    <ClCompile Include="CArmory.cpp" />
+    <ClCompile Include="CAssimilator.cpp" />
     <ClCompile Include="CBarracks.cpp" />
     <ClCompile Include="CBattleCruiser.cpp" />
     <ClCompile Include="CBCBullet.cpp" />
     <ClCompile Include="CBCYamato.cpp" />
+    <ClCompile Include="CBlueMarine.cpp" />
     <ClCompile Include="CBmpMgr.cpp" />
     <ClCompile Include="CBuilding.cpp" />
+    <ClCompile Include="CBunker.cpp" />
     <ClCompile Include="CButton.cpp" />
+    <ClCompile Include="CCameraMgr.cpp" />
+    <ClCompile Include="CCarrier.cpp" />
+    <ClCompile Include="CCitadelOfAdun.cpp" />
     <ClCompile Include="CCollisionMgr.cpp" />
+    <ClCompile Include="CCombatStation.cpp" />
     <ClCompile Include="CCommandCenter.cpp" />
     <ClCompile Include="CCommandMgr.cpp" />
+    <ClCompile Include="CCorsair.cpp" />
     <ClCompile Include="CCursorMgr.cpp" />
+    <ClCompile Include="CCyberneticsCore.cpp" />
+    <ClCompile Include="CDarkArchon.cpp" />
+    <ClCompile Include="CDarkArchonBullet.cpp" />
+    <ClCompile Include="CDarkTemplar.cpp" />
+    <ClCompile Include="CDragon.cpp" />
+    <ClCompile Include="CDragoonBall.cpp" />
+    <ClCompile Include="CDrone.cpp" />
     <ClCompile Include="CEdit.cpp" />
+    <ClCompile Include="CEffect.cpp" />
+    <ClCompile Include="CEngineeringBay.cpp" />
     <ClCompile Include="CFactory.cpp" />
+    <ClCompile Include="CFactoryAddOn.cpp" />
+    <ClCompile Include="CFirebat.cpp" />
+    <ClCompile Include="CFleetBeacon.cpp" />
     <ClCompile Include="CFogMgr.cpp" />
+    <ClCompile Include="CForge.cpp" />
+    <ClCompile Include="CGameDataMgr.cpp" />
     <ClCompile Include="CGas.cpp" />
+    <ClCompile Include="CGateway.cpp" />
     <ClCompile Include="CGBullet.cpp" />
     <ClCompile Include="CGdiPlusMgr.cpp" />
+    <ClCompile Include="CGhost.cpp" />
+    <ClCompile Include="CGhostBullet.cpp" />
+    <ClCompile Include="CGMissile.cpp" />
     <ClCompile Include="CGoliath.cpp" />
+    <ClCompile Include="CHatchery.cpp" />
+    <ClCompile Include="CHighTemplar.cpp" />
+    <ClCompile Include="CHive.cpp" />
+    <ClCompile Include="CHydralisk.cpp" />
+    <ClCompile Include="CHydraliskBullet.cpp" />
+    <ClCompile Include="CHydraliskDen.cpp" />
     <ClCompile Include="CInputMgr.cpp" />
+    <ClCompile Include="CIntercepBullet.cpp" />
+    <ClCompile Include="CInterceptor.cpp" />
+    <ClCompile Include="CLava.cpp" />
+    <ClCompile Include="CLogo.cpp" />
     <ClCompile Include="CMainGame.cpp" />
     <ClCompile Include="CMainUI.cpp" />
     <ClCompile Include="CMedic.cpp" />
     <ClCompile Include="CMenu.cpp" />
     <ClCompile Include="CMenuRace.cpp" />
     <ClCompile Include="CMineral.cpp" />
+    <ClCompile Include="CMutalisk.cpp" />
+    <ClCompile Include="CMutaliskBullet.cpp" />
     <ClCompile Include="CMyBmp.cpp" />
     <ClCompile Include="CMyImage.cpp" />
     <ClCompile Include="CMyPng.cpp" />
     <ClCompile Include="CNavMgr.cpp" />
+    <ClCompile Include="CNexus.cpp" />
+    <ClCompile Include="CNuclearSilo.cpp" />
     <ClCompile Include="CObj.cpp" />
     <ClCompile Include="CObjMgr.cpp" />
+    <ClCompile Include="CObservatory.cpp" />
+    <ClCompile Include="CObserver.cpp" />
     <ClCompile Include="Commandable.cpp" />
+    <ClCompile Include="COverload.cpp" />
+    <ClCompile Include="CPhotonCannon.cpp" />
+    <ClCompile Include="CPortraitMgr.cpp" />
+    <ClCompile Include="CPreLoad.cpp" />
+    <ClCompile Include="CProbe.cpp" />
     <ClCompile Include="CProjectile.cpp" />
+    <ClCompile Include="CPylon.cpp" />
+    <ClCompile Include="CReavor.cpp" />
     <ClCompile Include="CRefinery.cpp" />
+    <ClCompile Include="CResourceLoader.cpp" />
     <ClCompile Include="CResourceMgr.cpp" />
+    <ClCompile Include="CRoboticsFacility.cpp" />
+    <ClCompile Include="CRoboticsSupportBay.cpp" />
     <ClCompile Include="CScene.cpp" />
     <ClCompile Include="CSceneMgr.cpp" />
+    <ClCompile Include="CScienceFacility.cpp" />
+    <ClCompile Include="CSciencePhysics.cpp" />
+    <ClCompile Include="CScienceSecret.cpp" />
+    <ClCompile Include="CScout.cpp" />
     <ClCompile Include="CScrollMgr.cpp" />
     <ClCompile Include="CSCV.cpp" />
     <ClCompile Include="CSelectionMgr.cpp" />
+    <ClCompile Include="CShieldBattery.cpp" />
+    <ClCompile Include="CShuttle.cpp" />
+    <ClCompile Include="CSoundMgr.cpp" />
+    <ClCompile Include="CSpawningPool.cpp" />
+    <ClCompile Include="CSpire.cpp" />
     <ClCompile Include="CStage.cpp" />
+    <ClCompile Include="CStargate.cpp" />
     <ClCompile Include="CStarport.cpp" />
+    <ClCompile Include="CStarportAddOn.cpp" />
     <ClCompile Include="CSteeringMgr.cpp" />
     <ClCompile Include="CSupplyDepot.cpp" />
     <ClCompile Include="CTank.cpp" />
+    <ClCompile Include="CTemplarArchives.cpp" />
     <ClCompile Include="CTile.cpp" />
     <ClCompile Include="CTileMgr.cpp" />
     <ClCompile Include="CTimeMgr.cpp" />
+    <ClCompile Include="CTurret.cpp" />
+    <ClCompile Include="CTurretBullet.cpp" />
     <ClCompile Include="CUIMgr.cpp" />
+    <ClCompile Include="CUltralisk.cpp" />
+    <ClCompile Include="CUltraliskDen.cpp" />
     <ClCompile Include="CUnit.cpp" />
     <ClCompile Include="CMarine.cpp" />
+    <ClCompile Include="CUpgradeMgr.cpp" />
     <ClCompile Include="CVBullet.cpp" />
     <ClCompile Include="CVulture.cpp" />
+    <ClCompile Include="CVultureMine.cpp" />
+    <ClCompile Include="CZealot.cpp" />
+    <ClCompile Include="CZergling.cpp" />
     <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Starcraft.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CStarportAddOn.h" />
     <None Include="CUnit.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

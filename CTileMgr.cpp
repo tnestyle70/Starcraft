@@ -2,6 +2,8 @@
 #include "CTileMgr.h"
 #include "CAbstractFactory.h"
 #include "CScrollMgr.h"
+#include "CBmpMgr.h"
+#include "CScrollMgr.h"
 
 CTileMgr* CTileMgr::m_pInstance = nullptr;
 
@@ -17,6 +19,7 @@ CTileMgr::~CTileMgr()
 
 void CTileMgr::Initialize()
 {
+	
 	for (int i = 0; i < TILEY; ++i)
 	{
 		for (int j = 0; j < TILEX; ++j)
@@ -28,8 +31,11 @@ void CTileMgr::Initialize()
 			m_vecTile.push_back(pTile);
 		}
 	}
-	//타일 Occuy 먼저 초기화
+	//타일 Occuy 먼저 초기화(타일 점유 상태는 동적으로 변하는 구조)
 	m_vecOccupy.assign(TILEX * TILEY, 0); 
+	
+	//저그 크립 초기화
+	m_vecCrip.assign(TILEX * TILEY, 0);
 }
 
 void CTileMgr::Update()
@@ -181,7 +187,8 @@ void CTileMgr::RenderGrid(HDC hDC, float fScrX, float fScrY)
 	DeleteObject(pen);
 }
 
-void CTileMgr::RenderBuildingOverlay(HDC hDC, int topRow, int topCol, int width, int height, int requirecValue)
+void CTileMgr::RenderBuildingOverlay(HDC hDC, int topRow, int topCol, int width, int height, 
+	eRaceType type, eBuildingType buildingType, int requiredValue)
 {
 	float scrX = CScrollMgr::Get_Instance()->Get_ScrollX();
 	float scrY = CScrollMgr::Get_Instance()->Get_ScrollY();
@@ -207,8 +214,17 @@ void CTileMgr::RenderBuildingOverlay(HDC hDC, int topRow, int topCol, int width,
 				screenY + TILECY < 0 || screenY > WINCY)
 				continue;
 
-			// 건설 가능 여부 확인
-			bool canBuild = IsBuildableTile(r, c, requirecValue) && !IsOccupy(r, c);
+			bool canBuild = false;
+
+			// 종족에 따른 건설 가능 여부 확인
+			if (type == eRaceType::RACE_PROTOSS)
+			{
+				canBuild = CanBuildTileProtoss(r, c, requiredValue, buildingType);
+			}
+			else
+			{
+				canBuild = IsBuildableTile(r, c, requiredValue, buildingType) && !IsOccupy(r, c);
+			}
 
 			// 색상 결정
 			COLORREF overlayColor = canBuild ? RGB(0, 255, 0) : RGB(255, 0, 0);
@@ -250,11 +266,50 @@ void CTileMgr::RenderBuildingOverlay(HDC hDC, int topRow, int topCol, int width,
 	}
 }
 
-bool CTileMgr::IsOccupy(int row, int col)
+void CTileMgr::RenderCrip(HDC hDC)
 {
-	int idx = row * TILEX + col;
-	if ((int)m_vecOccupy.size() != TILEX * TILEY) return false; // 또는 true(정책)
-	return m_vecOccupy[idx] != 0;
+	CMyPng* pPng = CBmpMgr::Get_Instance()->Find_Png(L"Crip");
+	if (!pPng)
+		return;
+
+	// 기존 Render()와 동일한 컬링 계산
+	int iCullX = abs((int)CScrollMgr::Get_Instance()->Get_ScrollX() / TILECX);
+	int iCullY = abs((int)CScrollMgr::Get_Instance()->Get_ScrollY() / TILECY);
+	int iMaxX = iCullX + WINCX / TILECX + 2;
+	int iMaxY = iCullY + WINCY / TILECY + 2;
+
+	int iScrollX = (int)CScrollMgr::Get_Instance()->Get_ScrollX();
+	int iScrollY = (int)CScrollMgr::Get_Instance()->Get_ScrollY();
+
+	for (int i = iCullY; i < iMaxY; ++i)
+	{
+		for (int j = iCullX; j < iMaxX; ++j)
+		{
+			int iIndex = i * TILEX + j;
+
+			// 범위 체크
+			if (0 > iIndex || (size_t)iIndex >= m_vecCrip.size())
+				continue;
+
+			// 크립이 있는 타일만 렌더링
+			if (m_vecCrip[iIndex] > 0)
+			{
+				// 타일의 월드 좌표
+				int iWorldX = j * TILECX;
+				int iWorldY = i * TILECY;
+
+				// 기존 방식: 월드 좌표 + 스크롤
+				int iScreenX = iWorldX - iScrollX;
+				int iScreenY = iWorldY - iScrollY;
+
+				// 크립 렌더링
+				pPng->Render_Alpha(hDC,
+					iScreenX, iScreenY,
+					64, 64,
+					false, false);
+			}
+		}
+	}
 }
 
 void CTileMgr::SetOccupy(int row, int col, bool occupy)
@@ -264,8 +319,54 @@ void CTileMgr::SetOccupy(int row, int col, bool occupy)
 	{
 		m_vecOccupy.assign(TILEX * TILEY, 0);
 	}
-
 	m_vecOccupy[row * TILEX + col] = occupy ? 1 : 0;
+}
+
+void CTileMgr::SetPylonPower(int centerX, int centerY, bool power)
+{
+	//중심을 기준으로 4 * 3 사이즈를 파일런 occupy 상태로 설정, Pylon Power는 파일런 자체의 Occupy랑 별개로 동작
+	int powerRow = 5; //가로 16 타일  세로 10 타일
+	int powerCol = 8;
+	
+	for (int r = centerY - powerRow; r < centerY + powerRow; ++r)
+	{
+		for (int c = centerX - powerCol; c < centerX + powerCol; ++c)
+		{
+			if (!InRange(r, c)) //타일 범위 체크
+				continue;
+			//타원 범위 체크
+			int dr = r - centerY;
+			int dc = c - centerX;
+			// 타원의 방정식: (dx/a)^2 + (dy/b)^2 <= 1
+			float normalizeDist = ((float)(dr * dc) / (powerRow * powerCol)) +
+				((float)(dr * dc) / (powerRow * powerCol));
+			if (normalizeDist > 1.f)
+				continue;
+
+			//m_vecTile은 절대 수정하지 말고, 인게임 중 occupy 상태만을 판단하는 m_vecOccupy만 변경!!
+			int index = r * TILEX + c;
+			if (power)
+			{
+				if (m_vecOccupy[index] == 0)
+				{
+					m_vecOccupy[index] = 5;
+				}
+			}
+			//else
+			//{
+			//	if (m_vecOccupy[index] == 5)
+			//	{
+			//		m_vecOccupy[index] = 0;
+			//	}
+			//}
+		}
+	}
+}
+
+void CTileMgr::AddCrip(int centerX, int centerY)
+{
+	int index = centerY * TILEX + centerX;
+	m_vecCrip[index]++;
 }
 
 bool CTileMgr::InRange(int& row, int& col) const
@@ -274,34 +375,128 @@ bool CTileMgr::InRange(int& row, int& col) const
 		col >= 0 && col < TILEX);
 }
 
-bool CTileMgr::IsBuildableTile(int row, int col, int requiredValue)
+//인게임내에서 실시간으로 변하는 건물 건설에 따른 타일 점유 상태 판단
+bool CTileMgr::IsOccupy(int row, int col)
+{
+	int idx = row * TILEX + col;
+	if ((int)m_vecOccupy.size() != TILEX * TILEY) return false; // 또는 true(정책)
+	return m_vecOccupy[idx] != 0;
+}
+
+//맵 데이터 상(빈 땅, 이동 불가 지형, 미네랄, 가스 판단)
+bool CTileMgr::IsBuildableTile(int row, int col, int requiredValue, eBuildingType type)
 {
 	if (!InRange(row, col)) 
 		return false;
+
 	CObj* pObjTile = GetTile(row, col);
 	CTile* pTile = dynamic_cast<CTile*>(pObjTile);
 	if (!pTile) 
 		return false;
 
 	int iOption = pTile->Get_Option();
+	bool bExpantion = pTile->Get_Expansion();
 
-	//가스 3만 체크
-	if (requiredValue >= 0)
+	if (type == eBuildingType::COMMAND_CENTER || type == eBuildingType::NEXUS)
+	{
+		//커맨드 센터일 경우 따로 미네랄, 가스 주변을 체크한다.
+		return(iOption == 0 && !bExpantion);
+	}
+
+	//미네랄 타일 체크 추가
+	if (requiredValue == 2)
+		return (iOption == 2);
+
+	//가스 3 체크
+	if (requiredValue == 3)
 		return (iOption == requiredValue);
 
 	//기본 0만 건설 가능
 	return (iOption == 0);
 }
- 
-bool CTileMgr::CanConstruct(int row, int col, int width, int height, int requiredValue)
+
+bool CTileMgr::CanBuildTileProtoss(int row, int col, int requiredValue, eBuildingType type)
+{
+	//m_vecTile의 정적 데이터를 통한 건설 여부 판단 - 지형, 미네랄, 가스 
+	if (!IsBuildableTile(row, col, requiredValue, type))
+		return false;
+
+	int occupyState = GetOccupyState(row, col);
+
+	if (occupyState == 1)
+		return false;
+
+	if (requiredValue == 3)
+	{
+		return IsGasTile(row, col);
+	}
+	else if (requiredValue == 5)
+	{
+		//파워 범위 지을 수 있음
+		return (occupyState == 5);
+	}
+	else 
+	{
+		//빈 땅과 파워 범위 모두 지을 수 있음
+		return (occupyState == 0 || occupyState == 5);
+	}
+}
+
+bool CTileMgr::CanBuildRestrictedTile(int row, int col, int requiredValue)
+{
+	//커맨드 센터, 넥서스의 경우 일정 거리 떨어진 위치에서만 건물을 건설할 수 있음
+
+	return false;
+}
+
+bool CTileMgr::HasPylonPower(int row, int col)
+{
+	int idx = row * TILEX + col;
+	if ((int)m_vecOccupy.size() != TILEX * TILEY) return false; // 또는 true(정책)
+	return m_vecOccupy[idx] == 5;
+}
+
+bool CTileMgr::IsGasTile(int row, int col)
+{
+	int idx = row * TILEX + col;
+	if ((int)m_vecOccupy.size() != TILEX * TILEY) return false; // 또는 true(정책)
+	return m_vecOccupy[idx] == 3;
+}
+
+int CTileMgr::GetOccupyState(int row, int col)
+{
+	if (!InRange(row, col))
+		return false;
+
+	int index = row * TILEX + col;
+	if ((int)m_vecOccupy.size() != TILEX * TILEY)
+		return false;
+	return (m_vecOccupy[index]);
+}
+
+bool CTileMgr::CanConstruct(int row, int col, int width, int height, int requiredValue, eBuildingType type)
 {
 	for (int r = row; r < row + height; ++r)
 	{
 		for (int c = col; c < col + width; ++c)
 		{
 			if (!InRange(r, c)) return false;
-			if (!IsBuildableTile(r, c, requiredValue)) return false;
+			if (!IsBuildableTile(r, c, requiredValue, type)) return false;
 			if (IsOccupy(r, c)) return false;
+		}
+	}
+	return true;
+}
+
+bool CTileMgr::CanConstructProtoss(int row, int col, int width, int height, int requiredValue, eBuildingType type)
+{
+	//넥서스, 파일런, 정제소를 파워 빌드 불필요
+	for (int r = row; r < row + height; ++r)
+	{
+		for (int c = col; c < col + width; ++c)
+		{
+			if (!CanBuildTileProtoss(row, col, requiredValue, type))
+				return false;
 		}
 	}
 	return true;
@@ -424,8 +619,44 @@ void CTileMgr::Load_Tile()
 
 	CloseHandle(hFile);
 
-	wchar_t buf[128];
-	swprintf_s(buf, L"TOTAL=%d\nopt1=%d\nopt2=%d", cnt,cntOpt1, cntOpt2);
+	//wchar_t buf[128];
+	//swprintf_s(buf, L"TOTAL=%d\nopt1=%d\nopt2=%d", cnt,cntOpt1, cntOpt2);
 
-	MessageBox(g_hWnd, buf, L"Tile Load 완료", MB_OK);
+	//MessageBox(g_hWnd, buf, L"Tile Load 완료", MB_OK);
+	MarkExpansionTile();
+}
+
+void CTileMgr::MarkExpansionTile()
+{
+	//자원 주변 타일 expansion 플래그 설정
+	for (int x = 0; x < TILEX; ++x)
+	{
+		for (int y = 0; y < TILEY; ++y)
+		{
+			int index = y * TILEX + x;
+			//자원 주변을 확장해서 expansion = false로 설정
+			CTile* pTile = dynamic_cast<CTile*>(m_vecTile[index]);
+			int iOption = pTile->Get_Option();
+			if (iOption == 2 || iOption == 3) //미네랄, 가스인 경우
+			{
+				for (int dx = -3; dx <= 3; ++dx)
+				{
+					for (int dy = -1; dy <= 1; ++dy)
+					{
+						int nc = x + dx;
+						int nr = y + dy;
+						if (InRange(nr, nc))
+						{
+							int nIndex = nr * TILEX + nc;
+							CTile* pNearTile = dynamic_cast<CTile*>(m_vecTile[nIndex]);
+							if (pNearTile->Get_Option() == 0)
+							{
+								pNearTile->Set_Expansion(true);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 }

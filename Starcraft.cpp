@@ -3,8 +3,6 @@
 #include "Starcraft.h"
 #include "CMainGame.h"
 #include "CTimeMgr.h"
-#include "CScrollMgr.h"
-#include "CCommandMgr.h"
 #include <WindowsX.h>
 #include "CGdiPlusMgr.h"
 
@@ -141,24 +139,44 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    RECT rc = { 0, 0, WINCX, WINCY };
 
-   AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+   // 화면 크기 가져오기
+   int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+   int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, 
-      rc.right - rc.left, 
-      rc.bottom - rc.top, 
-      nullptr, nullptr, hInstance, nullptr);
+   // 중앙 좌표 계산
+   int x = (screenWidth - WINCX) / 2;
+   int y = (screenHeight - WINCY) / 2;
 
-   if (!hWnd)
-   {
-       ShowLastErrorBox(L"CreateWindowW");
-       return FALSE;
-   }
+   // 중앙에 배치
+   HWND hWnd = CreateWindowW(
+       szWindowClass,
+       szTitle,
+       WS_POPUP,
+       x, y,  // ← CW_USEDEFAULT 대신 계산된 좌표
+       rc.right - rc.left,
+       rc.bottom - rc.top,
+       nullptr, nullptr, hInstance, nullptr
+   );
+
+   //FPS 나오는 모드
+   //AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
+
+   //HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+   //   CW_USEDEFAULT, 0, 
+   //   rc.right - rc.left, 
+   //   rc.bottom - rc.top, 
+   //   nullptr, nullptr, hInstance, nullptr);
 
    //if (!hWnd)
    //{
-   //   return FALSE;
+   //    ShowLastErrorBox(L"CreateWindowW");
+   //    return FALSE;
    //}
+
+   if (!hWnd)
+   {
+      return FALSE;
+   }
 
    g_hWnd = hWnd;
 
@@ -174,13 +192,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_RBUTTONDOWN:
     {
-        POINT ptClient{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+        //POINT ptClient{ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
-        float fScrX = CScrollMgr::Get_Instance()->Get_ScrollX();
-        float fScrY = CScrollMgr::Get_Instance()->Get_ScrollY();
+        //float fScrX = CScrollMgr::Get_Instance()->Get_ScrollX();
+        //float fScrY = CScrollMgr::Get_Instance()->Get_ScrollY();
 
-        Vec2 vWorld{ ptClient.x + fScrX, ptClient.y + fScrY };
-        CCommandMgr::Get_Instance()->IssueMove(vWorld);
+        //Vec2 vWorld{ ptClient.x + fScrX, ptClient.y + fScrY };
+        //CInputMgr::Get_Instance()->SetWorldMouse(vWorld);
+        //CCommandMgr::Get_Instance()->IssueMove(vWorld);
         return 0;
     }
     case WM_COMMAND:

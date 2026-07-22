@@ -20,6 +20,8 @@ public:
     void SetFogState(int row, int col, eFogState state);
     //시야 계산
     void RevealArea(int centerRow, int centerCol, int sightRange);
+    void UpdateScan();
+    void SetScan(int centerRow, int centerCol, int sightRange, bool scan);
     void UpdateVision();
     void ResetVisibleToExplored();
     //안개 렌더링
@@ -31,8 +33,16 @@ public:
 private:
     bool InRange(int row, int col) const; 
 private:
+    //스캐너 사용
+    float m_fScannerTimer = 0.f;
+    float m_fScannerDuration = 3.f;
+    bool m_bUseScan = false;
+    int m_iScanRow;
+    int m_iScanCol;
+    int m_iScanRange = 10;
+    //안개 업데이트 주기
     float m_fFogUpdateRate;
-    const float UPDATE_INTERVAL = 0.3f;
+    const float UPDATE_INTERVAL = 0.5f;
     //타일별 안개 상태
     vector<eFogState> m_vecFogState;
     //안개 렌더링용 비트맵

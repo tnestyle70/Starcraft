@@ -4,7 +4,7 @@
 #include "CTimeMgr.h"
 
 CProjectile::CProjectile() : m_vDir(0.f, 0.f), m_fSpeed(0), m_iDamage(0),
-	m_pTarget(nullptr), m_pOwner(nullptr), m_bHoming(false), m_iDirection16(0)
+	m_pTarget(nullptr), m_pOwner(nullptr), m_bHoming(true), m_iDirection16(0)
 {
 }
 
@@ -24,6 +24,7 @@ int CProjectile::Update()
 {
 	if (m_bDead)
 		return DEAD;
+
 	//유도 미사일의 경우 타겟 추적
 	if (m_bHoming && m_pTarget && !m_pTarget->IsDead())
 	{
@@ -44,7 +45,7 @@ int CProjectile::Update()
 	m_tInfo.fX += m_fSpeed * dt * m_vDir.fX;
 	m_tInfo.fY += m_fSpeed * dt * m_vDir.fY;
 	
-	ResolveCollision();
+	//ResolveCollision();
 
 	__super::Update_Rect();
 
@@ -65,11 +66,21 @@ void CProjectile::Release()
 
 void CProjectile::ResolveCollision()
 {
-	if (m_tInfo.fX < -100.f || m_tInfo.fY < -100.f ||
+	if (m_tInfo.fX < -1000.f || m_tInfo.fY < -1000.f ||
 		m_tInfo.fX > 10000.f || m_tInfo.fY > 10000.f)
 	{
 		m_bDead = true;
 	}
+}
+
+void CProjectile::ClearTarget()
+{
+	if (m_bDead)
+	{
+		OutputDebugString(L"[WARNING] ClearTarget() called on DEAD projectile!\n");
+	}
+	m_pTarget = nullptr;
+	Set_Dead();
 }
 
 int CProjectile::DirTo16WayIndex(Vec2& vDir)
@@ -78,5 +89,23 @@ int CProjectile::DirTo16WayIndex(Vec2& vDir)
 	float step = PI / 8.f;
 	int idx = (int)floorf((ang + (PI / 16.f)) / step);
 	idx = (idx % 16 + 16) % 16;
+	return idx;
+}
+
+int CProjectile::DirTo17WayIndex(Vec2& vDir)
+{
+	if (vDir.fX == 0.f && vDir.fY == 0.f)
+		return 0;
+
+	float ang = atan2f(-vDir.fY, -vDir.fX); // -PI ~ PI
+
+	//-90도 보정 추가
+	ang -= PI * 0.5f;
+	if (ang >= PI * 2.f)
+		ang -= PI * 2.f;
+
+	float step = (PI * 2.f) / 17.f;        // 21.176도
+	int idx = (int)floorf((ang + step * 0.5f) / step); // 반올림
+	idx = (idx % 17 + 17) % 17;   // 0~16
 	return idx;
 }

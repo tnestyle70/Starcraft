@@ -14,7 +14,7 @@ public:
 	void Initialize();
 public:
 	void BeginFrame();
-	double GetDT() const { return m_dDT; }
+	double GetDT() const { return m_dDT;}
 public:
 	static CTimeMgr* Get_Instance()
 	{

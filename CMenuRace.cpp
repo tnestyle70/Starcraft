@@ -6,6 +6,9 @@
 #include "CAbstractFactory.h"
 #include "CObjMgr.h"
 #include "CCursorMgr.h"
+#include "CSoundMgr.h"
+#include "CTimeMgr.h"
+#include "CSceneMgr.h"
 
 CMenuRace::CMenuRace()
 {
@@ -20,9 +23,12 @@ void CMenuRace::Initialize()
 	//커서 초기화
 	CCursorMgr::Get_Instance()->Initialize();
 	//배경 이미지 
-	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu2/BackGround.png", L"Menu");
-	InitializeAnim();
+	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu2/BackGround.png", L"Menu_Race");
+	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu2/BackGround_2.png", L"MenuRace");
+
+	LoadResource();
 	InitializeButton();
+	InitializeAnim();
 }
 
 int CMenuRace::Update()
@@ -37,11 +43,28 @@ int CMenuRace::Update()
 void CMenuRace::Late_Update()
 {
 	CObjMgr::Get_Instance()->Late_Update();
+
+	if (m_bStart)
+	{
+		float dt = CTimeMgr::Get_Instance()->GetDT();
+		m_fSoundDelay += dt;
+		if (m_fSoundDelay >= m_fSoundDuration)
+		{
+			m_fSoundDelay = 0.f;
+			CSoundMgr::Get_Instance()->PlaySound(L"BGM/CountDown.wav", SOUND_EFFECT, 0.4f);
+		}
+		m_fStartDelay += dt;
+		if (m_fStartDelay >= m_fDelayDuartion)
+		{
+			CSoundMgr::Get_Instance()->StopSound(SOUND_BGM);
+			CSceneMgr::Get_Instance()->Scene_Change(CSceneMgr::SC_STAGE);
+		}
+	}
 }
 
 void CMenuRace::Render(HDC hDC)
 {
-	CMyPng* pPng = CBmpMgr::Get_Instance()->Find_Png(L"Menu");
+	CMyPng* pPng = CBmpMgr::Get_Instance()->Find_Png(L"MenuRace");
 	if (pPng)
 	{
 		pPng->Render_Alpha_Pure(hDC, 0, 0, 800, 600);
@@ -54,49 +77,12 @@ void CMenuRace::Render(HDC hDC)
 void CMenuRace::Release()
 {
 	CObjMgr::Get_Instance()->Delete_Obj(OBJ_UI);
+	//CObjMgr::Get_Instance()->Destroy_Instance();
 }
 
-void CMenuRace::InitializeAnim()
+void CMenuRace::LoadResource()
 {
-	//종족 애니메이션 생성
-	 
-	//테란
-	CObj* pAnimButton = CAbstractFactory<CAnimButton>::Create(200.f, 300.f);
-	pAnimButton->Initialize();
-	CAnimButton* pAnimBtn = dynamic_cast<CAnimButton*>(pAnimButton);
-	for (int i = 0; i <= 77; ++i)
-	{
-		TCHAR szPath[256];
-		TCHAR szKey[256];
-
-		wsprintf(szPath, L"../Image/MainMenu2/Terran/%d.png", i);
-		wsprintf(szKey, L"Terran_Normal_Anim_%d", i);
-
-		CBmpMgr::Get_Instance()->Insert_Png_Anim(szPath, szKey);
-	}
-	for (int i = 0; i <= 30; ++i)
-	{
-		TCHAR szPath[256];
-		TCHAR szKey[256];
-
-		wsprintf(szPath, L"../Image/MainMenu2/TerranMouseOn/%d.png", i);
-		wsprintf(szKey, L"Terran_Hover_Anim_%d", i);
-
-		CBmpMgr::Get_Instance()->Insert_Png_Anim(szPath, szKey);
-	}
-	if (pAnimBtn)
-	{
-		pAnimBtn->Set_NormalImage(L"Terran_Normal_Anim_0");
-		pAnimBtn->Set_NormalAnimation(L"Terran_Normal_Anim_%d", 77);
-		pAnimBtn->Set_HoverAnimation(L"Terran_Hover_Anim_%d", 30);
-		pAnimBtn->Set_ButtonType(L"Start");
-	}
-	CObjMgr::Get_Instance()->Add_Object(OBJ_UI, pAnimButton);
-	
-	//프로토스
-	pAnimButton = CAbstractFactory<CAnimButton>::Create(450.f, 200.f);
-	pAnimButton->Initialize();
-	pAnimBtn = dynamic_cast<CAnimButton*>(pAnimButton);
+	//프로토스 버튼
 	for (int i = 0; i <= 69; ++i)
 	{
 		TCHAR szPath[256];
@@ -117,19 +103,28 @@ void CMenuRace::InitializeAnim()
 
 		CBmpMgr::Get_Instance()->Insert_Png_Anim(szPath, szKey);
 	}
-	if (pAnimBtn)
+	//테란 버튼
+	for (int i = 0; i <= 77; ++i)
 	{
-		pAnimBtn->Set_NormalImage(L"Protoss_Normal_Anim_0");
-		pAnimBtn->Set_NormalAnimation(L"Protoss_Normal_Anim_%d", 69);
-		pAnimBtn->Set_HoverAnimation(L"Protoss_Hover_Anim_%d", 30);
-		pAnimBtn->Set_ButtonType(L"Start");
-	}
-	CObjMgr::Get_Instance()->Add_Object(OBJ_UI, pAnimButton);
+		TCHAR szPath[256];
+		TCHAR szKey[256];
 
-	//저그
-	pAnimButton = CAbstractFactory<CAnimButton>::Create(500.f, 500.f);
-	pAnimButton->Initialize();
-	pAnimBtn = dynamic_cast<CAnimButton*>(pAnimButton);
+		wsprintf(szPath, L"../Image/MainMenu2/Terran/%d.png", i);
+		wsprintf(szKey, L"Terran_Normal_Anim_%d", i);
+
+		CBmpMgr::Get_Instance()->Insert_Png_Anim(szPath, szKey);
+	}
+	for (int i = 0; i <= 30; ++i)
+	{
+		TCHAR szPath[256];
+		TCHAR szKey[256];
+
+		wsprintf(szPath, L"../Image/MainMenu2/TerranMouseOn/%d.png", i);
+		wsprintf(szKey, L"Terran_Hover_Anim_%d", i);
+
+		CBmpMgr::Get_Instance()->Insert_Png_Anim(szPath, szKey);
+	}
+	//저그 버튼
 	for (int i = 0; i <= 69; ++i)
 	{
 		TCHAR szPath[256];
@@ -150,55 +145,57 @@ void CMenuRace::InitializeAnim()
 
 		CBmpMgr::Get_Instance()->Insert_Png_Anim(szPath, szKey);
 	}
+}
+
+void CMenuRace::InitializeAnim()
+{
+	//종족 애니메이션 생성
+
+	//프로토스
+	CObj* pAnimButton = CAbstractFactory<CAnimButton>::Create(410.f, 210.f);
+	pAnimButton->Initialize();
+	CAnimButton* pAnimBtn = dynamic_cast<CAnimButton*>(pAnimButton);
 	if (pAnimBtn)
 	{
+		pAnimBtn->Set_MenuScene(this);
+		pAnimBtn->Set_NormalImage(L"Protoss_Normal_Anim_0");
+		pAnimBtn->Set_NormalAnimation(L"Protoss_Normal_Anim_%d", 69);
+		pAnimBtn->Set_HoverAnimation(L"Protoss_Hover_Anim_%d", 30);
+		pAnimBtn->Set_ButtonType(L"Protoss");
+	}
+	CObjMgr::Get_Instance()->Add_Object(OBJ_UI, pAnimButton);
+	 
+	//테란
+	pAnimButton = CAbstractFactory<CAnimButton>::Create(120.f, 310.f);
+	pAnimButton->Initialize();
+	pAnimBtn = dynamic_cast<CAnimButton*>(pAnimButton);
+	if (pAnimBtn)
+	{
+		pAnimBtn->Set_MenuScene(this);
+		pAnimBtn->Set_NormalImage(L"Terran_Normal_Anim_0");
+		pAnimBtn->Set_NormalAnimation(L"Terran_Normal_Anim_%d", 77);
+		pAnimBtn->Set_HoverAnimation(L"Terran_Hover_Anim_%d", 30);
+		pAnimBtn->Set_ButtonType(L"Terran");
+	}
+	CObjMgr::Get_Instance()->Add_Object(OBJ_UI, pAnimButton);
+
+	//저그
+	pAnimButton = CAbstractFactory<CAnimButton>::Create(690.f, 290.f);
+	pAnimButton->Initialize();
+	pAnimBtn = dynamic_cast<CAnimButton*>(pAnimButton);
+	if (pAnimBtn)
+	{
+		pAnimBtn->Set_MenuScene(this);
 		pAnimBtn->Set_NormalImage(L"Zerg_Normal_Anim_0");
 		pAnimBtn->Set_NormalAnimation(L"Zerg_Normal_Anim_%d", 69);
 		pAnimBtn->Set_HoverAnimation(L"Zerg_Hover_Anim_%d", 19);
-		pAnimBtn->Set_ButtonType(L"Start");
+		pAnimBtn->Set_ButtonType(L"Zerg");
 	}
 	CObjMgr::Get_Instance()->Add_Object(OBJ_UI, pAnimButton);
 }
 
 void CMenuRace::InitializeButton()
 {
-	//PNG 버튼 이미지 로딩
-	/*
-	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu/Button/single_button0.png", L"Btn_Single_Normal");
-	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu/Button/single_button1.png", L"Btn_Single_Hover");
-	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu/Button/editor_button0.png", L"Btn_Editor_Normal");
-	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu/Button/editor_button1.png", L"Btn_Editor_Hover");
-	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu/Button/exit_button0.png", L"Btn_Exit_Normal");
-	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu/Button/exit_button1.png", L"Btn_Exit_Hover");
-	//SinglePlay 이후 버튼
-	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/Logo/SelectMenu1.png", L"Select_Menu");
-
-	//Single 버튼
-	CObj* pButton = CAbstractFactory<CButton>::Create(200.f, 220.f);
-	pButton->Initialize();
-	CButton* pBtn = dynamic_cast<CButton*>(pButton);
-	if (pBtn)
-	{
-		pBtn->Set_PngImages(L"Btn_Single_Normal", L"Btn_Single_Hover");
-	}
-	CObjMgr::Get_Instance()->Add_Object(OBJ_UI, pButton);
-	//Editor 버튼
-	pButton = CAbstractFactory<CButton>::Create(600.f, 250.f);
-	pButton->Initialize();
-	pBtn = dynamic_cast<CButton*>(pButton);
-	if (pBtn)
-	{
-		pBtn->Set_PngImages(L"Btn_Editor_Normal", L"Btn_Editor_Hover");
-	}
-	CObjMgr::Get_Instance()->Add_Object(OBJ_UI, pButton);
-	//Exit 버튼
-	pButton = CAbstractFactory<CButton>::Create(550.f, 400.f);
-	pButton->Initialize();
-	pBtn = dynamic_cast<CButton*>(pButton);
-	if (pBtn)
-	{
-		pBtn->Set_PngImages(L"Btn_Exit_Normal", L"Btn_Exit_Hover");
-	}
-	CObjMgr::Get_Instance()->Add_Object(OBJ_UI, pButton);
-	*/
+	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu/Button/single_button1.png", L"Btn_Cancle_Hover");
+	CBmpMgr::Get_Instance()->Insert_Png(L"../Image/MainMenu/Button/cancle_button.png", L"Btn_Cancle_Normal");
 }

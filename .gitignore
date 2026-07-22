@@ -1,0 +1,27 @@
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Oo]bj/
+
+*.user
+*.suo
+*.obj
+*.pch
+*.pdb
+*.idb
+*.ilk
+*.iobj
+*.ipdb
+*.tlog
+*.lastbuildstate
+*.VC.db
+*.VC.VC.opendb
+
+# Third-party SDK files are supplied separately.
+fmod*.dll
+fmod*.lib
+fmod*.h
+fmod.hpp
+

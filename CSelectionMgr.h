@@ -1,8 +1,10 @@
 #pragma once
 #include "Define.h"
+#include <map>
 
 class CObj;
 class CUnit;
+class CBuilding;
 
 class CSelectionMgr
 {
@@ -15,11 +17,13 @@ public:
 	void Update();
 	void Render(HDC hDC);
 	void RenderSelectionCircle(HDC hDC);
+	void Release();
 public:
 	void OnLMouseDown();
 	void OnMouseMove();
 	void OnLMouseUp();
 	void SelectSameTypeUnits(CUnit* pRefUnit);
+	void SelectSameTypeBuildings(CBuilding* pRefBuilding);
 
 	void OnRMouseDown();
 	void OnRMouseUp();
@@ -29,6 +33,7 @@ public:
 
 	const std::vector<CObj*>& GetSelected() const { return m_vecSelected; }
 	void ClearSelection();
+	void RemoveFromSelection(CObj* pTarget);
 private:
 	bool m_bDragging = false;
 	POINT m_ptStart{};
@@ -45,6 +50,13 @@ private:
 	static RECT NormalizeRect(POINT a, POINT b);
 	static bool IsClickSelection(const RECT& r);
 	void SelectSingleAt(const POINT& clientPt);
+	void PlaySelectedSound(CObj* pSelected);
+public:
+	void SaveControlGroup(int slotNum);
+	void LoadControlGroup(int slotNum, bool addToSelection = false);
+	void RemoveFromControlGroup(CObj* pDeadObj);
+private:
+	map<int, vector<CObj*>> m_mapControlGroup;
 public:
 	static CSelectionMgr* Get_Instance()
 	{

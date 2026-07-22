@@ -42,26 +42,17 @@
     <Filter Include="01. Obj\01. Building">
       <UniqueIdentifier>{b97fd795-3f08-41bf-a0ba-55346199b245}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Obj\02. Projectile">
-      <UniqueIdentifier>{3c8bc947-8092-4c95-8b13-500752076ab6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\01. ObjMgr">
       <UniqueIdentifier>{2ee1b426-8326-47c0-b9bf-22848128a634}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. Design\02. CollisionMgr">
       <UniqueIdentifier>{e8be8af5-dea0-4d04-a171-a02284eeffd5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="02. Design\03. TileMap">
-      <UniqueIdentifier>{4dea9e5a-e967-48cb-96a0-cb0d6891a7a1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\04. ScrollMgr">
       <UniqueIdentifier>{eba7094c-af7e-43e8-ae83-10a7447f53dd}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. Design\06. SceneMgr">
       <UniqueIdentifier>{36f708e2-2485-46b9-9137-b6289f1e7e77}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. Design\08. SpatialHash">
-      <UniqueIdentifier>{3e47be0d-13af-47cd-afaa-7a9d18a056b4}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. Design\09. Core">
       <UniqueIdentifier>{89d53334-9ec7-450a-8015-373bc33ed953}</UniqueIdentifier>
@@ -90,21 +81,6 @@
     <Filter Include="03. Scene\02. Edit\00. TileMgr">
       <UniqueIdentifier>{6fb60eea-7ad6-4629-8d53-1002d30cd2f0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Obj\00. Unit\00. Marine">
-      <UniqueIdentifier>{08b3e8cf-ad1b-4e58-a269-42eb7eebb2f1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\00. Unit\01. BattleCruiser">
-      <UniqueIdentifier>{cfc98f82-dfb4-44dc-b939-39032410c34b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\00. Unit\02. Tank">
-      <UniqueIdentifier>{f7c30db1-fb59-49ff-8362-bc421352401a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\00. Unit\03. SCV">
-      <UniqueIdentifier>{e9505c78-34d3-4671-b64c-27c9fa1e0289}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\00. Unit\04. Medic">
-      <UniqueIdentifier>{577c39dc-f9cc-42c4-b25d-b28748f70261}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\10. RTS\04. NavMgr">
       <UniqueIdentifier>{a3ae7ab4-4e7e-4f2b-91bb-cb27d7199075}</UniqueIdentifier>
     </Filter>
@@ -114,41 +90,14 @@
     <Filter Include="02. Design\11. UI">
       <UniqueIdentifier>{e388bf84-2e26-4c1c-b2f1-3baa3e82a5e0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Obj\01. Building\00. CommandCenter">
-      <UniqueIdentifier>{c2db366b-9be9-4a32-be0e-da17301e6dab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\01. Building\01. Barracks">
-      <UniqueIdentifier>{4e2fe771-a89c-4cf4-a938-94b67413e048}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\01. Building\02. Factory">
-      <UniqueIdentifier>{93c919d6-07fc-40c6-8c3a-89a32bc21517}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\01. Building\03. Starport">
-      <UniqueIdentifier>{c2de90fb-30a6-4520-b0f8-a247c44d5435}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\11. UI\00. MainUI">
       <UniqueIdentifier>{42aa3c73-c549-4290-abce-7c00603f20a7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\01. Building\04. SupplyDepot">
-      <UniqueIdentifier>{9fb12e7a-c77d-4f66-a472-3d77156fd061}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\00. Unit\05. Vulture">
-      <UniqueIdentifier>{21a04b22-e77a-4bf5-8759-52d1e7cbb7ea}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="02. Design\05. AnimationMgr">
-      <UniqueIdentifier>{4f4c7923-8691-4cbb-b4f6-8cbd90233676}</UniqueIdentifier>
     </Filter>
     <Filter Include="02. Design\10. RTS\06. SteeringMgr">
       <UniqueIdentifier>{d6b65574-fd1d-457d-acb6-125e0393fbf4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Obj\00. Unit\01. BattleCruiser\00. Bullet">
-      <UniqueIdentifier>{8a9c1d5c-61a2-4210-b2ba-adce49a1de0a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="02. Design\10. RTS\02. CursorMgr">
       <UniqueIdentifier>{51332616-68f3-4192-94f6-2f8f3c81a358}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="01. Obj\01. Building\05. Refinery">
-      <UniqueIdentifier>{300ede7b-0c4a-4d74-b9f8-7c205fcd24c8}</UniqueIdentifier>
     </Filter>
     <Filter Include="01. Obj\03. Resource">
       <UniqueIdentifier>{3de53073-6f56-4642-b47a-41cca6ca3dd6}</UniqueIdentifier>
@@ -162,14 +111,278 @@
     <Filter Include="02. Design\07. ImageMgr\CMyPng">
       <UniqueIdentifier>{64caac1c-f005-4f56-b268-1ee119e2e07a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Obj\00. Unit\05. Vulture\00. Bullet">
-      <UniqueIdentifier>{3d0c5f5e-785f-4596-a0a4-b7946da147dd}</UniqueIdentifier>
+    <Filter Include="02. Design\03. SoundMgr">
+      <UniqueIdentifier>{4dea9e5a-e967-48cb-96a0-cb0d6891a7a1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Obj\00. Unit\06. Goliath">
+    <Filter Include="02. Design\05. UpgradeMgr">
+      <UniqueIdentifier>{4f4c7923-8691-4cbb-b4f6-8cbd90233676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\08. PortraitMgr">
+      <UniqueIdentifier>{3e47be0d-13af-47cd-afaa-7a9d18a056b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\12. ResourceLoader">
+      <UniqueIdentifier>{519ebe44-d80f-42ba-8643-f810cab09741}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\07. CameraMgr">
+      <UniqueIdentifier>{00f65d85-f790-41b2-9ff4-f9511639693f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran">
+      <UniqueIdentifier>{bf983558-4d2f-4bc5-b7d2-e1c76e7166d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\09. Enemy">
+      <UniqueIdentifier>{a6d7e07c-4dad-40f4-b77b-fb7b5c60d14a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\09. Enemy\00. BlueMarine">
+      <UniqueIdentifier>{07f4da9f-2530-4784-b796-d017ba32cc7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\09. Enemy\02. Protoss">
+      <UniqueIdentifier>{f8130b30-5f35-42fe-ad89-bbc1909d0d77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\00. Marine">
+      <UniqueIdentifier>{08b3e8cf-ad1b-4e58-a269-42eb7eebb2f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\01. BattleCruiser">
+      <UniqueIdentifier>{cfc98f82-dfb4-44dc-b939-39032410c34b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\01. BattleCruiser\00. Bullet">
+      <UniqueIdentifier>{8a9c1d5c-61a2-4210-b2ba-adce49a1de0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\02. Tank">
+      <UniqueIdentifier>{f7c30db1-fb59-49ff-8362-bc421352401a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\03. SCV">
+      <UniqueIdentifier>{e9505c78-34d3-4671-b64c-27c9fa1e0289}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\04. Medic">
+      <UniqueIdentifier>{577c39dc-f9cc-42c4-b25d-b28748f70261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\06. Goliath">
       <UniqueIdentifier>{71114b5d-7f19-4549-823b-50c1d5f66f3a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="01. Obj\00. Unit\06. Goliath\00. Bullet">
+    <Filter Include="01. Obj\00. Unit\00. Terran\06. Goliath\00. Bullet">
       <UniqueIdentifier>{661c68c8-9127-4f3d-a63b-5778eeecbfc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\07. Firebat">
+      <UniqueIdentifier>{7e688425-61ef-4cf4-b037-315fc0378c71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\08. Ghost">
+      <UniqueIdentifier>{aabd1ef8-c643-4729-80f6-a5cda213f3df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\08. Ghost\00. Bullet">
+      <UniqueIdentifier>{6dc483f4-abfc-4bc1-a687-58fb86003921}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg">
+      <UniqueIdentifier>{8ea65136-2324-40ce-a05d-3b9a3d63504b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\00. Zergling">
+      <UniqueIdentifier>{6767ab6f-9724-4797-8468-45171f204813}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\01. Hydralisk">
+      <UniqueIdentifier>{c8b7dc8a-30e9-4b79-a308-45115c9894ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\01. Hydralisk\00. Bullet">
+      <UniqueIdentifier>{04b7f264-bca5-45fd-91cc-565e49d7e385}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\03. Ultralisk">
+      <UniqueIdentifier>{e879196d-1c2f-480b-807f-28f2e4bae7b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\04. Mutalisk">
+      <UniqueIdentifier>{273a09fa-febc-4813-b0e1-0dbb4dc28b59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\04. Mutalisk\00. Bullet">
+      <UniqueIdentifier>{fd3fb0f0-8dec-4ef7-9679-cdef572b2716}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\05. Overload">
+      <UniqueIdentifier>{35ac5c7c-48bc-44d2-baa1-a66ad3c48787}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss">
+      <UniqueIdentifier>{d79b3aed-64e7-453c-98ad-9abb1a390d7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran">
+      <UniqueIdentifier>{9e56b87a-c5b4-4ffc-9df6-b84c2c8d4ce3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\00. CommandCenter">
+      <UniqueIdentifier>{c2db366b-9be9-4a32-be0e-da17301e6dab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\01. Barracks">
+      <UniqueIdentifier>{4e2fe771-a89c-4cf4-a938-94b67413e048}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\02. Factory">
+      <UniqueIdentifier>{93c919d6-07fc-40c6-8c3a-89a32bc21517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\03. Starport">
+      <UniqueIdentifier>{c2de90fb-30a6-4520-b0f8-a247c44d5435}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\04. SupplyDepot">
+      <UniqueIdentifier>{9fb12e7a-c77d-4f66-a472-3d77156fd061}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\05. Refinery">
+      <UniqueIdentifier>{300ede7b-0c4a-4d74-b9f8-7c205fcd24c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\06. Bunker">
+      <UniqueIdentifier>{b5e835a0-b08c-4a1a-a8b5-d6ad1c52ac55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\07. Turret">
+      <UniqueIdentifier>{42108063-c6d2-4e7f-a69e-7bd8ee141519}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\07. Turret\00. Bullet">
+      <UniqueIdentifier>{80b29ec9-a882-4370-a68c-12cfbc3c875f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\08. EngineeringBay">
+      <UniqueIdentifier>{e4597834-3b4f-40c8-84a6-aaccca5e7e61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\09. Armory">
+      <UniqueIdentifier>{2205eec0-adfc-4711-a59f-0c41b0923379}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\10. Academy">
+      <UniqueIdentifier>{e65c3152-fce1-4a34-8cd4-1069271083ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\00. Terran\11. ScienceFacility">
+      <UniqueIdentifier>{2bf76ec3-bb9c-45d6-85e4-bd39c8662189}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\01. Zerg">
+      <UniqueIdentifier>{c34c2f83-db59-4520-9310-474ee699a13c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\01. Zerg\00. Hive">
+      <UniqueIdentifier>{c5136625-d248-49c4-a350-a386f97cfa8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\01. Zerg\01. HydraliskDen">
+      <UniqueIdentifier>{e06892a7-8f75-4b1f-916b-e4865a831a1a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\01. Zerg\02. Spire">
+      <UniqueIdentifier>{4c2b7198-aa20-4a54-865b-d7089bb47914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\01. Zerg\03. SpawningPool">
+      <UniqueIdentifier>{cb7c635f-44bd-447f-8d2b-6618a709b30f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\01. Zerg\04. UltraliskDen">
+      <UniqueIdentifier>{6fc943f1-6001-4370-bda1-c968cb575ca4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss">
+      <UniqueIdentifier>{99b37e23-24e3-41ca-90d4-39981f0d1311}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\00. Nexus">
+      <UniqueIdentifier>{2afea7d8-ac83-4006-b397-4d3e8d3711b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\00. Probe">
+      <UniqueIdentifier>{157cdf0b-aa9d-4414-bcfe-297e49ff5e28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\05. Vulture">
+      <UniqueIdentifier>{21a04b22-e77a-4bf5-8759-52d1e7cbb7ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\00. Terran\05. Vulture\00. Bullet">
+      <UniqueIdentifier>{3d0c5f5e-785f-4596-a0a4-b7946da147dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\06. Drone">
+      <UniqueIdentifier>{f32df0f7-c1cb-4589-849f-f6b54041ecc2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. Design\10. RTS\08. GameDataMgr">
+      <UniqueIdentifier>{ff0e6f52-d480-4b6e-bf20-cbb3eb1202d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\01. Zealot">
+      <UniqueIdentifier>{d7ecadb2-8980-4f5e-afc5-447f7d721ebc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\02. Shuttle">
+      <UniqueIdentifier>{6f7ad497-4d61-4500-a097-b5d7c896ab54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\03. Archon">
+      <UniqueIdentifier>{bb2e9b50-e572-4fe9-b16c-a204b7e0c6b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\04. DarkArchon">
+      <UniqueIdentifier>{377d6765-75df-4040-ae3e-57aee3379e21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\05. DarkTemplar">
+      <UniqueIdentifier>{bd2bf791-9ca4-46dd-9567-d783960b22b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\06. Dragon">
+      <UniqueIdentifier>{cd77e1ba-e5ca-4298-a251-3a5fb6e51035}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\07. Arbiter">
+      <UniqueIdentifier>{fe55e2da-a7c4-4e79-8191-ca731d1b897c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\08. Carrier">
+      <UniqueIdentifier>{bb3815a8-e433-4592-a057-24dae97877c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\09. Corsair">
+      <UniqueIdentifier>{07ede945-92b9-42ee-a27f-58f073525958}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\10. HighTemplar">
+      <UniqueIdentifier>{fd4c02e8-ba9d-450b-978c-a16966d78e52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\11. Interceptor">
+      <UniqueIdentifier>{db3fb7d5-e660-450f-99a6-1e73fcf1251e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\12. Scout">
+      <UniqueIdentifier>{0c74b8b5-afcd-4895-a7bf-b74a20b875e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\13. Observer">
+      <UniqueIdentifier>{5c5096d2-593c-4a31-9487-3e2bc23bbef1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\14. Reaver">
+      <UniqueIdentifier>{046d3880-dd1f-4569-8653-ecc416e454a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\01. Pylon">
+      <UniqueIdentifier>{49d10074-54c6-41ea-8211-ca25c1b38cf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\06. Dragon\00. Bullet">
+      <UniqueIdentifier>{03bfd55c-b7ee-43b0-93cb-3f9a846f2d57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\11. Interceptor\00. Bullet">
+      <UniqueIdentifier>{2266388b-3eba-47c6-8ba9-8bdd872b0738}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\03. Gateway">
+      <UniqueIdentifier>{98006754-c906-45f9-a397-726c5d7fc06d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\02. Assimilator">
+      <UniqueIdentifier>{fefcb8a0-cd68-4639-91db-d4f426632253}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\04. Forge">
+      <UniqueIdentifier>{0066eee2-f63e-4a17-999c-5b624146f563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\05. PhotonCannon">
+      <UniqueIdentifier>{97f168cc-b33e-4945-9886-1e0a01f5d45c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\06. CyberneticsCore">
+      <UniqueIdentifier>{f1a3d361-fe48-4f77-b5d2-0a693e16b899}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\07. ShieldBattery">
+      <UniqueIdentifier>{27018949-711b-470a-a47b-b243edaefded}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\02. Protoss\04. DarkArchon\00. Bullet">
+      <UniqueIdentifier>{97856eb7-8723-4071-9a83-8fb97b6d471b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\08. RoboticsFacility">
+      <UniqueIdentifier>{6ff42a1f-c62d-4b3a-8417-b7fac9ae58c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\09. Stargate">
+      <UniqueIdentifier>{43498716-8c4e-434e-b723-54331103cda9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\10. CitadelOfAdun">
+      <UniqueIdentifier>{f9ff70b4-9bce-4b9a-b5f5-8a990e5cf300}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\11. RoboticsSupportBay">
+      <UniqueIdentifier>{3e819f36-de6c-4a2b-be39-f492f3cf1e1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\12. FleetBeacon">
+      <UniqueIdentifier>{25524a87-2d66-47d3-a8c9-7a9383f8ebbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\13. TemplarArchives">
+      <UniqueIdentifier>{fbd81b07-254c-4b9f-ada6-f4be21eb2f69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\14. Observatory">
+      <UniqueIdentifier>{ab8686bb-daea-4c74-9f70-04703e320b74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\02. Protoss\15. ArbiterTribunal">
+      <UniqueIdentifier>{299ce75c-2a3d-46e1-9ee7-7c954214205e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="03. Scene\04. Preload">
+      <UniqueIdentifier>{e4c37e90-e500-4c2f-a544-ae1d5637cc08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\01. Building\01. Zerg\05. Hatchery">
+      <UniqueIdentifier>{9058b135-08d7-4d7b-894e-57f03c070b00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Obj\00. Unit\01. Zerg\07. Lava">
+      <UniqueIdentifier>{3bc854a2-ece4-4987-b006-f487ede1d546}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -180,9 +393,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Resource.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Starcraft.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -246,7 +456,7 @@
       <Filter>03. Scene\02. Edit\00. TileMgr</Filter>
     </ClInclude>
     <ClInclude Include="CMarine.h">
-      <Filter>01. Obj\00. Unit\00. Marine</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\00. Marine</Filter>
     </ClInclude>
     <ClInclude Include="CSelectionMgr.h">
       <Filter>02. Design\10. RTS\00. SelectionMgr</Filter>
@@ -255,16 +465,16 @@
       <Filter>02. Design\10. RTS\01. CommandMgr</Filter>
     </ClInclude>
     <ClInclude Include="CBattleCruiser.h">
-      <Filter>01. Obj\00. Unit\01. BattleCruiser</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\01. BattleCruiser</Filter>
     </ClInclude>
     <ClInclude Include="CTank.h">
-      <Filter>01. Obj\00. Unit\02. Tank</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\02. Tank</Filter>
     </ClInclude>
     <ClInclude Include="CSCV.h">
-      <Filter>01. Obj\00. Unit\03. SCV</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\03. SCV</Filter>
     </ClInclude>
     <ClInclude Include="CMedic.h">
-      <Filter>01. Obj\00. Unit\04. Medic</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\04. Medic</Filter>
     </ClInclude>
     <ClInclude Include="CNavMgr.h">
       <Filter>02. Design\10. RTS\04. NavMgr</Filter>
@@ -285,25 +495,25 @@
       <Filter>01. Obj</Filter>
     </ClInclude>
     <ClInclude Include="CCommandCenter.h">
-      <Filter>01. Obj\01. Building\00. CommandCenter</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\00. CommandCenter</Filter>
     </ClInclude>
     <ClInclude Include="CBarracks.h">
-      <Filter>01. Obj\01. Building\01. Barracks</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\01. Barracks</Filter>
     </ClInclude>
     <ClInclude Include="CFactory.h">
-      <Filter>01. Obj\01. Building\02. Factory</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\02. Factory</Filter>
     </ClInclude>
     <ClInclude Include="CStarport.h">
-      <Filter>01. Obj\01. Building\03. Starport</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\03. Starport</Filter>
     </ClInclude>
     <ClInclude Include="CMainUI.h">
       <Filter>02. Design\11. UI\00. MainUI</Filter>
     </ClInclude>
     <ClInclude Include="CSupplyDepot.h">
-      <Filter>01. Obj\01. Building\04. SupplyDepot</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\04. SupplyDepot</Filter>
     </ClInclude>
     <ClInclude Include="CVulture.h">
-      <Filter>01. Obj\00. Unit\05. Vulture</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\05. Vulture</Filter>
     </ClInclude>
     <ClInclude Include="CSteeringMgr.h">
       <Filter>02. Design\10. RTS\06. SteeringMgr</Filter>
@@ -315,19 +525,16 @@
       <Filter>01. Obj\00. Unit</Filter>
     </ClInclude>
     <ClInclude Include="CBCBullet.h">
-      <Filter>01. Obj\00. Unit\01. BattleCruiser\00. Bullet</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\01. BattleCruiser\00. Bullet</Filter>
     </ClInclude>
     <ClInclude Include="CBCYamato.h">
-      <Filter>01. Obj\00. Unit\01. BattleCruiser\00. Bullet</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\01. BattleCruiser\00. Bullet</Filter>
     </ClInclude>
     <ClInclude Include="CCursorMgr.h">
       <Filter>02. Design\10. RTS\02. CursorMgr</Filter>
     </ClInclude>
     <ClInclude Include="CRefinery.h">
-      <Filter>01. Obj\01. Building\05. Refinery</Filter>
-    </ClInclude>
-    <ClInclude Include="CMineral.h">
-      <Filter>01. Obj\03. Resource</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\05. Refinery</Filter>
     </ClInclude>
     <ClInclude Include="CGas.h">
       <Filter>01. Obj\03. Resource</Filter>
@@ -351,22 +558,250 @@
       <Filter>03. Scene\01. Menu</Filter>
     </ClInclude>
     <ClInclude Include="CVBullet.h">
-      <Filter>01. Obj\00. Unit\05. Vulture\00. Bullet</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\05. Vulture\00. Bullet</Filter>
     </ClInclude>
     <ClInclude Include="CGoliath.h">
-      <Filter>01. Obj\00. Unit\06. Goliath</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\06. Goliath</Filter>
     </ClInclude>
     <ClInclude Include="CGBullet.h">
-      <Filter>01. Obj\00. Unit\06. Goliath\00. Bullet</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\06. Goliath\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CEffect.h">
+      <Filter>01. Obj\00. Unit</Filter>
+    </ClInclude>
+    <ClInclude Include="CLogo.h">
+      <Filter>03. Scene\00. Logo</Filter>
+    </ClInclude>
+    <ClInclude Include="CSoundMgr.h">
+      <Filter>02. Design\03. SoundMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CFirebat.h">
+      <Filter>01. Obj\00. Unit\00. Terran\07. Firebat</Filter>
+    </ClInclude>
+    <ClInclude Include="CGhost.h">
+      <Filter>01. Obj\00. Unit\00. Terran\08. Ghost</Filter>
+    </ClInclude>
+    <ClInclude Include="CEngineeringBay.h">
+      <Filter>01. Obj\01. Building\00. Terran\08. EngineeringBay</Filter>
+    </ClInclude>
+    <ClInclude Include="CTurret.h">
+      <Filter>01. Obj\01. Building\00. Terran\07. Turret</Filter>
+    </ClInclude>
+    <ClInclude Include="CAcademy.h">
+      <Filter>01. Obj\01. Building\00. Terran\10. Academy</Filter>
+    </ClInclude>
+    <ClInclude Include="CBunker.h">
+      <Filter>01. Obj\01. Building\00. Terran\06. Bunker</Filter>
+    </ClInclude>
+    <ClInclude Include="CScienceFacility.h">
+      <Filter>01. Obj\01. Building\00. Terran\11. ScienceFacility</Filter>
+    </ClInclude>
+    <ClInclude Include="CArmory.h">
+      <Filter>01. Obj\01. Building\00. Terran\09. Armory</Filter>
+    </ClInclude>
+    <ClInclude Include="CFactoryAddOn.h">
+      <Filter>01. Obj\01. Building\00. Terran\02. Factory</Filter>
+    </ClInclude>
+    <ClInclude Include="CGhostBullet.h">
+      <Filter>01. Obj\00. Unit\00. Terran\08. Ghost\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CBlueMarine.h">
+      <Filter>01. Obj\00. Unit\00. Terran\09. Enemy\00. BlueMarine</Filter>
+    </ClInclude>
+    <ClInclude Include="CZergling.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\00. Zergling</Filter>
+    </ClInclude>
+    <ClInclude Include="CHydralisk.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\01. Hydralisk</Filter>
+    </ClInclude>
+    <ClInclude Include="CUltralisk.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\03. Ultralisk</Filter>
+    </ClInclude>
+    <ClInclude Include="CHive.h">
+      <Filter>01. Obj\01. Building\01. Zerg\00. Hive</Filter>
+    </ClInclude>
+    <ClInclude Include="CZealot.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\01. Zealot</Filter>
+    </ClInclude>
+    <ClInclude Include="CUpgradeMgr.h">
+      <Filter>02. Design\05. UpgradeMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CMutalisk.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\04. Mutalisk</Filter>
+    </ClInclude>
+    <ClInclude Include="CHydraliskDen.h">
+      <Filter>01. Obj\01. Building\01. Zerg\01. HydraliskDen</Filter>
+    </ClInclude>
+    <ClInclude Include="CSpire.h">
+      <Filter>01. Obj\01. Building\01. Zerg\02. Spire</Filter>
+    </ClInclude>
+    <ClInclude Include="CSpawningPool.h">
+      <Filter>01. Obj\01. Building\01. Zerg\03. SpawningPool</Filter>
+    </ClInclude>
+    <ClInclude Include="CUltraliskDen.h">
+      <Filter>01. Obj\01. Building\01. Zerg\04. UltraliskDen</Filter>
+    </ClInclude>
+    <ClInclude Include="CHydraliskBullet.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\01. Hydralisk\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CMutaliskBullet.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\04. Mutalisk\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CGMissile.h">
+      <Filter>01. Obj\00. Unit\00. Terran\06. Goliath\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CCombatStation.h">
+      <Filter>01. Obj\01. Building\00. Terran\00. CommandCenter</Filter>
+    </ClInclude>
+    <ClInclude Include="CTurretBullet.h">
+      <Filter>01. Obj\01. Building\00. Terran\07. Turret\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CVultureMine.h">
+      <Filter>01. Obj\00. Unit\00. Terran\05. Vulture\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CScienceSecret.h">
+      <Filter>01. Obj\01. Building\00. Terran\11. ScienceFacility</Filter>
+    </ClInclude>
+    <ClInclude Include="CNuclearSilo.h">
+      <Filter>01. Obj\01. Building\00. Terran\00. CommandCenter</Filter>
+    </ClInclude>
+    <ClInclude Include="CSciencePhysics.h">
+      <Filter>01. Obj\01. Building\00. Terran\11. ScienceFacility</Filter>
+    </ClInclude>
+    <ClInclude Include="CPortraitMgr.h">
+      <Filter>02. Design\08. PortraitMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CResourceLoader.h">
+      <Filter>02. Design\12. ResourceLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="CCameraMgr.h">
+      <Filter>02. Design\10. RTS\07. CameraMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CNexus.h">
+      <Filter>01. Obj\01. Building\02. Protoss\00. Nexus</Filter>
+    </ClInclude>
+    <ClInclude Include="CProbe.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\00. Probe</Filter>
+    </ClInclude>
+    <ClInclude Include="CDrone.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\06. Drone</Filter>
+    </ClInclude>
+    <ClInclude Include="CGameDataMgr.h">
+      <Filter>02. Design\10. RTS\08. GameDataMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="CShuttle.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\02. Shuttle</Filter>
+    </ClInclude>
+    <ClInclude Include="CArchon.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\03. Archon</Filter>
+    </ClInclude>
+    <ClInclude Include="CDarkArchon.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\04. DarkArchon</Filter>
+    </ClInclude>
+    <ClInclude Include="CDarkTemplar.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\05. DarkTemplar</Filter>
+    </ClInclude>
+    <ClInclude Include="CDragon.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\06. Dragon</Filter>
+    </ClInclude>
+    <ClInclude Include="CArbiter.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\07. Arbiter</Filter>
+    </ClInclude>
+    <ClInclude Include="CCarrier.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\08. Carrier</Filter>
+    </ClInclude>
+    <ClInclude Include="CCorsair.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\09. Corsair</Filter>
+    </ClInclude>
+    <ClInclude Include="CHighTemplar.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\10. HighTemplar</Filter>
+    </ClInclude>
+    <ClInclude Include="CReavor.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\14. Reaver</Filter>
+    </ClInclude>
+    <ClInclude Include="CScout.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\12. Scout</Filter>
+    </ClInclude>
+    <ClInclude Include="CObserver.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\13. Observer</Filter>
+    </ClInclude>
+    <ClInclude Include="COverload.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\05. Overload</Filter>
+    </ClInclude>
+    <ClInclude Include="CPylon.h">
+      <Filter>01. Obj\01. Building\02. Protoss\01. Pylon</Filter>
+    </ClInclude>
+    <ClInclude Include="CDragoonBall.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\06. Dragon\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CInterceptor.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\11. Interceptor</Filter>
+    </ClInclude>
+    <ClInclude Include="CIntercepBullet.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\11. Interceptor\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CAssimilator.h">
+      <Filter>01. Obj\01. Building\02. Protoss\02. Assimilator</Filter>
+    </ClInclude>
+    <ClInclude Include="CGateway.h">
+      <Filter>01. Obj\01. Building\02. Protoss\03. Gateway</Filter>
+    </ClInclude>
+    <ClInclude Include="CCyberneticsCore.h">
+      <Filter>01. Obj\01. Building\02. Protoss\06. CyberneticsCore</Filter>
+    </ClInclude>
+    <ClInclude Include="CDarkArchonBullet.h">
+      <Filter>01. Obj\00. Unit\02. Protoss\04. DarkArchon\00. Bullet</Filter>
+    </ClInclude>
+    <ClInclude Include="CCitadelOfAdun.h">
+      <Filter>01. Obj\01. Building\02. Protoss\10. CitadelOfAdun</Filter>
+    </ClInclude>
+    <ClInclude Include="CRoboticsFacility.h">
+      <Filter>01. Obj\01. Building\02. Protoss\08. RoboticsFacility</Filter>
+    </ClInclude>
+    <ClInclude Include="CStargate.h">
+      <Filter>01. Obj\01. Building\02. Protoss\09. Stargate</Filter>
+    </ClInclude>
+    <ClInclude Include="CRoboticsSupportBay.h">
+      <Filter>01. Obj\01. Building\02. Protoss\11. RoboticsSupportBay</Filter>
+    </ClInclude>
+    <ClInclude Include="CFleetBeacon.h">
+      <Filter>01. Obj\01. Building\02. Protoss\12. FleetBeacon</Filter>
+    </ClInclude>
+    <ClInclude Include="CTemplarArchives.h">
+      <Filter>01. Obj\01. Building\02. Protoss\13. TemplarArchives</Filter>
+    </ClInclude>
+    <ClInclude Include="CObservatory.h">
+      <Filter>01. Obj\01. Building\02. Protoss\14. Observatory</Filter>
+    </ClInclude>
+    <ClInclude Include="CArbiterTribunal.h">
+      <Filter>01. Obj\01. Building\02. Protoss\15. ArbiterTribunal</Filter>
+    </ClInclude>
+    <ClInclude Include="CShieldBattery.h">
+      <Filter>01. Obj\01. Building\02. Protoss\07. ShieldBattery</Filter>
+    </ClInclude>
+    <ClInclude Include="CForge.h">
+      <Filter>01. Obj\01. Building\02. Protoss\04. Forge</Filter>
+    </ClInclude>
+    <ClInclude Include="CPhotonCannon.h">
+      <Filter>01. Obj\01. Building\02. Protoss\05. PhotonCannon</Filter>
+    </ClInclude>
+    <ClInclude Include="Starcraft.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="CPreLoad.h">
+      <Filter>03. Scene\04. Preload</Filter>
+    </ClInclude>
+    <ClInclude Include="CHatchery.h">
+      <Filter>01. Obj\01. Building\01. Zerg\05. Hatchery</Filter>
+    </ClInclude>
+    <ClInclude Include="CLava.h">
+      <Filter>01. Obj\00. Unit\01. Zerg\07. Lava</Filter>
+    </ClInclude>
+    <ClInclude Include="CMineral.h">
+      <Filter>01. Obj\03. Resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Starcraft.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="CMainGame.cpp">
       <Filter>00. MainGame</Filter>
     </ClCompile>
@@ -422,7 +857,7 @@
       <Filter>03. Scene\02. Edit\00. TileMgr</Filter>
     </ClCompile>
     <ClCompile Include="CMarine.cpp">
-      <Filter>01. Obj\00. Unit\00. Marine</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\00. Marine</Filter>
     </ClCompile>
     <ClCompile Include="CSelectionMgr.cpp">
       <Filter>02. Design\10. RTS\00. SelectionMgr</Filter>
@@ -431,16 +866,16 @@
       <Filter>02. Design\10. RTS\01. CommandMgr</Filter>
     </ClCompile>
     <ClCompile Include="CBattleCruiser.cpp">
-      <Filter>01. Obj\00. Unit\01. BattleCruiser</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\01. BattleCruiser</Filter>
     </ClCompile>
     <ClCompile Include="CTank.cpp">
-      <Filter>01. Obj\00. Unit\02. Tank</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\02. Tank</Filter>
     </ClCompile>
     <ClCompile Include="CSCV.cpp">
-      <Filter>01. Obj\00. Unit\03. SCV</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\03. SCV</Filter>
     </ClCompile>
     <ClCompile Include="CMedic.cpp">
-      <Filter>01. Obj\00. Unit\04. Medic</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\04. Medic</Filter>
     </ClCompile>
     <ClCompile Include="CNavMgr.cpp">
       <Filter>02. Design\10. RTS\04. NavMgr</Filter>
@@ -458,25 +893,25 @@
       <Filter>01. Obj</Filter>
     </ClCompile>
     <ClCompile Include="CCommandCenter.cpp">
-      <Filter>01. Obj\01. Building\00. CommandCenter</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\00. CommandCenter</Filter>
     </ClCompile>
     <ClCompile Include="CBarracks.cpp">
-      <Filter>01. Obj\01. Building\01. Barracks</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\01. Barracks</Filter>
     </ClCompile>
     <ClCompile Include="CFactory.cpp">
-      <Filter>01. Obj\01. Building\02. Factory</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\02. Factory</Filter>
     </ClCompile>
     <ClCompile Include="CStarport.cpp">
-      <Filter>01. Obj\01. Building\03. Starport</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\03. Starport</Filter>
     </ClCompile>
     <ClCompile Include="CMainUI.cpp">
       <Filter>02. Design\11. UI\00. MainUI</Filter>
     </ClCompile>
     <ClCompile Include="CSupplyDepot.cpp">
-      <Filter>01. Obj\01. Building\04. SupplyDepot</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\04. SupplyDepot</Filter>
     </ClCompile>
     <ClCompile Include="CVulture.cpp">
-      <Filter>01. Obj\00. Unit\05. Vulture</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\05. Vulture</Filter>
     </ClCompile>
     <ClCompile Include="CSteeringMgr.cpp">
       <Filter>02. Design\10. RTS\06. SteeringMgr</Filter>
@@ -488,16 +923,16 @@
       <Filter>01. Obj\00. Unit</Filter>
     </ClCompile>
     <ClCompile Include="CBCBullet.cpp">
-      <Filter>01. Obj\00. Unit\01. BattleCruiser\00. Bullet</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\01. BattleCruiser\00. Bullet</Filter>
     </ClCompile>
     <ClCompile Include="CBCYamato.cpp">
-      <Filter>01. Obj\00. Unit\01. BattleCruiser\00. Bullet</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\01. BattleCruiser\00. Bullet</Filter>
     </ClCompile>
     <ClCompile Include="CCursorMgr.cpp">
       <Filter>02. Design\10. RTS\02. CursorMgr</Filter>
     </ClCompile>
     <ClCompile Include="CRefinery.cpp">
-      <Filter>01. Obj\01. Building\05. Refinery</Filter>
+      <Filter>01. Obj\01. Building\00. Terran\05. Refinery</Filter>
     </ClCompile>
     <ClCompile Include="CMineral.cpp">
       <Filter>01. Obj\03. Resource</Filter>
@@ -524,18 +959,258 @@
       <Filter>03. Scene\01. Menu</Filter>
     </ClCompile>
     <ClCompile Include="CVBullet.cpp">
-      <Filter>01. Obj\00. Unit\05. Vulture\00. Bullet</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\05. Vulture\00. Bullet</Filter>
     </ClCompile>
     <ClCompile Include="CGoliath.cpp">
-      <Filter>01. Obj\00. Unit\06. Goliath</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\06. Goliath</Filter>
     </ClCompile>
     <ClCompile Include="CGBullet.cpp">
-      <Filter>01. Obj\00. Unit\06. Goliath\00. Bullet</Filter>
+      <Filter>01. Obj\00. Unit\00. Terran\06. Goliath\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CEffect.cpp">
+      <Filter>01. Obj\00. Unit</Filter>
+    </ClCompile>
+    <ClCompile Include="CLogo.cpp">
+      <Filter>03. Scene\00. Logo</Filter>
+    </ClCompile>
+    <ClCompile Include="CSoundMgr.cpp">
+      <Filter>02. Design\03. SoundMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CFirebat.cpp">
+      <Filter>01. Obj\00. Unit\00. Terran\07. Firebat</Filter>
+    </ClCompile>
+    <ClCompile Include="CGhost.cpp">
+      <Filter>01. Obj\00. Unit\00. Terran\08. Ghost</Filter>
+    </ClCompile>
+    <ClCompile Include="CEngineeringBay.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\08. EngineeringBay</Filter>
+    </ClCompile>
+    <ClCompile Include="CTurret.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\07. Turret</Filter>
+    </ClCompile>
+    <ClCompile Include="CAcademy.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\10. Academy</Filter>
+    </ClCompile>
+    <ClCompile Include="CBunker.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\06. Bunker</Filter>
+    </ClCompile>
+    <ClCompile Include="CScienceFacility.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\11. ScienceFacility</Filter>
+    </ClCompile>
+    <ClCompile Include="CArmory.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\09. Armory</Filter>
+    </ClCompile>
+    <ClCompile Include="CFactoryAddOn.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\02. Factory</Filter>
+    </ClCompile>
+    <ClCompile Include="CGhostBullet.cpp">
+      <Filter>01. Obj\00. Unit\00. Terran\08. Ghost\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CBlueMarine.cpp">
+      <Filter>01. Obj\00. Unit\00. Terran\09. Enemy\00. BlueMarine</Filter>
+    </ClCompile>
+    <ClCompile Include="CZergling.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\00. Zergling</Filter>
+    </ClCompile>
+    <ClCompile Include="CHydralisk.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\01. Hydralisk</Filter>
+    </ClCompile>
+    <ClCompile Include="CUltralisk.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\03. Ultralisk</Filter>
+    </ClCompile>
+    <ClCompile Include="CHive.cpp">
+      <Filter>01. Obj\01. Building\01. Zerg\00. Hive</Filter>
+    </ClCompile>
+    <ClCompile Include="CZealot.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\01. Zealot</Filter>
+    </ClCompile>
+    <ClCompile Include="CUpgradeMgr.cpp">
+      <Filter>02. Design\05. UpgradeMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CMutalisk.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\04. Mutalisk</Filter>
+    </ClCompile>
+    <ClCompile Include="COverload.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\05. Overload</Filter>
+    </ClCompile>
+    <ClCompile Include="CHydraliskDen.cpp">
+      <Filter>01. Obj\01. Building\01. Zerg\01. HydraliskDen</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpire.cpp">
+      <Filter>01. Obj\01. Building\01. Zerg\02. Spire</Filter>
+    </ClCompile>
+    <ClCompile Include="CUltraliskDen.cpp">
+      <Filter>01. Obj\01. Building\01. Zerg\04. UltraliskDen</Filter>
+    </ClCompile>
+    <ClCompile Include="CHydraliskBullet.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\01. Hydralisk\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CMutaliskBullet.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\04. Mutalisk\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CGMissile.cpp">
+      <Filter>01. Obj\00. Unit\00. Terran\06. Goliath\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CCombatStation.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\00. CommandCenter</Filter>
+    </ClCompile>
+    <ClCompile Include="CTurretBullet.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\07. Turret\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CVultureMine.cpp">
+      <Filter>01. Obj\00. Unit\00. Terran\05. Vulture\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CScienceSecret.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\11. ScienceFacility</Filter>
+    </ClCompile>
+    <ClCompile Include="CNuclearSilo.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\00. CommandCenter</Filter>
+    </ClCompile>
+    <ClCompile Include="CSciencePhysics.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\11. ScienceFacility</Filter>
+    </ClCompile>
+    <ClCompile Include="CPortraitMgr.cpp">
+      <Filter>02. Design\08. PortraitMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CResourceLoader.cpp">
+      <Filter>02. Design\12. ResourceLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="CCameraMgr.cpp">
+      <Filter>02. Design\10. RTS\07. CameraMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CNexus.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\00. Nexus</Filter>
+    </ClCompile>
+    <ClCompile Include="CProbe.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\00. Probe</Filter>
+    </ClCompile>
+    <ClCompile Include="CDrone.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\06. Drone</Filter>
+    </ClCompile>
+    <ClCompile Include="CGameDataMgr.cpp">
+      <Filter>02. Design\10. RTS\08. GameDataMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="CShuttle.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\02. Shuttle</Filter>
+    </ClCompile>
+    <ClCompile Include="CArchon.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\03. Archon</Filter>
+    </ClCompile>
+    <ClCompile Include="CDarkArchon.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\04. DarkArchon</Filter>
+    </ClCompile>
+    <ClCompile Include="CDarkTemplar.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\05. DarkTemplar</Filter>
+    </ClCompile>
+    <ClCompile Include="CDragon.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\06. Dragon</Filter>
+    </ClCompile>
+    <ClCompile Include="CArbiter.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\07. Arbiter</Filter>
+    </ClCompile>
+    <ClCompile Include="CCarrier.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\08. Carrier</Filter>
+    </ClCompile>
+    <ClCompile Include="CCorsair.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\09. Corsair</Filter>
+    </ClCompile>
+    <ClCompile Include="CHighTemplar.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\10. HighTemplar</Filter>
+    </ClCompile>
+    <ClCompile Include="CReavor.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\14. Reaver</Filter>
+    </ClCompile>
+    <ClCompile Include="CScout.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\12. Scout</Filter>
+    </ClCompile>
+    <ClCompile Include="CObserver.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\13. Observer</Filter>
+    </ClCompile>
+    <ClCompile Include="CPylon.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\01. Pylon</Filter>
+    </ClCompile>
+    <ClCompile Include="CStarportAddOn.cpp">
+      <Filter>01. Obj\01. Building\00. Terran\03. Starport</Filter>
+    </ClCompile>
+    <ClCompile Include="CDragoonBall.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\06. Dragon\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CInterceptor.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\11. Interceptor</Filter>
+    </ClCompile>
+    <ClCompile Include="CIntercepBullet.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\11. Interceptor\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CAssimilator.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\02. Assimilator</Filter>
+    </ClCompile>
+    <ClCompile Include="CGateway.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\03. Gateway</Filter>
+    </ClCompile>
+    <ClCompile Include="CCyberneticsCore.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\06. CyberneticsCore</Filter>
+    </ClCompile>
+    <ClCompile Include="CDarkArchonBullet.cpp">
+      <Filter>01. Obj\00. Unit\02. Protoss\04. DarkArchon\00. Bullet</Filter>
+    </ClCompile>
+    <ClCompile Include="CCitadelOfAdun.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\10. CitadelOfAdun</Filter>
+    </ClCompile>
+    <ClCompile Include="CRoboticsFacility.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\08. RoboticsFacility</Filter>
+    </ClCompile>
+    <ClCompile Include="CStargate.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\09. Stargate</Filter>
+    </ClCompile>
+    <ClCompile Include="CRoboticsSupportBay.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\11. RoboticsSupportBay</Filter>
+    </ClCompile>
+    <ClCompile Include="CFleetBeacon.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\12. FleetBeacon</Filter>
+    </ClCompile>
+    <ClCompile Include="CTemplarArchives.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\13. TemplarArchives</Filter>
+    </ClCompile>
+    <ClCompile Include="CObservatory.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\14. Observatory</Filter>
+    </ClCompile>
+    <ClCompile Include="CArbiterTribunal.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\15. ArbiterTribunal</Filter>
+    </ClCompile>
+    <ClCompile Include="CShieldBattery.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\07. ShieldBattery</Filter>
+    </ClCompile>
+    <ClCompile Include="CForge.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\04. Forge</Filter>
+    </ClCompile>
+    <ClCompile Include="CPhotonCannon.cpp">
+      <Filter>01. Obj\01. Building\02. Protoss\05. PhotonCannon</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Starcraft.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="CPreLoad.cpp">
+      <Filter>03. Scene\04. Preload</Filter>
+    </ClCompile>
+    <ClCompile Include="CHatchery.cpp">
+      <Filter>01. Obj\01. Building\01. Zerg\05. Hatchery</Filter>
+    </ClCompile>
+    <ClCompile Include="CLava.cpp">
+      <Filter>01. Obj\00. Unit\01. Zerg\07. Lava</Filter>
+    </ClCompile>
+    <ClCompile Include="CSpawningPool.cpp">
+      <Filter>01. Obj\01. Building\01. Zerg\03. SpawningPool</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="CUnit.h">
       <Filter>01. Obj\00. Unit</Filter>
+    </None>
+    <None Include="CStarportAddOn.h">
+      <Filter>01. Obj\01. Building\00. Terran\03. Starport</Filter>
     </None>
   </ItemGroup>
 </Project>

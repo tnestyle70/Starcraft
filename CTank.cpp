@@ -6,7 +6,11 @@
 #include "CUIMgr.h"
 #include "CSelectionMgr.h"
 #include "CTimeMgr.h"
-    
+#include "CEffect.h"
+#include "CAbstractFactory.h"
+#include "CObjMgr.h"
+#include "CSoundMgr.h"
+
 CTank::CTank()
 {
 }
@@ -22,14 +26,22 @@ void CTank::Initialize()
     m_tInfo.fCY = 128.f;
     m_iMaxHP = 300;
     m_iHP = m_iMaxHP;
-    m_fSpeed = 200.f;
+    m_fSpeed = 100.f;
     //공격 변수 초기화
-    m_iAttackDamage = 20;
+    m_iAttackDamage = 10;
     m_fAttackRange = 7.f * TILECX;
-    m_fAttackSpeed = 1.f;
+    m_fAttackSpeed = 0.2f;
+
+    m_fAttackInterval = 2.f; //진짜 공격 속도!
+    m_fAttackTimer = m_fAttackInterval;
 
     m_pFrameKey = L"Tank_Body";
     m_pHeadKey = L"Tank_Head";
+    m_pTankEffectKey = L"TankHit";
+    m_pSiegeEffectKey = L"SiegeTankHit";
+
+    m_eOriginalRace = eRaceType::RACE_TERRAN;
+    m_eCurrentRace = eRaceType::RACE_TERRAN;
 
     m_eRender = RENDER_WORLD;
     m_eCommandCardState = eCommandCardState::NORMAL_TANK;
@@ -43,9 +55,7 @@ void CTank::Initialize()
     m_tFrame.dwSpeed = 100;
     //포탑 초기화
     m_vHeadDir = { 0.f, -1.f }; //위쪽 방향
-    m_iHeadFrame = 0; 
-    m_bFiring = false;
-    m_iFireFrame = 0;
+    m_iHeadFrame = 0;
     //모드 초기화 
     m_bTransforming = false;
     m_bSiegeMode = false;
@@ -58,7 +68,20 @@ int CTank::Update()
     int iResult = CUnit::Update();
 
     if (iResult == DEAD)
+        m_eState = eUnitState::DIE;
+
+    if (m_eState == eUnitState::DIE)
+    {
+        UpdateDead();
         return DEAD;
+    }
+
+    //적일 경우 AI 업데이트, 아니면 조작하면서 게임 플레이 가능하도록 만들기
+    if (m_eTeamType == eTeamType::ENEMY)
+    {
+        //AI업데이트
+        UpdateAI();
+    }
 
     UpdateBody();
     UpdateHead();
@@ -72,8 +95,10 @@ void CTank::Late_Update()
 {
     //선택이 되었을 경우 마우스 방향의 애니메이션 재생
     if (!m_bSelected) return;
-    //이동 중이면 마우스 방향 애니메이션 재생 멈추기
-    if (m_eState != eUnitState::IDLE) return;
+    //마우스 방향 안 보기!
+    if (m_eState == eUnitState::MOVE) return;
+    if (m_eState == eUnitState::ATTACK) return;
+    if (m_eState == eUnitState::IDLE) return;
 
     Vec2 vWorldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
     Vec2 vDir{ vWorldMouse.fX - m_tInfo.fX, vWorldMouse.fY - m_tInfo.fY };
@@ -121,10 +146,15 @@ void CTank::UpdateBody()
         {
             //시즈 해제 중이면 감소, 시즈 모드 중이면 증가
             if (m_bSiegeMode)
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Tank/SiegeMode2.wav", SOUND_WORLD ,1.f);
                 m_tFrame.iFrame--;
+            }
             else
+            {
+                CSoundMgr::Get_Instance()->PlaySound(L"Tank/SiegeMode1.wav", SOUND_WORLD, 1.f);
                 m_tFrame.iFrame++;
-
+            }
             m_tFrame.dwTime = now;
             //애니메이션 끝 체크
             bool bFinished = m_bSiegeMode ?
@@ -147,7 +177,7 @@ void CTank::UpdateBody()
                 {
                     m_tFrame.iStart = 0;
                     m_tFrame.iFrame = 0;
-                    m_fSpeed = 200.f;
+                    m_fSpeed = 100.f;
                     m_fAttackRange = m_fTankRange;
                     m_eCommandCardState = eCommandCardState::NORMAL_TANK;
                 }
@@ -169,12 +199,26 @@ void CTank::UpdateBody()
         m_tFrame.iStart = 0;
         break;
     case eUnitState::MOVE:
+        m_tFrame.iStart = 0;
         m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
+        m_iHeadFrame = DirTo16WayIndex(m_vDir);
         break;
     case eUnitState::ATTACK:
-        //공격 중에도 몸체는 이동 방향 유지
+        //공격 애니메이션 처리(일반 모드)
+        if (m_bFiring)
+        {
+            m_tFrame.iStart = 1; //col - 1 일반 공격
+        }
+        else
+        {
+            m_tFrame.iStart = 0; //col - 0 일반 상태
+        }
+        m_tFrame.iFrame = DirTo16WayIndex(m_vDir);
         break;
     case eUnitState::DIE:
+        UpdateDead();
+        m_eState = eUnitState::DIE;
+        return;
         break;
     default:
         break;
@@ -183,9 +227,74 @@ void CTank::UpdateBody()
 
 void CTank::UpdateHead()
 {
-    if (m_bSiegeMode) //시즈 모드일 경우 HeadFrame 2로 변경
-        m_iHeadFrame = 2;
+    DWORD now = GetTickCount();
+    float dt = CTimeMgr::Get_Instance()->GetDT();
 
+    if (m_bSiegeMode) //시즈 모드일 경우 HeadFrame 2로 변경 후 종료
+    {
+        m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
+        //return; //타이머는 동일하게 돌린다
+    }
+
+    switch (m_eState)
+    {
+    case eUnitState::IDLE:
+        m_bFiring = false;
+        //m_iHeadFrame = 0;
+        if (m_pTarget)
+        {
+            //타겟이 존재하면 머리 타겟 방향 바라보도록 설정 
+            m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
+
+            m_fAttackTimer += dt;
+            if (m_fAttackTimer >= m_fAttackInterval)
+            {
+                m_eState = eUnitState::ATTACK;
+                m_fAttackTimer = 0.f;
+                m_bAttack = true;
+            }
+        }
+        break;
+    case eUnitState::MOVE:
+        m_bFiring = false;
+        m_vHeadDir = m_vDir;
+        m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
+        //MOVE 상태에서도 발사 프레임 초기화!!
+        //m_bFiring = false;
+        break;
+    case eUnitState::ATTACK:
+        if (m_bAttack)
+        {
+            m_bFiring = true;
+            //머리는 타겟 방향 바라보도록 설정 
+            m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
+            //애니메이션 카운트 진행
+            if (now - m_tFrame.dwTime >= m_tFrame.dwSpeed)
+            {
+                m_iFireFrameTimer++;
+                if (m_iFireFrameTimer >= m_iFireFrameDuration)
+                {
+                    if (m_bSiegeMode)
+                    {
+                        FireSiegeMode();
+                    }
+                    else
+                        FireNormalMode();
+                    //m_bFiring = false;
+                    m_bAttack = false;
+                    m_eState = eUnitState::IDLE;
+                    m_iFireFrameTimer = 0;
+                }
+                m_tFrame.dwTime = now;
+            }
+        }
+        break;
+    case eUnitState::DIE:
+        break;
+    default:
+        break;
+    }
+    /*
     if (m_bSelected && m_eState == eUnitState::IDLE)
     {
         Vec2 worldMouse = CInputMgr::Get_Instance()->GetWorldMouse();
@@ -199,8 +308,10 @@ void CTank::UpdateHead()
             m_vHeadDir.fY /= len;
         }
         m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
+        //IDLE 상태일 때 발사 프레임 초기화!
+        m_bFiring = false;
     }
-    DWORD now = GetTickCount();
+    //공격 상태일 경우 타겟 방향으로 헤드 회전
     if (m_eState == eUnitState::ATTACK) 
     {
         if (m_OrderQ.front().pTarget)
@@ -217,22 +328,29 @@ void CTank::UpdateHead()
             }
             m_iHeadFrame = DirTo16WayIndex(m_vHeadDir);
         }
-        DWORD attackCoolTime = (DWORD)(1000.f / m_fAttackSpeed);
-        DWORD timeSinceLastAttack = now - m_dwLastAttack;
-
-        // 공격 직후에 발사 애니메이션 시작
-        if (timeSinceLastAttack < 100)  // 공격 후 100ms 동안만 발사 애니메이션 표시
-        {
-            m_bFiring = true;
-            // col 2로 이동 (발사 프레임)
-            m_iFireFrame = 1;
-        }
-        else
-        {
-            m_bFiring = false;
-            m_iFireFrame = 0;  // col 0 = 일반 상태
-        }
     }
+    else //다른 모든 상태에서도 발사 프레임 초기화!
+    {
+        m_bFiring = false;
+    }
+    */
+}
+
+void CTank::Render(HDC hDC)
+{
+    //전장의 안개 
+    CUnit::Render(hDC);
+
+    RenderBody(hDC);
+
+    if (!m_bTransforming)
+    {
+        RenderHead(hDC);
+    }
+}
+
+void CTank::Release()
+{
 }
 
 void CTank::RenderBody(HDC hDC)
@@ -263,7 +381,6 @@ void CTank::RenderBody(HDC hDC)
 
 void CTank::RenderHead(HDC hDC)
 {
-
     int iScrollX = (int)CScrollMgr::Get_Instance()->Get_ScrollX();
     int iScrollY = (int)CScrollMgr::Get_Instance()->Get_ScrollY();
 
@@ -297,21 +414,187 @@ void CTank::RenderHead(HDC hDC)
         RGB(0, 255, 0));
 }
 
-void CTank::Render(HDC hDC)
+bool CTank::UpdateRAttack(Order& order)
 {
-    //전장의 안개 
-    CUnit::Render(hDC);
-
-    RenderBody(hDC);
-
-    if (!m_bTransforming)
+    //공격 중이 아닐 때만 타겟 설정
+    if (!m_bAttack && order.pTarget)
     {
-        RenderHead(hDC);
+        m_pTarget = order.pTarget;
+    }
+
+    float fDT = CTimeMgr::Get_Instance()->GetDT();
+
+    //타겟이 죽었거나 사라진 경우
+    if (!order.pTarget || order.pTarget->IsDead())
+    {
+        if (m_bAttackMove)
+        {
+            order.eType = eOrderType::ATTACK_MOVE;
+            order.pTarget = nullptr;
+            return false;
+        }
+        else
+        {
+            m_eState = eUnitState::IDLE;
+            return false; //오더 완료
+        }
+    }
+
+    Vec2 targetPos = order.pTarget->Get_Pos();
+    Vec2 myPos{ m_tInfo.fX, m_tInfo.fY };
+    //타겟까지의 거리
+    Vec2 diff = { targetPos.fX - myPos.fX, targetPos.fY - myPos.fY };
+    float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
+    //공격 사거리 체크
+    if (dist <= m_fAttackRange)
+    {
+        //Move -> Idle로 상태를 변환해서 공격 타이머가 돌 수 있도록 설정한다.
+        if (m_eState == eUnitState::MOVE)
+        {
+            m_eState = eUnitState::IDLE;
+        }
+        //타겟 방향 보기
+        if (dist > 0.1f)
+        {
+            //탱크는 머리 방향도 업데이트!
+            m_vDir = { diff.fX / dist, diff.fY / dist };
+            m_vHeadDir = { diff.fX / dist, diff.fY / dist };
+        }
+        return false;
+    }
+    else
+    {
+        //타겟이 사거리 내에 존재하지 않을 경우 이동
+        Vec2 dir = { diff.fX / dist, diff.fY / dist };
+        m_vDir = dir;
+        float fDT = CTimeMgr::Get_Instance()->GetDT();
+        m_tInfo.fX += dir.fX * fDT * m_fSpeed;
+        m_tInfo.fY += dir.fY * fDT * m_fSpeed;
+        return false;
     }
 }
 
-void CTank::Release()
+void CTank::FireNormalMode()
 {
+    if (!m_pTarget) //안전장치
+        return;
+
+    Vec2 targetPos = m_pTarget->Get_Pos();
+    Vec2 myPos{ m_tInfo.fX, m_tInfo.fY };
+    float fDT = CTimeMgr::Get_Instance()->GetDT();
+    //타겟까지의 거리
+    Vec2 diff = { targetPos.fX - myPos.fX, targetPos.fY - myPos.fY };
+    float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
+    //공격 사거리 체크
+    if (dist <= m_fAttackRange)
+    {
+        //타겟 방향 보기
+        if (dist > 0.1f)
+        {
+            m_vDir = { diff.fX / dist, diff.fY / dist };
+        }
+        //히트스캔
+        m_pTarget->TakeDamage(m_iAttackDamage);
+        //사운드 재생
+        CSoundMgr::Get_Instance()->PlayEffect(L"Tank/TankAttack.wav", 0.5f);
+        //타겟 이펙트 생성
+        CObj* pEffect = CAbstractFactory<CEffect>::Create(
+            targetPos.fX, targetPos.fY);
+        pEffect->Initialize();
+        CEffect* pEffectObj = dynamic_cast<CEffect*>(pEffect);
+        if (pEffectObj)
+        {
+            pEffectObj->Set_Effect(L"TankHit", 16, 56, 56, eEffectType::ROW_BASE, RGB(0, 255, 0));
+        }
+        CObjMgr::Get_Instance()->Add_Object(OBJ_PROJECTILE, pEffect);
+        return;
+    }
+}
+
+void CTank::FireSiegeMode()
+{
+    if (!m_pTarget) //안전장치
+        return;
+
+    Vec2 targetPos = m_pTarget->Get_Pos();
+    Vec2 myPos{ m_tInfo.fX, m_tInfo.fY };
+    float fDT = CTimeMgr::Get_Instance()->GetDT();
+    //타겟까지의 거리
+    Vec2 diff = { targetPos.fX - myPos.fX, targetPos.fY - myPos.fY };
+    float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
+    //공격 사거리 체크
+    if (dist <= m_fAttackRange)
+    {
+        //타겟 방향 보기
+        if (dist > 0.1f)
+        {
+            m_vDir = { diff.fX / dist, diff.fY / dist };
+        }
+        //히트스캔
+        m_pTarget->TakeDamage(m_iAttackDamage);
+        //사운드 재생
+        CSoundMgr::Get_Instance()->PlayEffect(L"Tank/SiegeTankAttack.wav", 0.5f);
+        //타겟 이펙트 생성
+        CObj* pEffect = CAbstractFactory<CEffect>::Create(
+            targetPos.fX, targetPos.fY);
+        pEffect->Initialize();
+        CEffect* pEffectObj = dynamic_cast<CEffect*>(pEffect);
+        if (pEffectObj)
+        {
+            pEffectObj->Set_Effect(L"SiegeTankHit", 16, 100, 108, eEffectType::COL_BASE, RGB(0, 0, 0));
+        }
+        CObjMgr::Get_Instance()->Add_Object(OBJ_PROJECTILE, pEffect);
+        return;
+    }
+}
+
+void CTank::UpdateDead()
+{
+    if (m_eTeamType == eTeamType::ALLY)
+    {
+        CResourceMgr::Get_Instance()->SubtractSupply(2);
+    }
+    //이펙트와 사운드 재생
+    CSoundMgr::Get_Instance()->PlayEffect(L"Tank/TankDeath.wav", 1.f);
+
+    //타겟 이펙트 생성
+    CObj* pEffect = CAbstractFactory<CEffect>::Create(
+        m_tInfo.fX, m_tInfo.fY);
+    pEffect->Initialize();
+    CEffect* pEffectObj = dynamic_cast<CEffect*>(pEffect);
+    if (pEffectObj)
+    {
+        pEffectObj->Set_Effect(L"MARINE_DEATH_EFFECT",
+            7, 100, 50, eEffectType::COL_BASE, RGB(255, 255, 0));
+    }
+    CObjMgr::Get_Instance()->Add_Object(OBJ_PROJECTILE, pEffect);
+}
+
+void CTank::CommandCardSlot(vector<CommandSlot>& outSlot)
+{
+    switch (m_eCommandCardState)
+    {
+    case eCommandCardState::NORMAL_TANK:
+        CUnit::CommandCardSlot(outSlot);
+        //7번 : 시즈 모드로 변경
+        outSlot[6].commandID = eCommandID::SIEGE_TANK;
+        outSlot[6].iconKey = TEXT("ICON_SIEGE_TANK");
+        outSlot[6].hotkey = 'X';
+        outSlot[6].clickable = true;
+        outSlot[6].visible = true;
+        break;
+    case eCommandCardState::SIEGE_TANK:
+        CUnit::CommandCardSlot(outSlot);
+        //7번 : 탱크 모드로 변경
+        outSlot[6].commandID = eCommandID::TANK;
+        outSlot[6].iconKey = TEXT("ICON_TANK");
+        outSlot[6].hotkey = 'X';
+        outSlot[6].clickable = true;
+        outSlot[6].visible = true;
+        break;
+    default:
+        break;
+    }
 }
 
 void CTank::UpdateHotKeys()
@@ -363,93 +646,96 @@ bool CTank::ExecuteCommand(eCommandID command, CommandContext& context)
     return false;
 }
 
-void CTank::CommandCardSlot(vector<CommandSlot>& outSlot)
+void CTank::UpdateAI()
 {
+    if (m_eTeamType == eTeamType::ALLY)
+        return;
 
-    switch (m_eCommandCardState)
+    //시즈 모드 설정
+    if (CInputMgr::Get_Instance()->KeyDownVK(VK_F7))
     {
-    case eCommandCardState::NORMAL_TANK:
-        CUnit::CommandCardSlot(outSlot);
-        //7번 : 시즈 모드로 변경
-        outSlot[6].commandID = eCommandID::SIEGE_TANK;
-        outSlot[6].iconKey = TEXT("ICON_SIEGE_TANK");
-        outSlot[6].hotkey = 'B';
-        outSlot[6].clickable = true;
-        outSlot[6].visible = true;
-        break;
-    case eCommandCardState::SIEGE_TANK:
-        CUnit::CommandCardSlot(outSlot);
-        //7번 : 탱크 모드로 변경
-        outSlot[6].commandID = eCommandID::TANK;
-        outSlot[6].iconKey = TEXT("ICON_TANK");
-        outSlot[6].hotkey = 'B';
-        outSlot[6].clickable = true;
-        outSlot[6].visible = true;
-        break;
-    default:
-        break;
-    }
-}
-
-bool CTank::UpdateAttack(Order& order)
-{
-    //변신 중에는 공격 불가
-    if (m_bTransforming)
-    {
-        m_eState = eUnitState::IDLE;
-        return false;
-    }
-    // 타겟이 죽었거나 사라진 경우
-    if (!order.pTarget || order.pTarget->IsDead())
-    {
-        m_eState = eUnitState::IDLE;
-        return true; // 오더 완료
-    }
-
-    Vec2 targetPos = order.pTarget->Get_Pos();
-    Vec2 myPos{ m_tInfo.fX, m_tInfo.fY };
-    // 타겟까지의 거리
-    Vec2 diff = { targetPos.fX - myPos.fX, targetPos.fY - myPos.fY };
-    float dist = sqrtf(diff.fX * diff.fX + diff.fY * diff.fY);
-
-    // 공격 사거리 체크
-    if (dist <= m_fAttackRange)
-    {
-        m_eState = eUnitState::ATTACK;
-        // 타겟 방향 보기
-        if (dist > 0.1f)
+        list<CObj*> enemyList = CObjMgr::Get_Instance()->Get_ObjList(OBJ_ENEMY);
+        for (auto& pEnemy : enemyList)
         {
-            m_vDir = { diff.fX / dist, diff.fY / dist };
+            CTank* pTank = dynamic_cast<CTank*>(pEnemy);
+            if (pTank)
+            {
+                pTank->ToggleSiegeMode();
+            }
         }
-        // 공격 쿨타임 체크
-        DWORD now = GetTickCount();
-        DWORD attackCoolTime = (DWORD)(1000.f / m_fAttackSpeed);
-        if (now - m_dwLastAttack >= attackCoolTime)
+    }
+
+    //주변 적 찾기
+    CObj* pEnemy = FindNearestEnemyAI(m_fAttackRange);
+    //주변에 적이 존재할 경우, 오더 다 멈추고 공격 Order 추가
+    if (pEnemy)
+    {
+        if (!m_OrderQ.empty())
         {
-            order.pTarget->TakeDamage(m_iAttackDamage);
-            m_dwLastAttack = now;
+            m_OrderQ.pop_front();
         }
-        return false;
+        Order attack;
+        attack.eType = eOrderType::ATTACK;
+        attack.pTarget = pEnemy;
+        attack.dst = { pEnemy->Get_Info().fX, pEnemy->Get_Info().fY };
+
+        m_OrderQ.push_back(attack);
     }
     else
     {
-        // 시즈 모드일 때는 이동 불가 - 타겟이 사거리 밖이면 공격 중단
-        if (m_bSiegeMode)
-        {
-            m_eState = eUnitState::IDLE;
-            return true; // 오더 완료 (타겟 포기)
-        }
-
-        // 일반 모드일 때는 타겟 추적
-        m_eState = eUnitState::MOVE;
-        Vec2 dir = { diff.fX / dist, diff.fY / dist };
-        m_vDir = dir;
-        float fDT = CTimeMgr::Get_Instance()->GetDT();
-        m_tInfo.fX += dir.fX * fDT * m_fSpeed;
-        m_tInfo.fY += dir.fY * fDT * m_fSpeed;
-        return false;
+        //Order stop;
+        //stop.eType = eOrderType::STOP;
+        //m_OrderQ.push_back(stop);
+        //Order move;
+        //move.eType = eOrderType::MOVE;
+        //move.dst = { 0,0 };  // ← 문제 2: 매 프레임 (0,0) 명령 추가!
+        //m_OrderQ.push_back(move);  // ← 큐가 무한정 쌓임!
     }
 }
 
+CObj* CTank::FindNearestEnemyAI(float searchRadius)
+{
+    float fMinDistance = FLT_MAX;
+    CObj* pNearestEnemy = nullptr;
 
+    // 탐지 범위 (사거리 + 추가 탐지 범위)
+    float fDetectionRange = m_fAttackRange + 300.f; //300 감지 범위
 
+    // 모든 유닛 검사
+    auto& unitList = CObjMgr::Get_Instance()->Get_ObjList(OBJ_UNIT);
+    for (auto& pObj : unitList)
+    {
+        // 자기 자신 제외
+        if (pObj == this)
+            continue;
+
+        // 죽은 유닛 제외
+        if (pObj->Is_Dead())
+            continue;
+
+        //벙커에 있는 유닛 제외
+        if (!pObj->IsSelectable())
+            continue;
+
+        //공중 유닛 제외
+        if (pObj->GetLayer() == eUnitLayer::AIR)
+            continue;
+
+        // 거리 계산
+        float fDX = pObj->Get_Info().fX - m_tInfo.fX;
+        float fDY = pObj->Get_Info().fY - m_tInfo.fY;
+        float fDistance = sqrtf(fDX * fDX + fDY * fDY);
+
+        // 탐지 범위 밖이면 제외
+        if (fDistance > fDetectionRange)
+            continue;
+
+        // 가장 가까운 적 갱신
+        if (fDistance < fMinDistance)
+        {
+            fMinDistance = fDistance;
+            pNearestEnemy = pObj;
+        }
+    }
+    return pNearestEnemy;
+}

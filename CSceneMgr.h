@@ -1,4 +1,5 @@
 #pragma once
+#include "CLogo.h"
 #include "CMenu.h"
 #include "CMenuRace.h"
 #include "CStage.h"
@@ -7,8 +8,14 @@
 class CSceneMgr
 {
 public:
-	enum SCENEID {SC_LOGO, SC_MENU, SC_MENU_RACE
-		,SC_EDIT, SC_STAGE, SC_END};
+	enum SCENEID {
+		 SC_PRELOAD,
+		 SC_LOGO, 
+		 SC_MENU, 
+		 SC_MENU_RACE,
+		 SC_EDIT, 
+		 SC_STAGE, 
+		 SC_END};
 private:
 	CSceneMgr();
 	CSceneMgr(const CSceneMgr& rhs) = delete;
@@ -21,7 +28,8 @@ public:
 	void Late_Update();
 	void Render(HDC hDC);
 	void Release();
-
+public:
+	SCENEID Get_SceneID() { return m_eCurScene; }
 public:
 	static CSceneMgr* Get_Instance()
 	{
@@ -47,6 +55,9 @@ private:
 
 	SCENEID		m_eCurScene;
 	SCENEID		m_ePreScene;
+	SCENEID m_eNextScene;
+
+	bool m_bSceneChanged;
 
 	CScene* m_pScene;
 };

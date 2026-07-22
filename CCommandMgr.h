@@ -17,14 +17,28 @@ private:
 private:
 	eCommandMode m_eMode = eCommandMode::NONE;
 	eBuildingType m_ePlaceType;
-	class CUnit* m_pBuilder = nullptr;
+	CUnit* m_pBuilder = nullptr;
 	CBuilding* m_pGhost = nullptr;
+	//사운드 재생 타이머
+	float m_fSoundInterval = 2.f;
+	float m_fSoundTimer = m_fSoundInterval;
+	bool m_bCanPlaySound = false;
+	//A땅 공격
+	bool m_bAttackMove = false;
 public:
+	void SaveCamSlot();
+	void HandleControlGroup();
 	void BeginPlaceBuilding(eBuildingType type, CUnit* pBuilder);
 	void CancleBuilding();
 	bool IsPlacing();
 	void Update();
 	void Render(HDC hDC);
+public:
+	void IssueMove(Vec2& worldGoal);
+	void IssueAttack(CObj* pTarget);
+	void IssueAttackMove(Vec2& worldGoal);
+	void IssueHeal(CObj* pTarget);
+	void PlayMoveSound(CUnit* pUnit);
 public:
 	static CCommandMgr* Get_Instance()
 	{
@@ -43,10 +57,6 @@ public:
 			m_pInstance = nullptr;
 		}
 	}
-public:
-	void IssueMove(Vec2& worldGoal);
-	void IssueAttack(CObj* pTarget);
-	void IssueAttackMove(Vec2& worldGoal);
 private:
 	static CCommandMgr* m_pInstance;
 };
